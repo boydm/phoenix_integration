@@ -31,6 +31,9 @@ defmodule PhoenixIntegration.Mixfile do
   end
 
   defp deps do
-    [{:phoenix, "~> 1.1"}]
+    [
+      {:phoenix, "~> 1.1"},
+      {:floki, "~> 0.9"}             # html parser
+    ]
   end
 end
