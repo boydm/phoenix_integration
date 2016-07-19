@@ -1,0 +1,2 @@
+defmodule PhoenixIntegration do
+end
