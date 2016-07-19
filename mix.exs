@@ -6,6 +6,7 @@ defmodule PhoenixIntegration.Mixfile do
       app: :phoenix_integration,
       version: "0.0.1",
       elixir: "~> 1.1",
+      elixirc_paths: elixirc_paths(Mix.env),
       deps: deps(),
       package: [
         contributors: ["Boyd Multerer"],
@@ -19,6 +20,11 @@ defmodule PhoenixIntegration.Mixfile do
       """
     ]
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_),     do: ["lib"]
+
 
   def application do
     [applications: [:phoenix]]
