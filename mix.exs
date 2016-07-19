@@ -13,6 +13,10 @@ defmodule PhoenixIntegration.Mixfile do
         licenses: ["MIT"],
         links: %{github: "https://github.com/boydm/phoenix_integration"}
       ],
+      description: """
+      Phoenix server-side integration test tools. Very lightweight. Meant to be used
+      with and alongside Phoenix.ConnCase and other tools.
+      """
     ]
   end
 
