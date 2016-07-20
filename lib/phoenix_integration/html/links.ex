@@ -19,30 +19,32 @@
         "#" <> id ->
           case Floki.attribute(link, "id") do
             [^id] -> link
-            _ -> false
+            _ -> {"id=", id}
           end
         "/" <> _ ->
           case Floki.attribute(link, "href") do
             [^identifier] -> link
-            _ -> false
+            _ -> {"href=", identifier}
           end
         "http" <> _ ->
           case Floki.attribute(link, "href") do
             [^identifier] -> link
-            _ -> false
+            _ -> {"href=", identifier}
           end
         _ ->
           cond do
             # see if the identifier is in the links's text
             Floki.text(kids) =~ identifier -> link
             # all other cases fail
-            true -> false
+            true -> {"text containing ", identifier}
           end
       end
     end)
     |> case do
-      nil ->
-        raise "Failed to find link \"#{identifier}\" in the response"
+      {err_type, err_ident} ->
+        msg = "Failed to find link \"#{identifier}\", :get in the response\n" <>
+          "Expected to find an anchor with #{err_type}\"#{err_ident}\""
+        raise msg
       link ->
         [path] = Floki.attribute(link, "href")
         {:ok, path}
