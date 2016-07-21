@@ -1,7 +1,5 @@
 defmodule PhoenixIntegration.TestSupport.Requests do
   use Plug.Test
-#  use Phoenix.ConnTest
-  alias Phoenix.View
   
   @expected_json_data %{
     "one"   => 1,
