@@ -8,6 +8,7 @@
   text_here
 </p>
 
+-----------------------------
 A sample form link using POST
 <form id="post_id", action="/links/post" class="link" method="post">
   <input name="_method" type="hidden" value="post">
@@ -15,6 +16,7 @@ A sample form link using POST
   <a data-submit="parent" href="#" rel="nofollow"> POST link text </a>
 </form>
 
+-----------------------------
 A sample form link using PUT
 <form id="put_id", action="/links/put" class="link" method="post">
   <input name="_method" type="hidden" value="put">
@@ -22,6 +24,7 @@ A sample form link using PUT
   <a data-submit="parent" href="#" rel="nofollow"> PUT link text </a>
 </form>
 
+-----------------------------
 A sample form link using PATCH
 <form id="patch_id", action="/links/patch" class="link" method="post">
   <input name="_method" type="hidden" value="patch">
@@ -29,9 +32,56 @@ A sample form link using PATCH
   <a data-submit="parent" href="#" rel="nofollow"> PATCH link text </a>
 </form>
 
+-----------------------------
 A sample form link using DELETE
 <form id="delete_id", action="/links/delete" class="link" method="post">
   <input name="_method" type="hidden" value="delete">
   <input name="_csrf_token" type="hidden" value="WSMEZV81NQRYbAsLGzE0RXwLfnwvEAAAvk45jBW7sUfbOAeu7xN8CA==">
   <a data-submit="parent" href="#" rel="nofollow"> DELETE link text </a>
+</form>
+
+-----------------------------
+One more form. A proper one this time, with fields to be filled out.
+<form accept-charset="UTF-8" action="/form" method="post" id="proper_form">
+  Text in the proper form
+  <input name="_method" type="hidden" value="put">
+  <input name="_csrf_token" type="hidden" value="fARqZ3tHVnwaSwwtPwklRg9GQR5fEAAASLZ7N04O1raDkytvD5qZ3A==">
+  <input name="_utf8" type="hidden" value="✓">
+
+  <div class="form-group">
+    <label class="control-label" for="user_name">Name</label>
+    <input class="form-control" id="user_name" name="user[name]" type="text" value="John Doe">
+  </div>
+
+  A select field
+  <div class="form-group">
+    <select class="form-control" id="user_type" name="user[type]">
+      <option value="type_one">One</option>
+      <option selected="selected" value="type_two">Two</option>
+      <option value="type_three">Three</option>
+    </select>
+  </div>
+
+  A set of radio buttons
+  <div class='radio'>
+    <label>
+      <input type="radio" name="user[species]" id="user_species_human" value="human" checked="checked" />
+      Human
+    </label>
+    <br>
+    <label>
+      <input type="radio" name="user[species]" id="user_species_centauri" value="centauri" />
+      Centauri
+    </label>
+    <br>
+    <label>
+      <input type="radio" name="user[species]" id="user_species_narn" value="narn" />
+      Narn
+    </label>
+  </div>
+
+  <div class="form-group">
+    <input class="btn btn-primary" type="submit" value="Update">
+  </div>
+
 </form>
