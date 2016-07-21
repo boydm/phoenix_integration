@@ -8,14 +8,23 @@ defmodule PhoenixIntegration.Html.FormsTest do
   @href_first_get   "/links/first"
   @href_second_get  "https://www.example.com/links/second"
 
-  @form_action  "/form"
-  @form_method  "put"
-  @form_id      "#proper_form"
+  @form_action      "/form"
+  @form_method      "put"
+  @form_id          "#proper_form"
+
+  @user_data        %{ user: %{
+    name:     "User Name",
+    type:     "type_one",
+    story:    "Updated story."
+  }}
 
   #============================================================================
   # set up context 
   setup do
-    %{html: get( conn(:get, "/"), "/test_html" ).resp_body}
+    html = get( conn(:get, "/"), "/test_html" ).resp_body
+    {:ok, _action, _method, form} =
+      PhoenixIntegration.Html.Forms.find( html, @form_id )
+    %{html: html, form: form}
   end
 
 
@@ -39,20 +48,101 @@ defmodule PhoenixIntegration.Html.FormsTest do
 
   test "find form raises on missing path", %{html: html} do
     assert_raise RuntimeError, fn ->
-      PhoenixIntegration.Html.Links.find( html, "/invalid/path", :delete )
+      PhoenixIntegration.Html.Forms.find( html, "/invalid/path" )
     end    
   end
 
   test "find form raises on invalid id", %{html: html} do
     assert_raise RuntimeError, fn ->
-      PhoenixIntegration.Html.Links.find( html, "#other", :delete )
+      PhoenixIntegration.Html.Forms.find( html, "#other" )
     end    
   end
 
   test "find form raises on missing text", %{html: html} do
     assert_raise RuntimeError, fn ->
-      PhoenixIntegration.Html.Links.find( html, "Invalid Text", :delete )
+      PhoenixIntegration.Html.Forms.find( html, "Invalid Text" )
+    end    
+  end
+
+  #============================================================================
+  # build form data to send
+
+  test "build form data works", %{form: form} do
+    data = PhoenixIntegration.Html.Forms.build_form_data( form, @user_data )
+    %{user: user_params} = data
+    assert user_params.name == @user_data.user.name
+    assert user_params.type == @user_data.user.type
+    assert user_params.story == @user_data.user.story
+  end
+
+  test "build form data sets just text field", %{form: form} do
+    user_data = %{user: %{name: "Just Name"}}
+    data = PhoenixIntegration.Html.Forms.build_form_data( form, user_data )
+    %{user: user_params} = data
+    assert user_params.name == "Just Name"
+    assert user_params.type == "type_two"
+    assert user_params.story == "Initial user story"
+  end
+
+  test "build form data sets just select field", %{form: form} do
+    user_data = %{user: %{type: "type_three"}}
+    data = PhoenixIntegration.Html.Forms.build_form_data( form, user_data )
+    %{user: user_params} = data
+    assert user_params.name == "Initial Name"
+    assert user_params.type == "type_three"
+    assert user_params.story == "Initial user story"
+  end
+
+  test "build form data sets just text area", %{form: form} do
+    user_data = %{user: %{story: "Just story."}}
+    data = PhoenixIntegration.Html.Forms.build_form_data( form, user_data )
+    %{user: user_params} = data
+    assert user_params.name == "Initial Name"
+    assert user_params.type == "type_two"
+    assert user_params.story == "Just story."
+  end
+
+  test "build form raises setting missing field", %{form: form} do
+    user_data = Map.merge @user_data, %{missing: "something"}
+    assert_raise RuntimeError, fn ->
+      PhoenixIntegration.Html.Forms.build_form_data( form, user_data )
+    end    
+  end
+
+  test "build form raises setting invalid select value", %{form: form} do
+    user_data = %{user: %{type: "type_invalid"}}
+    assert_raise RuntimeError, fn ->
+      PhoenixIntegration.Html.Forms.build_form_data( form, user_data )
     end    
   end
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
