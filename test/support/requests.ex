@@ -41,8 +41,6 @@ defmodule PhoenixIntegration.TestSupport.Requests do
     |> resp( 200, File.read!("test/fixtures/templates/second.html") )
   end
 
-
-
   def post(old_conn, path, _data \\ %{} ) do
     conn(:post, path)
     |> Plug.Test.recycle_cookies( old_conn )
@@ -70,7 +68,6 @@ defmodule PhoenixIntegration.TestSupport.Requests do
     |> put_resp_header("location", "/second")
     |> put_status( 302 )
   end
-
 
 
   #============================================================================
