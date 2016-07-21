@@ -1,5 +1,4 @@
-defmodule PhoenixIntegration.Html.Links do
-  alias PhoenixIntegration.Html
+defmodule PhoenixIntegration.Links do
 
   #----------------------------------------------------------------------------
   # don't really care if there are multiple copies of the same link,
@@ -59,7 +58,7 @@ defmodule PhoenixIntegration.Html.Links do
   #--------------------------------------------------------
   def find( html, identifier, method ) do
     {:ok, path, _method, _form} =
-      Html.Forms.find(html, identifier, method)
+      PhoenixIntegration.Forms.find(html, identifier, method)
     {:ok, path}
   end
 

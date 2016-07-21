@@ -1,4 +1,4 @@
-defmodule PhoenixIntegration.Html.Forms do
+defmodule PhoenixIntegration.Forms do
 #  import IEx
 
 
