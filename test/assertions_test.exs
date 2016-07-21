@@ -1,7 +1,6 @@
 defmodule PhoenixIntegration.AssertionsTest do
   use ExUnit.Case
   use Plug.Test
-
   import PhoenixIntegration.TestSupport.Requests
 
 #  import IEx

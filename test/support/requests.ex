@@ -1,18 +1,21 @@
 defmodule PhoenixIntegration.TestSupport.Requests do
   use Plug.Test
-
+#  use Phoenix.ConnTest
+  alias Phoenix.View
+  
   @expected_json_data %{
     "one"   => 1,
     "two"   => "two",
     "other" => "Sample"
   }
 
+
   #============================================================================
   # faked up request/conn functions
 
   def get(old_conn, "/test_html" <> query) do
     pre_get_html(old_conn, "/test_html" <> query)
-    |> resp( 200, "Sample Page body goes here" )
+    |> resp( 200, File.read!("test/fixtures/templates/sample.html") )
   end
 
   def get(old_conn, "/test_json" <> query) do
