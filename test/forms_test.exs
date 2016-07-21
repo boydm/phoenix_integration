@@ -22,7 +22,7 @@ defmodule PhoenixIntegration.FormsTest do
   #============================================================================
   # set up context 
   setup do
-    html = get( conn(:get, "/"), "/test_html" ).resp_body
+    html = get( conn(:get, "/"), "/sample" ).resp_body
     {:ok, _action, _method, form} =
       PhoenixIntegration.Forms.find( html, @form_id )
     %{html: html, form: form}

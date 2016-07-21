@@ -3,8 +3,9 @@ defmodule PhoenixIntegration.Links do
   #----------------------------------------------------------------------------
   # don't really care if there are multiple copies of the same link,
   # jsut that it is actually on the page
-  def find( html, identifier, method \\ :get )
-  def find( html, identifier, :get ) do
+  def find( html, identifier, method \\ "get" )
+  def find( html, identifier, :get ), do: find( html, identifier, "get" )
+  def find( html, identifier, "get" ) do
     identifier = String.strip(identifier)
 
     # scan all links, return the first where either the path or the content

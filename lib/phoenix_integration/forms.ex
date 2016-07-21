@@ -4,6 +4,11 @@ defmodule PhoenixIntegration.Forms do
 
   #----------------------------------------------------------------------------
   def find( html, identifier, method \\ nil, form_finder \\ "form" ) do
+    method = case method do
+      nil -> nil
+      other -> to_string(other)
+    end
+
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
     Floki.find(html, form_finder)

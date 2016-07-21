@@ -14,7 +14,7 @@ defmodule PhoenixIntegration.LinksTest do
   #============================================================================
   # set up context 
   setup do
-    %{html: get( conn(:get, "/"), "/test_html" ).resp_body}
+    %{html: get( conn(:get, "/"), "/sample" ).resp_body}
   end
 
   #============================================================================
