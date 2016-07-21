@@ -73,7 +73,7 @@ defmodule PhoenixIntegration do
 
       #----------------------------------------------------------------------------
       def follow_form(conn = %Plug.Conn{}, identifier, fields, method \\ nil, form_finder \\ "form") do
-        submit_form(conn, fields, form_finder, method) |> follow_redirect
+        submit_form(conn, identifier, fields, method, form_finder) |> follow_redirect
       end
     end # quote
   end # defmacro

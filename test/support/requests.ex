@@ -31,7 +31,7 @@ defmodule PhoenixIntegration.TestSupport.Requests do
     |> put_status( 302 )
   end
 
-  def get(old_conn, "/sample" <> query, data) do
+  def get(old_conn, "/sample" <> query, _data) do
     pre_get_html(old_conn, "/sample" <> query)
     |> resp( 200, File.read!("test/fixtures/templates/sample.html") )
   end
