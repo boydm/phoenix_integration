@@ -50,10 +50,16 @@ defmodule PhoenixIntegration do
       end
 
       #----------------------------------------------------------------------------
-      def submit_form(conn = %Plug.Conn{}, identifier, fields, method \\ nil, form_finder \\ "form") do  
+      def submit_form(conn = %Plug.Conn{}, fields, opts \\ %{} ) do
+        opts = Map.merge( %{
+            identifier: nil,
+            method: nil,
+            finder: "form"
+          }, opts )
+
         # find the form
         {:ok, form_action, form_method, form} =
-          PhoenixIntegration.Forms.find(conn.resp_body, identifier, method, form_finder)
+          PhoenixIntegration.Forms.find(conn.resp_body, opts.identifier, opts.method, opts.finder)
 
         # build the data to send to the action pointed to by the form
         form_data = PhoenixIntegration.Forms.build_form_data(form, fields)
@@ -72,8 +78,8 @@ defmodule PhoenixIntegration do
       end
 
       #----------------------------------------------------------------------------
-      def follow_form(conn = %Plug.Conn{}, identifier, fields, method \\ nil, form_finder \\ "form") do
-        submit_form(conn, identifier, fields, method, form_finder) |> follow_redirect
+      def follow_form(conn = %Plug.Conn{}, fields, opts \\ %{}) do
+        submit_form(conn, fields, opts) |> follow_redirect
       end
     end # quote
   end # defmacro

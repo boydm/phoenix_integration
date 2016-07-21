@@ -16,6 +16,7 @@ defmodule PhoenixIntegration.Forms do
       {"form", _attribs, _kids} = form
  
       case identifier do
+        nil -> form         # if nil identifier, return the first form
         "#" <> id ->
           case Floki.attribute(form, "id") do
             [^id] -> form
