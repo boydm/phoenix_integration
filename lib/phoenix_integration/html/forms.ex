@@ -1,5 +1,5 @@
 defmodule PhoenixIntegration.Html.Forms do
-  import IEx
+#  import IEx
 
 
   #----------------------------------------------------------------------------
@@ -114,7 +114,7 @@ defmodule PhoenixIntegration.Html.Forms do
 
   #----------------------------------------------------------------------------'
   defp input_to_key_value(input, input_type) do
-    ok = case Floki.attribute(input, "type") do
+    case Floki.attribute(input, "type") do
       ["radio"] ->
         case Floki.attribute(input, "checked") do
           ["checked"] ->
