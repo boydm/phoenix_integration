@@ -3,7 +3,7 @@ defmodule PhoenixIntegration.Html.FormsTest do
   use Plug.Test
   import PhoenixIntegration.TestSupport.Requests
 
-  import IEx
+#  import IEx
 
   @href_first_get   "/links/first"
   @href_second_get  "https://www.example.com/links/second"
@@ -15,7 +15,8 @@ defmodule PhoenixIntegration.Html.FormsTest do
   @user_data        %{ user: %{
     name:     "User Name",
     type:     "type_one",
-    story:    "Updated story."
+    story:    "Updated story.",
+    species:  "centauri"
   }}
 
   #============================================================================
@@ -70,9 +71,10 @@ defmodule PhoenixIntegration.Html.FormsTest do
   test "build form data works", %{form: form} do
     data = PhoenixIntegration.Html.Forms.build_form_data( form, @user_data )
     %{user: user_params} = data
-    assert user_params.name == @user_data.user.name
-    assert user_params.type == @user_data.user.type
-    assert user_params.story == @user_data.user.story
+    assert user_params.name ==    @user_data.user.name
+    assert user_params.type ==    @user_data.user.type
+    assert user_params.story ==   @user_data.user.story
+    assert user_params.species == @user_data.user.species
   end
 
   test "build form data sets just text field", %{form: form} do
@@ -82,6 +84,7 @@ defmodule PhoenixIntegration.Html.FormsTest do
     assert user_params.name == "Just Name"
     assert user_params.type == "type_two"
     assert user_params.story == "Initial user story"
+    assert user_params.species == "human"
   end
 
   test "build form data sets just select field", %{form: form} do
@@ -91,6 +94,7 @@ defmodule PhoenixIntegration.Html.FormsTest do
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_three"
     assert user_params.story == "Initial user story"
+    assert user_params.species == "human"
   end
 
   test "build form data sets just text area", %{form: form} do
@@ -100,17 +104,21 @@ defmodule PhoenixIntegration.Html.FormsTest do
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_two"
     assert user_params.story == "Just story."
+    assert user_params.species == "human"
+  end
+
+  test "build form data sets just radio", %{form: form} do
+    user_data = %{user: %{species: "narn"}}
+    data = PhoenixIntegration.Html.Forms.build_form_data( form, user_data )
+    %{user: user_params} = data
+    assert user_params.name == "Initial Name"
+    assert user_params.type == "type_two"
+    assert user_params.story == "Initial user story"
+    assert user_params.species == "narn"
   end
 
   test "build form raises setting missing field", %{form: form} do
     user_data = Map.merge @user_data, %{missing: "something"}
-    assert_raise RuntimeError, fn ->
-      PhoenixIntegration.Html.Forms.build_form_data( form, user_data )
-    end    
-  end
-
-  test "build form raises setting invalid select value", %{form: form} do
-    user_data = %{user: %{type: "type_invalid"}}
     assert_raise RuntimeError, fn ->
       PhoenixIntegration.Html.Forms.build_form_data( form, user_data )
     end    

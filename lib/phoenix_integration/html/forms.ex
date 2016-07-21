@@ -1,6 +1,7 @@
 defmodule PhoenixIntegration.Html.Forms do
   import IEx
 
+
   #----------------------------------------------------------------------------
   def find( html, identifier, method \\ nil, form_finder \\ "form" ) do
     # scan all links, return the first where either the path or the content
@@ -113,6 +114,18 @@ defmodule PhoenixIntegration.Html.Forms do
 
   #----------------------------------------------------------------------------'
   defp input_to_key_value(input, input_type) do
+    ok = case Floki.attribute(input, "type") do
+      ["radio"] ->
+        case Floki.attribute(input, "checked") do
+          ["checked"] ->
+            really_input_to_key_value(input, input_type)
+          _ ->
+            {:error, "skip"}
+        end
+      _ -> really_input_to_key_value(input, input_type)
+    end
+  end
+  defp really_input_to_key_value(input, input_type) do
     case Floki.attribute(input, "name") do
       [] ->     {:error, :no_name}
       [name] -> interpret_named_value(name, get_input_value(input, input_type))
