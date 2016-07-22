@@ -70,15 +70,9 @@ defmodule PhoenixIntegration.Assertions do
       conn
     else
       # raise an appropriate error
-      full_path = case conn.query_string do
-        nil -> conn.request_path
-        "" -> conn.request_path
-        query -> conn.request_path <> "?" <> query
-      end
-
       msg = error_msg_type( conn, err_type ) <>
         error_msg_expected( expected ) <>
-        error_msg_found( full_path )
+        error_msg_found( conn_request_path(conn) )
       raise %ResponseError{ message: msg }
     end
   end
@@ -112,15 +106,9 @@ defmodule PhoenixIntegration.Assertions do
       conn
     else
       # raise an appropriate error
-      full_path = case conn.query_string do
-        nil -> conn.request_path
-        "" -> conn.request_path
-        query -> conn.request_path <> "?" <> query
-      end
-
       msg = error_msg_type( conn, err_type ) <>
-        error_msg_expected( "path to NOT be:" <> full_path ) <>
-        error_msg_found( full_path )
+        error_msg_expected( "path to NOT be:" <> conn_request_path(conn) ) <>
+        error_msg_found( conn_request_path(conn) )
       raise %ResponseError{ message: msg }
     end
   end
