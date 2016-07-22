@@ -305,7 +305,8 @@ defmodule PhoenixIntegration.Assertions do
   #----------------------------------------------------------------------------
   defp error_msg_type(conn, type) do
     "#{IO.ANSI.red}The conn's response was not formed as expected\n" <>
-    "#{IO.ANSI.green}conn.request_path: #{IO.ANSI.cyan}#{conn.request_path}" <>
+    "#{IO.ANSI.green}conn.path: #{IO.ANSI.cyan}#{conn_request_path(conn)}\n" <>
+    "#{IO.ANSI.green}conn.params: #{IO.ANSI.cyan}#{inspect(conn.params)}\n" <>
     "#{IO.ANSI.green}Error verifying #{IO.ANSI.cyan}:#{type}\n"
   end
   #----------------------------------------------------------------------------
@@ -315,6 +316,16 @@ defmodule PhoenixIntegration.Assertions do
   #----------------------------------------------------------------------------
   defp error_msg_found(msg) do
     "#{IO.ANSI.green}Found: #{IO.ANSI.red}#{msg}\n"
+  end
+
+  #----------------------------------------------------------------------------
+  defp conn_request_path(conn) do
+    conn.request_path <> 
+    case conn.query_string do
+      nil -> ""
+      "" -> ""
+      query -> "?" <> query
+    end
   end
 
 end
