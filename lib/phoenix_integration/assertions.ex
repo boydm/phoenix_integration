@@ -76,7 +76,7 @@ defmodule PhoenixIntegration.Assertions do
         query -> conn.request_path <> "?" <> query
       end
 
-      msg = error_msg_type( err_type ) <>
+      msg = error_msg_type( conn, err_type ) <>
         error_msg_expected( expected ) <>
         error_msg_found( full_path )
       raise %ResponseError{ message: msg }
@@ -118,7 +118,7 @@ defmodule PhoenixIntegration.Assertions do
         query -> conn.request_path <> "?" <> query
       end
 
-      msg = error_msg_type( err_type ) <>
+      msg = error_msg_type( conn, err_type ) <>
         error_msg_expected( "path to NOT be:" <> full_path ) <>
         error_msg_found( full_path )
       raise %ResponseError{ message: msg }
@@ -131,7 +131,7 @@ defmodule PhoenixIntegration.Assertions do
     case Plug.Conn.get_resp_header(conn, "location") do
       [^expected] -> conn
       [to] ->
-        msg = error_msg_type( err_type ) <>
+        msg = error_msg_type( conn, err_type ) <>
           error_msg_expected( to_string(expected) ) <>
           error_msg_found( to_string(to) )
         raise %ResponseError{ message: msg }
@@ -144,7 +144,7 @@ defmodule PhoenixIntegration.Assertions do
       302 ->
         case Plug.Conn.get_resp_header(conn, "location") do
           [^expected] ->
-            msg = error_msg_type( err_type ) <>
+            msg = error_msg_type( conn, err_type ) <>
               error_msg_expected( "to NOT redirect to: " <> to_string(expected) ) <>
               error_msg_found( "redirect to: " <> to_string(expected) )
             raise %ResponseError{ message: msg }
@@ -181,7 +181,7 @@ defmodule PhoenixIntegration.Assertions do
     case Poison.decode!( conn.resp_body ) do
       ^expected -> conn
       data ->
-        msg = error_msg_type( err_type ) <>
+        msg = error_msg_type( conn, err_type ) <>
           error_msg_expected( inspect(expected) ) <>
           error_msg_found( inspect(data) )
         raise %ResponseError{ message: msg }
@@ -198,7 +198,7 @@ defmodule PhoenixIntegration.Assertions do
           header =~ "json"->
             case Poison.decode!( conn.resp_body ) do
               ^expected ->
-                msg = error_msg_type( err_type ) <>
+                msg = error_msg_type( conn, err_type ) <>
                   error_msg_expected( "to NOT find " <> inspect(expected) ) <>
                   error_msg_found( inspect(expected) )
                 raise %ResponseError{ message: msg }
@@ -214,7 +214,7 @@ defmodule PhoenixIntegration.Assertions do
     if conn.resp_body =~ expected do
       conn
     else
-      msg = error_msg_type( err_type ) <>
+      msg = error_msg_type( conn, err_type ) <>
         error_msg_expected( "to find \"#{expected}\"" ) <>
         error_msg_found( "Not in the response body\n" ) <>
         IO.ANSI.yellow <>
@@ -226,7 +226,7 @@ defmodule PhoenixIntegration.Assertions do
   #----------------------------------------------------------------------------
   defp refute_body(conn, expected, err_type \\ :body) do
     if conn.resp_body =~ expected do
-      msg = error_msg_type( err_type ) <>
+      msg = error_msg_type( conn, err_type ) <>
         error_msg_expected( "NOT to find \"#{expected}\"" ) <>
         error_msg_found( "in the response body\n" ) <>
         IO.ANSI.yellow <>
@@ -242,7 +242,7 @@ defmodule PhoenixIntegration.Assertions do
     case conn.status do
       ^status -> conn
       other ->
-        msg = error_msg_type( err_type ) <>
+        msg = error_msg_type( conn, err_type ) <>
           error_msg_expected( to_string(status) ) <>
           error_msg_found( to_string(other) )
         raise %ResponseError{ message: msg }
@@ -253,7 +253,7 @@ defmodule PhoenixIntegration.Assertions do
   defp refute_status(conn, status, err_type \\ :status) do
     case conn.status do
       ^status ->
-        msg = error_msg_type( err_type ) <>
+        msg = error_msg_type( conn, err_type ) <>
           error_msg_expected( "NOT " <> to_string(status) ) <>
           error_msg_found( to_string(status) )
         raise %ResponseError{ message: msg }
@@ -266,7 +266,7 @@ defmodule PhoenixIntegration.Assertions do
     case Plug.Conn.get_resp_header(conn, "content-type") do
       [] -> 
         # no content type header was found
-        msg = error_msg_type( err_type ) <>
+        msg = error_msg_type( conn, err_type ) <>
           error_msg_expected("content-type header of \"#{expected_type}\"") <>
           error_msg_found( "No content-type header was found" )
         raise %ResponseError{ message: msg }
@@ -277,7 +277,7 @@ defmodule PhoenixIntegration.Assertions do
             conn
           true ->
             # there was a content type header, but the wrong one
-            msg = error_msg_type( err_type ) <>
+            msg = error_msg_type( conn, err_type ) <>
               error_msg_expected("content-type including \"#{expected_type}\"") <>
               error_msg_found( "\"#{header}\"" )
             raise %ResponseError{ message: msg }
@@ -293,7 +293,7 @@ defmodule PhoenixIntegration.Assertions do
         cond do
           header =~ expected_type->
             # the refuted content_type header was found
-            msg = error_msg_type( err_type ) <>
+            msg = error_msg_type( conn, err_type ) <>
               error_msg_expected("content-type to NOT be \"#{expected_type}\"") <>
               error_msg_found( "\"#{header}\"" )
             raise %ResponseError{ message: msg }
@@ -303,8 +303,9 @@ defmodule PhoenixIntegration.Assertions do
   end
 
   #----------------------------------------------------------------------------
-  defp error_msg_type(type) do
+  defp error_msg_type(conn, type) do
     "#{IO.ANSI.red}The conn's response was not formed as expected\n" <>
+    "#{IO.ANSI.green}conn.request_path: #{IO.ANSI.cyan}#{conn.request_path}" <>
     "#{IO.ANSI.green}Error verifying #{IO.ANSI.cyan}:#{type}\n"
   end
   #----------------------------------------------------------------------------
