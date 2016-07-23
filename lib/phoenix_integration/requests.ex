@@ -30,7 +30,11 @@ defmodule PhoenixIntegration.Requests do
   Similar to a standard get/post/put/patch/delete call in a ConnTest except that follow_path
   also follows any redirects returned in the path's response header.
   """
-  def follow_path(conn = %Plug.Conn{}, path, opts \\ %{} ) do
+  def follow_path(conn, path, opts \\ %{} )
+  def follow_path(conn = %Plug.Conn{}, path, opts ) when is_list(opts) do
+    follow_path(conn, path, Enum.into(opts, %{}) )
+  end
+  def follow_path(conn = %Plug.Conn{}, path, opts ) do
     opts = Map.merge(%{
       method: "get",
       max_redirects: 5
@@ -54,7 +58,11 @@ defmodule PhoenixIntegration.Requests do
 
   Any redirects are __not__ followed.
   """
-  def click_link(conn = %Plug.Conn{}, identifer, opts \\ %{}) do
+  def click_link(conn, identifer, opts \\ %{})
+  def click_link(conn = %Plug.Conn{}, path, opts ) when is_list(opts) do
+    click_link(conn, path, Enum.into(opts, %{}) )
+  end
+  def click_link(conn = %Plug.Conn{}, identifer, opts) do
     opts = Map.merge( %{method: "get"}, opts )
 
     {:ok, href} = find_html_link(conn.resp_body, identifer, opts.method)
@@ -65,7 +73,11 @@ defmodule PhoenixIntegration.Requests do
   @doc """
   Similar to click_link, except that it does follow redirects.
   """
-  def follow_link(conn = %Plug.Conn{}, indentifer, opts \\ %{} ) do
+  def follow_link(conn, indentifer, opts \\ %{} )
+  def follow_link(conn = %Plug.Conn{}, indentifer, opts ) when is_list(opts) do
+    follow_link(conn, indentifer, Enum.into(opts, %{}) )
+  end
+  def follow_link(conn = %Plug.Conn{}, indentifer, opts ) do
     opts = Map.merge(%{
       method: "get",
       max_redirects: 5
@@ -87,7 +99,11 @@ defmodule PhoenixIntegration.Requests do
 
   Any redirects are __not__ followed.
   """
-  def submit_form(conn = %Plug.Conn{}, fields, opts \\ %{} ) do
+  def submit_form(conn, fields, opts \\ %{} )
+  def submit_form(conn = %Plug.Conn{}, fields, opts ) when is_list(opts) do
+    submit_form(conn, fields, Enum.into(opts, %{}) )
+  end
+  def submit_form(conn = %Plug.Conn{}, fields, opts ) do
     opts = Map.merge( %{
         identifier: nil,
         method: nil,
@@ -109,7 +125,11 @@ defmodule PhoenixIntegration.Requests do
   @doc """
   Similar to submit_form, except that it does follow redirects.
   """
-  def follow_form(conn = %Plug.Conn{}, fields, opts \\ %{}) do
+  def follow_form(conn, fields, opts \\ %{})
+  def follow_form(conn = %Plug.Conn{}, fields, opts ) when is_list(opts) do
+    follow_form(conn, fields, Enum.into(opts, %{}) )
+  end
+  def follow_form(conn = %Plug.Conn{}, fields, opts) do
     opts = Map.merge( %{max_redirects: 5}, opts)
 
     submit_form(conn, fields, opts)
