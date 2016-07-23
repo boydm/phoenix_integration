@@ -175,7 +175,7 @@ defmodule PhoenixIntegration.Requests do
   end
   defp find_html_link( html, identifier, method ) do
     {:ok, path, _method, _form} =
-      PhoenixIntegration.Forms.find_html_form(html, identifier, method)
+      find_html_form(html, identifier, method, "form")
     {:ok, path}
   end
 
