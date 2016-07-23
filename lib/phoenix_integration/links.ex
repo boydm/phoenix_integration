@@ -3,6 +3,8 @@ defmodule PhoenixIntegration.Links do
   
   @endpoint Application.get_env(:phoenix_integration, :endpoint)
 
+  def get_end(), do: @endpoint
+
   #----------------------------------------------------------------------------
   def follow_redirect(conn = %Plug.Conn{}, max_redirects \\ 5) do
     if max_redirects == 0 do
