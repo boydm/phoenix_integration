@@ -4,8 +4,9 @@ defmodule PhoenixIntegration do
   defmacro __using__(_opts) do
     quote do
       import PhoenixIntegration.Assertions
-      import PhoenixIntegration.Links
-      import PhoenixIntegration.Forms
+      import PhoenixIntegration.Requests
+#      import PhoenixIntegration.Links
+#      import PhoenixIntegration.Forms
 
 #      #----------------------------------------------------------------------------
 #      def follow_redirect(conn = %Plug.Conn{}, max_redirects \\ 5) do
