@@ -6,7 +6,10 @@ defmodule PhoenixIntegration.Assertions do
     defexception [message: "#{IO.ANSI.red}The conn's response was not formed as expected\n"]
   end
 
-
+  @doc """
+  Asserts a set of content for the response fields in a conn. Returns the conn on success
+  so that it can be used in the next integration call.
+  """
   def assert_response(conn = %Plug.Conn{}, conditions) do
     Enum.each(conditions, fn({condition, value}) ->
       case condition do
@@ -24,6 +27,10 @@ defmodule PhoenixIntegration.Assertions do
     conn
   end
 
+  @doc """
+  Refutes a set of content for the response fields in a conn. Returns the conn on success
+  so that it can be used in the next integration call.
+  """
   def refute_response(conn = %Plug.Conn{}, conditions) do
     Enum.each(conditions, fn({condition, value}) ->
       case condition do

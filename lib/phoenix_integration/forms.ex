@@ -1,9 +1,49 @@
 defmodule PhoenixIntegration.Forms do
-#  import IEx
+  use Phoenix.ConnTest
 
+  @endpoint Application.get_env(:phoenix_integration, :endpoint)
 
   #----------------------------------------------------------------------------
-  def find( html, identifier, method \\ nil, form_finder \\ "form" ) do
+  def submit_form(conn = %Plug.Conn{}, fields, opts \\ %{} ) do
+    opts = Map.merge( %{
+        identifier: nil,
+        method: nil,
+        finder: "form"
+      }, opts )
+
+    # find the form
+    {:ok, form_action, form_method, form} =
+      find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
+
+    # build the data to send to the action pointed to by the form
+    form_data = build_form_data(form, fields)
+
+    # use ConnCase to call the form's handler. return the new conn
+    case form_method do
+      "post" ->
+        post( conn, form_action, form_data )
+      "put" -> 
+        put( conn, form_action, form_data )
+      "patch" -> 
+        patch( conn, form_action, form_data )
+      "get" ->
+        get( conn, form_action, form_data )
+    end
+  end
+
+  #----------------------------------------------------------------------------
+  def follow_form(conn = %Plug.Conn{}, fields, opts \\ %{}) do
+    submit_form(conn, fields, opts)
+    |> PhoenixIntegration.Links.follow_redirect
+  end
+
+
+
+  #============================================================================
+  # private below
+
+  #----------------------------------------------------------------------------
+  def find_html_form( html, identifier, method \\ nil, form_finder \\ "form" ) do
     method = case method do
       nil -> nil
       other -> to_string(other)
@@ -60,7 +100,7 @@ defmodule PhoenixIntegration.Forms do
   end
 
   #----------------------------------------------------------------------------
-  def build_form_data(form, fields) do
+  defp build_form_data(form, fields) do
     form_data = build_form_by_type(form, %{}, "input")
     form_data = build_form_by_type(form, form_data, "textarea")
     form_data = build_form_by_type(form, form_data, "select")
@@ -101,7 +141,7 @@ defmodule PhoenixIntegration.Forms do
   # support for building form data
 
   #----------------------------------------------------------------------------
-  def build_form_by_type(form, acc, input_type) do
+  defp build_form_by_type(form, acc, input_type) do
     Enum.reduce(Floki.find(form, input_type), acc, fn(input, acc) ->
       case input_to_key_value(input, input_type) do
         {:ok, key, value} ->

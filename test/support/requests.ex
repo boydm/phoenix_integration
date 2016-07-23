@@ -7,6 +7,10 @@ defmodule PhoenixIntegration.TestSupport.Requests do
     "other" => "Sample"
   }
 
+  defmodule Endpoint do
+    use Phoenix.Endpoint, otp_app: :phoenix_integration
+  end
+
 
   #============================================================================
   # faked up request/conn functions

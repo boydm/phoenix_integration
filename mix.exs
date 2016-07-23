@@ -14,6 +14,9 @@ defmodule PhoenixIntegration.Mixfile do
         licenses: ["MIT"],
         links: %{github: "https://github.com/boydm/phoenix_integration"}
       ],
+      name: "phoenix_integration",
+      source_url: "https://github.com/boydm/phoenix_integration",
+
       description: """
       Phoenix server-side integration test tools. Very lightweight. Meant to be used
       with and alongside Phoenix.ConnCase and other tools.
@@ -34,7 +37,15 @@ defmodule PhoenixIntegration.Mixfile do
     [
       {:phoenix, "~> 1.1"},
       {:phoenix_html, "~> 2.3"},
-      {:floki, "~> 0.9"}             # html parser
+      {:floki, "~> 0.9"},             # html parser
+
+     # Docs dependencies
+     {:ex_doc, "~> 0.13", only: :dev},
+     {:inch_ex, "~> 0.5", only: :dev}
     ]
   end
+
+#  defp docs do
+#    extras: ["README.md"]
+#  end
 end
