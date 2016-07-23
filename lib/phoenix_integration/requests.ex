@@ -20,7 +20,7 @@ defmodule PhoenixIntegration.Requests do
         # contains state that might be needed
         [location] = Plug.Conn.get_resp_header(conn, "location")
         get(conn, location)
-          |> follow_redirect(max_redirects - 1)
+        |> follow_redirect(max_redirects - 1)
       _ -> conn
     end
   end
@@ -30,8 +30,14 @@ defmodule PhoenixIntegration.Requests do
   Similar to a standard get/post/put/patch/delete call in a ConnTest except that follow_path
   also follows any redirects returned in the path's response header.
   """
-  def follow_path(conn = %Plug.Conn{}, path, method \\ "get") do
-    request_path(conn, path, method) |> follow_redirect
+  def follow_path(conn = %Plug.Conn{}, path, opts \\ %{} ) do
+    opts = Map.merge(%{
+      method: "get",
+      max_redirects: 5
+      }, opts)
+
+    request_path(conn, path, opts.method)
+    |> follow_redirect( opts.max_redirects )
   end
 
   #----------------------------------------------------------------------------
@@ -48,17 +54,25 @@ defmodule PhoenixIntegration.Requests do
 
   Any redirects are __not__ followed.
   """
-  def click_link(conn = %Plug.Conn{}, identifer, method \\ "get") do
-    {:ok, href} = find_html_link(conn.resp_body, identifer, method)
-    request_path(conn, href, method)
+  def click_link(conn = %Plug.Conn{}, identifer, opts \\ %{}) do
+    opts = Map.merge( %{method: "get"}, opts )
+
+    {:ok, href} = find_html_link(conn.resp_body, identifer, opts.method)
+    request_path(conn, href, opts.method)
   end
 
   #----------------------------------------------------------------------------
   @doc """
   Similar to click_link, except that it does follow redirects.
   """
-  def follow_link(conn = %Plug.Conn{}, indentifer, method \\ "get") do
-    click_link(conn, indentifer, method) |> follow_redirect
+  def follow_link(conn = %Plug.Conn{}, indentifer, opts \\ %{} ) do
+    opts = Map.merge(%{
+      method: "get",
+      max_redirects: 5
+      }, opts)
+
+    click_link(conn, indentifer, opts)
+    |> follow_redirect( opts.max_redirects )
   end
 
   #----------------------------------------------------------------------------
@@ -96,8 +110,10 @@ defmodule PhoenixIntegration.Requests do
   Similar to submit_form, except that it does follow redirects.
   """
   def follow_form(conn = %Plug.Conn{}, fields, opts \\ %{}) do
+    opts = Map.merge( %{max_redirects: 5}, opts)
+
     submit_form(conn, fields, opts)
-    |> follow_redirect
+    |> follow_redirect( opts.max_redirects )
   end
 
   #============================================================================

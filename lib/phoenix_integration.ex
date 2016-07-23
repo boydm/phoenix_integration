@@ -1,5 +1,8 @@
 defmodule PhoenixIntegration do
 
+  @moduledoc """
+  Put phoenix_integration overview here.
+  """
 
   defmacro __using__(_opts) do
     quote do
