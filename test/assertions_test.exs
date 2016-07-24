@@ -1,14 +1,14 @@
 defmodule PhoenixIntegration.AssertionsTest do
   use ExUnit.Case, async: true
-  use Plug.Test
-  import PhoenixIntegration.TestSupport.Requests
+  use Phoenix.ConnTest
+  @endpoint PhoenixIntegration.TestEndpoint
 
 #  import IEx
 
   #============================================================================
   # set up context 
   setup do
-    %{conn: conn(:get, "/")}
+    %{conn: build_conn(:get, "/")}
   end
 
   #============================================================================

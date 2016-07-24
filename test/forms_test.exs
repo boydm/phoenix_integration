@@ -1,7 +1,7 @@
  defmodule PhoenixIntegration.FormsTest do
   use ExUnit.Case, async: true
-  use Plug.Test
-  import PhoenixIntegration.TestSupport.Requests
+  use Phoenix.ConnTest
+  @endpoint PhoenixIntegration.TestEndpoint
 
 #  import IEx
 
@@ -22,7 +22,7 @@
   #============================================================================
   # set up context 
   setup do
-    html = get( conn(:get, "/"), "/sample" ).resp_body
+    html = get( build_conn(:get, "/"), "/sample" ).resp_body
     {:ok, _action, _method, form} =
       PhoenixIntegration.Requests.test_find_html_form( html, @form_id, nil, "form" )
     %{html: html, form: form}

@@ -1,7 +1,7 @@
 defmodule PhoenixIntegration.LinksTest do
   use ExUnit.Case, async: true
-  use Plug.Test
-  import PhoenixIntegration.TestSupport.Requests
+  use Phoenix.ConnTest
+  @endpoint PhoenixIntegration.TestEndpoint
 
   @href_first_get   "/links/first"
   @href_second_get  "https://www.example.com/links/second"
@@ -14,7 +14,7 @@ defmodule PhoenixIntegration.LinksTest do
   #============================================================================
   # set up context 
   setup do
-    %{html: get( conn(:get, "/"), "/sample" ).resp_body}
+    %{html: get( build_conn(:get, "/"), "/sample" ).resp_body}
   end
 
   #============================================================================
