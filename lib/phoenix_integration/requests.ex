@@ -5,10 +5,16 @@ defmodule PhoenixIntegration.Requests do
 
   #----------------------------------------------------------------------------
   @doc """
-  Given a conn who's response is a redirect, it calls the path indicated by the 
-  redirect "location" response header and returns the conn from that call.
+  Given a conn who's response is a redirect, `follow_redirect` calls the path indicated
+  by the "location" response header and returns the conn from that call.
 
-  This will recursively follow up to _max_redirects_ redirect responses.
+  ### Parameters
+    * `conn` A conn whose status 302, which is a redirect. The conn's location header
+      should point to the path being redirected to.
+    * `max_redirects` The maximum number of recirects to follow. Defaults to `5`;
+
+  Any incoming `conn.status` other than 302 causes `follow_redirect` to take no
+  action and return the incoming conn for further processing.
   """
   def follow_redirect(conn = %Plug.Conn{}, max_redirects \\ 5) do
     if max_redirects == 0 do
@@ -27,12 +33,23 @@ defmodule PhoenixIntegration.Requests do
 
   #----------------------------------------------------------------------------
   @doc """
-  Similar to a standard get/post/put/patch/delete call in a ConnTest except that follow_path
-  follows any redirects returned in the conn's response header.
+  Similar to a standard get/post/put/patch/delete call in a ConnTest except that
+  `follow_path` follows any redirects returned in the conn's response header.
 
-  ## Options
-    * `:method` - method use when requesting the path. Defaults to `"get"`;
-    * `:max_redirects` - Maximum number of redirects to follow. defaults to `5`;
+  Unlike the rest of the functions in this module, `follow_path` ignores the
+  conn.resp_body and simply uses the given path.
+
+  ### Parameters
+    * `conn` A conn that has been set up to work in the test environment.
+      Could be the conn originally passed in to the test;
+    * `path` A path that works with your router;
+    * `opts` A map of additional options
+      * `:method` - method to use when requesting the path. Defaults to `"get"`;
+      * `:max_redirects` - Maximum number of redirects to follow. Defaults to `5`;
+
+  ### Example:
+      follow_path( conn, thing_path(conn, :index) )
+      |> assert_response( status: 200, path: think_path(conn, :index) )
   """
   def follow_path(conn, path, opts \\ %{} )
   def follow_path(conn = %Plug.Conn{}, path, opts ) when is_list(opts) do
@@ -53,60 +70,54 @@ defmodule PhoenixIntegration.Requests do
   Finds a link in conn.resp_body, requests it as if the user had clicked on it,
   and returns the resulting conn.
 
-  `click_link` does not follow any redirects returned by the request. This allows
+  ### Parameters
+    * `conn` should be a conn returned from a previous request that rendered some html. The
+      functions are designed to pass the conn from one call into the next via pipes.
+    * `identifier` indicates which link to find in the html. Valid values can be in the following
+      forms:
+        * `"/some/path"` specify the link's href starting with a `"/"` character
+        * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
+        * `"#element-id"` specify the html element id of the link you are looking for. Must start
+          start with the `"#"` character (same as css id specifier).
+        * `"Some Text"` specify text contained within the link you are looking for.
+    * `opts` A map of additional options
+      * `:method` - method to use when requesting the path. Defaults to `"get"`;
+
+  `click_link` does __not__ follow any redirects returned by the request. This allows
   you to explicitly check that the redirect is correct. Use `follow_redirect` to request
   the location redirected to, or just use `follow_link` to do it in one call.
 
-  For example:
+  If the link is not found in the body, `click_link` raises an error.
+
+  ### Examples:
+
+      # click a link specified by path or uri
+      get( conn, thing_path(conn, :index) )
+      |> click_link( page_path(conn, :index) )
+
+      # click a link specified by html id with a non-get method
+      get( conn, thing_path(conn, :index) )
+      |> click_link( "#link-id", method: :delete )
+
+      # click a link containing the given text
+      get( conn, thing_path(conn, :index) )
+      |> click_link( conn, "Settings" )
+
+      # test a redirect and continue
       get( conn, thing_path(conn, :index) )
       |> click_link( "something that redirects to new" )
       |> assert_response( status: 302, to: think_path(conn, :new) )
       |> follow_redirect()
       |> assert_response( status: 200, path: think_path(conn, :new) )
 
-  If the link is not found in the body, `click_link` raises an error.
-
-  Any redirects are __not__ followed.
-
-  ### Parameters
-  `conn` should be a conn returned from a previous request that rendered some html. The
-  functions are designed to pass the conn from one call into the next via pipes.
-
-  `identifier` indicates which link to find in the html. Valid values can be in the following
-  forms:
-    * `"/some/path"` specify the link's href starting with a `"/"` character
-    * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
-    * `"#element-id"` specify the html element id of the link you are looking for. Must start
-      start with the `"#"` character (same as css id specifier).
-    * `"Some Text"` specify text contained within the link you are looking for.
-
-  Examples:
-
-      # click a link specified by path or uri
-      get( conn, thing_path(conn, :index) )
-      |> click_link( page_path(conn, :index) )
-
-      # click a link specified by html id
-      get( conn, thing_path(conn, :index) )
-      |> click_link( "#link-id" )
-
-      # click a link containing the given text
-      get( conn, thing_path(conn, :index) )
-      |> click_link( conn, "Settings" )
-
-  ### Options
-    * `:method` - link method to look for in the html. Defaults to `"get"`;
-
-
   ### Links that don't use the :get method
 
   When Phoneix.Html renders a link, it usually generates an `<a>` tag. However, if you 
-  specify a method other than :get, then it generates a form that looks like a link.
+  specify a method other than :get, then Phoenix generates html looks like a link, but
+  is really a form using the method. This is why you must specify the method used in `opts`
+  if you used anything other than the standard :get in your link.
 
-      <%= link "Delete Thing", to: thing_path(conn, :delete, thing), method: :delete %>
-
-  If you did this, then specifiy the method to look for as an option.
-
+      # follow a non-get link
       click_link( conn, thing_path(conn, :delete), method: :delete )
   """
   def click_link(conn, identifer, opts \\ %{})
@@ -125,57 +136,39 @@ defmodule PhoenixIntegration.Requests do
   Finds a link in conn.resp_body, requests it as if the user had clicked on it,
   follows any redirects, and returns the resulting conn.
 
+  ### Parameters
+    * `conn` should be a conn returned from a previous request that rendered some html. The
+      functions are designed to pass the conn from one call into the next via pipes.
+    * `identifier` indicates which link to find in the html. Valid values can be in the following
+      forms:
+        * `"/some/path"` specify the link's href starting with a `"/"` character
+        * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
+        * `"#element-id"` specify the html element id of the link you are looking for. Must start
+          start with the `"#"` character (same as css id specifier).
+        * `"Some Text"` specify text contained within the link you are looking for.
+    * `opts` A map of additional options
+      * `:method` - method to use when requesting the path. Defaults to `"get"`;
+      * `:max_redirects` - Maximum number of redirects to follow. Defaults to `5`;
+
   This is similar to `click_link`, except that it follows returned redirects. This
   is very useful during integration tests as you typically want to emulate what the
-  user is really doing. You should typically use follow_link more than click_link.
+  user is really doing. You will probably use `follow_link` more than `click_link`.
 
-  For example:
-      get( conn, thing_path(conn, :index) )
-      |> follow_link( "something that redirects to new" )
-      |> assert_response( status: 200, path: think_path(conn, :new) )
-      |> follow_link( "Cancel" )
-      |> assert_response( status: 200, path: think_path(conn, :index) )
+  If the link is not found in the body, `follow_link` raises an error.
 
-
-  If the link is not found in the body, `click_link` raises an error.
-
-
-  ### Parameters
-  `conn` should be a conn returned from a previous request that rendered some html. The
-  functions are designed to pass the conn from one call into the next via pipes.
-
-  `identifier` indicates which link to find in the html. Valid values can be in the following
-  forms:
-    * `"/some/path"` specify the link's href starting with a `"/"` character
-    * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
-    * `"#element-id"` specify the html element id of the link you are looking for. Must start
-      start with the `"#"` character (same as css id specifier).
-    * `"Some Text"` specify text contained within the link you are looking for.
-
-  Example:
-
-      # click through several pages that should point to each other
-      get( conn, thing_path(conn, :index) )
-      |> follow_link( conn, "#settings" )
-      |> follow_link( conn, "Cancel" )
-      |> assert_response( path: thing_path(conn, :index) )
-
-  ### Options
-    * `:method` - link method to look for in the html. Defaults to `"get"`;
-    * `:max_redirects` - Maximum number of redirects to follow. defaults to `5`;
+  ### Example:
+        # click through several pages that should point to each other
+        get( conn, thing_path(conn, :index) )
+        |> follow_link( conn, "#settings" )
+        |> follow_link( conn, "Cancel" )
+        |> assert_response( path: thing_path(conn, :index) )
 
   ### Links that don't use the :get method
 
   When Phoneix.Html renders a link, it usually generates an `<a>` tag. However, if you 
-  specify a method other than :get, like this:
-
-      <%= link "Delete Thing", to: thing_path(conn, :delete, thing), method: :delete %>
-
-  Then Phoenix generates html looks like a link, but is really a form using the method.
-  This is why you must specify the method used in `opts` if you used anything other
-  than the standard :get in your link.
-
-  For example:
+  specify a method other than :get, then Phoenix generates html looks like a link, but
+  is really a form using the method. This is why you must specify the method used in `opts`
+  if you used anything other than the standard :get in your link.
 
       # follow a non-get link
       follow_link( conn, thing_path(conn, :delete), method: :delete )
