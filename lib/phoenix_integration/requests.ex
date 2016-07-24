@@ -22,11 +22,11 @@ defmodule PhoenixIntegration.Requests do
         # get the root index page
         get( conn, page_path(conn, :index) )
         # click/follow through the various about pages
-        |> follow_link( conn, "About Us" )
-        |> follow_link( conn, "Contact" )
-        |> follow_link( conn, "Privacy" )
-        |> follow_link( conn, "Terms of Service" )
-        |> follow_link( conn, "Home" )
+        |> follow_link( "About Us" )
+        |> follow_link( "Contact" )
+        |> follow_link( "Privacy" )
+        |> follow_link( "Terms of Service" )
+        |> follow_link( "Home" )
         |> assert_response( status: 200, path: page_path(conn, :index) )
       end
 
@@ -34,7 +34,7 @@ defmodule PhoenixIntegration.Requests do
         # get the root index page
         get( conn, page_path(conn, :index) )
         # create the new user
-        |> follow_link( conn, "Sign Up" )
+        |> follow_link( "Sign Up" )
         |> follow_form( %{ user: %{
               name: "New User",
               email: "user@example.com",
@@ -148,7 +148,7 @@ defmodule PhoenixIntegration.Requests do
 
       # click a link containing the given text
       get( conn, thing_path(conn, :index) )
-      |> click_link( conn, "Settings" )
+      |> click_link( "Settings" )
 
       # test a redirect and continue
       get( conn, thing_path(conn, :index) )
@@ -206,8 +206,8 @@ defmodule PhoenixIntegration.Requests do
   ### Example:
         # click through several pages that should point to each other
         get( conn, thing_path(conn, :index) )
-        |> follow_link( conn, "#settings" )
-        |> follow_link( conn, "Cancel" )
+        |> follow_link( "#settings" )
+        |> follow_link( "Cancel" )
         |> assert_response( path: thing_path(conn, :index) )
 
   ### Links that don't use the :get method
