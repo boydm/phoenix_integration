@@ -1,5 +1,6 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
+  import IEx
 
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
@@ -341,9 +342,27 @@ defmodule PhoenixIntegration.Requests do
     |> follow_redirect( opts.max_redirects )
   end
 
+
+
+
+
+
   #============================================================================
   #============================================================================
   # private below
+
+  IEx.pry
+  if Mix.env == :test do
+    def test_find_html_link( html, identifier, method) do
+      find_html_link( html, identifier, method)
+    end
+    def test_find_html_form( html, identifier, method, form_finder ) do
+      find_html_form( html, identifier, method, form_finder )
+    end
+    def test_build_form_data(form, fields) do
+      build_form_data(form, fields)
+    end
+  end
 
   #----------------------------------------------------------------------------
   defp request_path(conn, path, method, data \\ %{} ) do
@@ -477,16 +496,6 @@ defmodule PhoenixIntegration.Requests do
     end
   end
 
-  #----------------------------------------------------------------------------
-  defp build_form_data(form, fields) do
-    form_data = build_form_by_type(form, %{}, "input")
-    form_data = build_form_by_type(form, form_data, "textarea")
-    form_data = build_form_by_type(form, form_data, "select")
-
-    # merge the data from the form and that provided by the test
-    merge_grouped_fields( form_data, fields )
-  end
-
   #========================================================
   # support for find
 
@@ -517,6 +526,16 @@ defmodule PhoenixIntegration.Requests do
 
   #========================================================
   # support for building form data
+
+  #----------------------------------------------------------------------------
+  defp build_form_data(form, fields) do
+    form_data = build_form_by_type(form, %{}, "input")
+    form_data = build_form_by_type(form, form_data, "textarea")
+    form_data = build_form_by_type(form, form_data, "select")
+
+    # merge the data from the form and that provided by the test
+    merge_grouped_fields( form_data, fields )
+  end
 
   #----------------------------------------------------------------------------
   defp build_form_by_type(form, acc, input_type) do
