@@ -65,3 +65,7 @@ config :phoenix_integration,
 
 Where MyApp is the name of your app.
 
+## Documentation
+
+You can read [the full documentation here](https://hexdocs.pm/phoenix_integration).
+
