@@ -3,8 +3,6 @@ defmodule PhoenixIntegration.AssertionsTest do
   use Phoenix.ConnTest
   @endpoint PhoenixIntegration.TestEndpoint
 
-#  import IEx
-
   #============================================================================
   # set up context 
   setup do

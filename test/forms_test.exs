@@ -3,8 +3,6 @@
   use Phoenix.ConnTest
   @endpoint PhoenixIntegration.TestEndpoint
 
-#  import IEx
-
   @href_first_get   "/links/first"
   @href_second_get  "https://www.example.com/links/second"
 
