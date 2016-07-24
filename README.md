@@ -68,6 +68,9 @@ defp deps do
   ]
 end
 ```
+### Step 3
+
+Run `mix deps.get` on the command line.
 
 ## Documentation
 
