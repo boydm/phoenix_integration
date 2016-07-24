@@ -1,6 +1,5 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
-  import IEx
 
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
@@ -351,7 +350,6 @@ defmodule PhoenixIntegration.Requests do
   #============================================================================
   # private below
 
-  IEx.pry
   if Mix.env == :test do
     def test_find_html_link( html, identifier, method) do
       find_html_link( html, identifier, method)
