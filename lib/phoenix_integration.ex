@@ -1,7 +1,16 @@
 defmodule PhoenixIntegration do
 
   @moduledoc """
-  Put phoenix_integration overview here.
+  Lightweight integration test support for Phoenix. Extends the existing
+  Phoenix.ConnTest framework.
+
+  ## Overview
+
+  Overview `"topic:subtopic"` goes here
+
+    channel "room:*", MyApp.RoomChannel
+
+  More stuff goes here
   """
 
   defmacro __using__(_opts) do

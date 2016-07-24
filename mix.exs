@@ -16,7 +16,7 @@ defmodule PhoenixIntegration.Mixfile do
       ],
       name: "phoenix_integration",
       source_url: "https://github.com/boydm/phoenix_integration",
-
+      docs: [source_ref: "v#{@version}", main: "PhoenixIntegration"],
       description: """
       Phoenix server-side integration test tools. Very lightweight. Meant to be used
       with and alongside Phoenix.ConnCase and other tools.
