@@ -1,4 +1,5 @@
-# PhoenixIntegration
+PhoenixIntegration
+========
 
 PhoenixIntegration is set of lightweight, server-side integration test functions for Phoenix.
 Works within the existing `Phoenix.ConnTest` framework and emphasizes both speed and readability.
@@ -9,52 +10,58 @@ excersize your application in as lightweight and readable manner as possible.
 Each function accepts a conn and some other data, and returns a conn intended to be
 passed into the next function via a pipe.
 
-      test "Basic page flow", %{conn: conn} do
-        # get the root index page
-        get( conn, page_path(conn, :index) )
-        # click/follow through the various about pages
-        |> follow_link( "About Us" )
-        |> follow_link( "Contact" )
-        |> follow_link( "Privacy" )
-        |> follow_link( "Terms of Service" )
-        |> follow_link( "Home" )
-        |> assert_response( status: 200, path: page_path(conn, :index) )
-      end
+```elixir
+test "Basic page flow", %{conn: conn} do
+  # get the root index page
+  get( conn, page_path(conn, :index) )
+  # click/follow through the various about pages
+  |> follow_link( "About Us" )
+  |> follow_link( "Contact" )
+  |> follow_link( "Privacy" )
+  |> follow_link( "Terms of Service" )
+  |> follow_link( "Home" )
+  |> assert_response( status: 200, path: page_path(conn, :index) )
+end
 
-      test "Create new user", %{conn: conn} do
-        # get the root index page
-        get( conn, page_path(conn, :index) )
-        # click/follow through the various about pages
-        |> follow_link( "Sign Up" )
-        |> follow_form( %{ user: %{
-              name: "New User",
-              email: "user@example.com",
-              password: "test.password",
-              confirm_password: "test.password"
-            }} )
-        |> assert_response(
-            status: 200,
-            path: page_path(conn, :index),
-            html: "New User" )
-      end
+test "Create new user", %{conn: conn} do
+  # get the root index page
+  get( conn, page_path(conn, :index) )
+  # click/follow through the various about pages
+  |> follow_link( "Sign Up" )
+  |> follow_form( %{ user: %{
+        name: "New User",
+        email: "user@example.com",
+        password: "test.password",
+        confirm_password: "test.password"
+      }} )
+  |> assert_response(
+      status: 200,
+      path: page_path(conn, :index),
+      html: "New User" )
+end
+```
 
 ## Installation
 
 Add PhoenixIntegration to the deps section of your application's `mix.exs` file
 
-      defp deps do
-        [
-          # ...
-          {:phoenix_integration, "~> 0.1.0"}
-          # ...
-        ]
-      end
+```elixir
+defp deps do
+  [
+    # ...
+    {:phoenix_integration, "~> 0.1.0"}
+    # ...
+  ]
+end
+```
 
 You also need to tell phoenix_integration what Endpoint to use for the request calls to work.
 To do this, add the following to your `config/test.exs` file
 
-    config :phoenix_integration,
-      endpoint: MyApp.Endpoint
+```elixir
+config :phoenix_integration,
+  endpoint: MyApp.Endpoint
+```
 
 Where MyApp is the name of your app.
 
