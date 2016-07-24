@@ -43,6 +43,20 @@ end
 
 ## Installation
 
+### Step 1
+
+Tell phoenix_integration what Endpoint to use.
+To do this, add the following to your `config/test.exs` file
+
+```elixir
+config :phoenix_integration,
+  endpoint: MyApp.Endpoint
+```
+
+Where MyApp is the name of your app.
+
+### Step 2
+
 Add PhoenixIntegration to the deps section of your application's `mix.exs` file
 
 ```elixir
@@ -54,16 +68,6 @@ defp deps do
   ]
 end
 ```
-
-You also need to tell phoenix_integration what Endpoint to use for the request calls to work.
-To do this, add the following to your `config/test.exs` file
-
-```elixir
-config :phoenix_integration,
-  endpoint: MyApp.Endpoint
-```
-
-Where MyApp is the name of your app.
 
 ## Documentation
 
