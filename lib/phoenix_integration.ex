@@ -4,9 +4,20 @@ defmodule PhoenixIntegration do
   Lightweight server-side integration test functions for Phoenix. Works within the existing
   Phoenix.ConnTest framework and emphasizes both speed and readability.
 
+  ## Configuration
+
+  You need to tell phoenix_integration what Endpoint to use for the request calls to work.
+  To do this, add the following to your `config/test.exs` file
+
+      config :phoenix_integration,
+        endpoint: MyApp.Endpoint
+
+  Where MyApp is the name of your app.
+
+
   ## Overview
 
-  PhoenixIntegration provides two assertion and six request functions to be used
+  phoenix_integration provides two assertion and six request functions to be used
   alongside the existing `get`, `post`, `put`, `patch`, and `delete` utilities
   inside of a Phoenix.ConnTest test suite.
 
@@ -135,9 +146,9 @@ defmodule PhoenixIntegration do
         end
 
 
-  ### What PhoenixIntegration is NOT
+  ### What phoenix_integration is NOT
 
-  PhoenixIntegration is not a client-side acceptence test suite. It does not use
+  phoenix_integration is not a client-side acceptence test suite. It does not use
   a real browser and does not exercise javascript code that lives there. It's focus
   is on fast, readable, server-side integration.
 

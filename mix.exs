@@ -1,10 +1,13 @@
 defmodule PhoenixIntegration.Mixfile do
   use Mix.Project
 
+  @version "0.1.0"
+  @url "https://github.com/boydm/phoenix_integration"
+
   def project do
     [
       app: :phoenix_integration,
-      version: "0.0.1",
+      version: @version,
       elixir: "~> 1.1",
       elixirc_paths: elixirc_paths(Mix.env),
       deps: deps(),
@@ -12,14 +15,15 @@ defmodule PhoenixIntegration.Mixfile do
         contributors: ["Boyd Multerer"],
         maintainers: ["Boyd Multerer"],
         licenses: ["MIT"],
-        links: %{github: "https://github.com/boydm/phoenix_integration"}
+        links: %{github: @url}
       ],
       name: "phoenix_integration",
-      source_url: "https://github.com/boydm/phoenix_integration",
-      docs: [source_ref: "v#{@version}", main: "PhoenixIntegration"],
+      source_url: @url,
+      #docs: [source_ref: "v#{@version}", main: "PhoenixIntegration"],
+      docs: docs(),
       description: """
-      Phoenix server-side integration test tools. Very lightweight. Meant to be used
-      with and alongside Phoenix.ConnCase and other tools.
+      Lightweight server-side integration test functions for Phoenix.
+      Works within the existing Phoenix.ConnTest framework and emphasizes both speed and readability.
       """
     ]
   end
@@ -45,7 +49,11 @@ defmodule PhoenixIntegration.Mixfile do
     ]
   end
 
-#  defp docs do
-#    extras: ["README.md"]
-#  end
+  def docs do
+    [
+      extras: ["README.md"],
+      source_ref: "v#{@version}",
+      main: "PhoenixIntegration"
+    ]
+  end
 end
