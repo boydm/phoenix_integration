@@ -1,5 +1,52 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
+
+  @moduledoc """
+  A set of functions intended to compliment the regular Phoenix.ConnTest utilities
+  of `get`, `post`, `put`, `patch`, and `delete`.
+
+  Each request function takes a conn and a set of data telling it what to do. Then it
+  requests one or more paths from your phoenix application, transforming the
+  conn each time. The final conn is returned.
+
+  All the functions except `follow_path` and `follow_redirect` examine the html
+  conntent of the incoming conn to find a link or form to use. In this way, you
+  can both confirm that content exists in rendered pages and take actions as
+  the user would.
+
+  This is intended to be used as a (possibly long) chain of piped functions that
+  exercises a set of functionality in your application.
+
+  ### Examples
+      test "Basic page flow", %{conn: conn} do
+        # get the root index page
+        get( conn, page_path(conn, :index) )
+        # click/follow through the various about pages
+        |> follow_link( conn, "About Us" )
+        |> follow_link( conn, "Contact" )
+        |> follow_link( conn, "Privacy" )
+        |> follow_link( conn, "Terms of Service" )
+        |> follow_link( conn, "Home" )
+        |> assert_response( status: 200, path: page_path(conn, :index) )
+      end
+
+      test "Create new user", %{conn: conn} do
+        # get the root index page
+        get( conn, page_path(conn, :index) )
+        # create the new user
+        |> follow_link( conn, "Sign Up" )
+        |> follow_form( %{ user: %{
+              name: "New User",
+              email: "user@example.com",
+              password: "test.password",
+              confirm_password: "test.password"
+            }} )
+        |> assert_response(
+            status: 200,
+            path: page_path(conn, :index),
+            html: "New User" )
+      end
+  """
   
   @endpoint Application.get_env(:phoenix_integration, :endpoint)
 
@@ -189,21 +236,40 @@ defmodule PhoenixIntegration.Requests do
 
   #----------------------------------------------------------------------------
   @doc """
-  Finds a form in the conn's resp_body html, fills out the fields with the given
-  data, and requests the form's action with the given data.
+  Finds a form in conn.resp_body, fills out the fields with the given
+  data, requests the form's action and returns the resulting conn.
 
-  You can identify which form to find by specifying the action (starting with either a "/" or
-  "http"), the form's id (starting with a "#", or textual content in the form)
+  ### Parameters
+    * `conn` should be a conn returned from a previous request that rendered some html. The
+      functions are designed to pass the conn from one call into the next via pipes.
+    * `fields` a map of fields and data to be written into the form before submitting it's action.
+    * `opts` A map of additional options
+      * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
+        in the following forms:
+          * `"/some/path"` specify the link's href starting with a `"/"` character
+          * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
+          * `"#element-id"` specify the html element id of the link you are looking for. Must start
+            start with the `"#"` character (same as css id specifier).
+          * `"Some Text"` specify text contained within the link you are looking for.
+      * `:method` - restricts the forms searched to those whose action uses the given
+      method (such as "post" or "put"). Defaults to `nil`;
+      * `:finder` - finding string passed to `Floki.find`. Defaults to `"form"`
 
-  If the link is not in the body, it raises an error.
+  If no `opts.identifier` is specified, the first form that makes sense is used. Unless you
+  have multiple forms on your page, this often is the most understandable pattern.
+
+  If no appropriate form is found, `submit_form` raises an error.
 
   Any redirects are __not__ followed.
 
-  ## Options
-    * `:identifier` - /action, #id or text to identify the form. Defaults to `nil`;
-    * `:method` - restricts the forms searched to those whose action uses the given
-      method (such as "post" or "put"). Defaults to `nil`;
-    * `:finder` - finding string passed to `Floki.find`. Defaults to `"form"`
+  ### Example:
+        # fill out a form and submit it
+        get( conn, thing_path(conn, :edit, thing) )
+        |> submit_form( %{ thing: %{
+            name: "Updated Name",
+            some_count: 42
+          }})
+        |> assert_response( status: 302, to: thing_path(conn, :show, thing) )
   """
   def submit_form(conn, fields, opts \\ %{} )
   def submit_form(conn = %Plug.Conn{}, fields, opts ) when is_list(opts) do
@@ -229,13 +295,40 @@ defmodule PhoenixIntegration.Requests do
 
   #----------------------------------------------------------------------------
   @doc """
-  Similar to submit_form, except that it does follow redirects.
+  Finds a form in conn.resp_body, fills out the fields with the given
+  data, requests the form's action, follows any redirects and returns the resulting conn.
 
-  ## Options
-    * `:identifier` - /action, #id or text to identify the form. Defaults to `nil`;
-    * `:method` - restricts the forms searched to those whose action uses the given
+  Similar to `submit_form`, except that it does follow redirects.
+
+  ### Parameters
+    * `conn` should be a conn returned from a previous request that rendered some html. The
+      functions are designed to pass the conn from one call into the next via pipes.
+    * `fields` a map of fields and data to be written into the form before submitting it's action.
+    * `opts` A map of additional options
+      * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
+        in the following forms:
+          * `"/some/path"` specify the link's href starting with a `"/"` character
+          * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
+          * `"#element-id"` specify the html element id of the link you are looking for. Must start
+            start with the `"#"` character (same as css id specifier).
+          * `"Some Text"` specify text contained within the link you are looking for.
+      * `:method` - restricts the forms searched to those whose action uses the given
       method (such as "post" or "put"). Defaults to `nil`;
-    * `:max_redirects` - Maximum number of redirects to follow. defaults to `5`;
+      * `:finder` - finding string passed to `Floki.find`. Defaults to `"form"`
+
+  If no `opts.identifier` is specified, the first form that makes sense is used. Unless you
+  have multiple forms on your page, this often is the most understandable pattern.
+
+  If no appropriate form is found, `follow_form` raises an error.
+
+  ### Example:
+        # fill out a form and submit it
+        get( conn, thing_path(conn, :edit, thing) )
+        |> follow_form( %{ thing: %{
+            name: "Updated Name",
+            some_count: 42
+          }})
+        |> assert_response( status: 200, path: thing_path(conn, :show, thing) )
   """
   def follow_form(conn, fields, opts \\ %{})
   def follow_form(conn = %Plug.Conn{}, fields, opts ) when is_list(opts) do
