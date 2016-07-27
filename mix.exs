@@ -19,7 +19,6 @@ defmodule PhoenixIntegration.Mixfile do
       ],
       name: "phoenix_integration",
       source_url: @url,
-      #docs: [source_ref: "v#{@version}", main: "PhoenixIntegration"],
       docs: docs(),
       description: """
       Lightweight server-side integration test functions for Phoenix.
