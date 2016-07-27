@@ -22,7 +22,7 @@ defmodule PhoenixIntegration do
   inside of a Phoenix.ConnTest test suite.
 
   The goal is to chain together a string of requests and assertions that thouroughly
-  excersize your application in as lightweight and readable manner as possible.
+  exercise your application in as lightweight and readable manner as possible.
 
   Each function accepts a conn and some other data, and returns a conn intended to be
   passed into the next function via a pipe.
@@ -60,7 +60,7 @@ defmodule PhoenixIntegration do
   ### Simulate multiple users
   Since all user state is held in the conn that is being passed around (just like when
   a user is hitting your application in a browser), you can simulate multiple users
-  simply by tracking seperate conns for them.
+  simply by tracking separate conns for them.
 
   In the example below, I'm assuming an application-specific `test_sign_in` function, which
   itself uses the `follow_*` functions to sign a given user in.

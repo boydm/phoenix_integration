@@ -8,7 +8,7 @@ defmodule PhoenixIntegration.Assertions do
   and, if they all pass, the function returns the passed-in conn unchanged. If any
   condition fails, the function raises an appropriate error.
 
-  This is intended to be used as a (possibly long) chain of piped functions that
+  This is intended to be used in a (possibly long) chain of piped functions that
   exercises a set of functionality in your application.
 
   ### Example
@@ -87,7 +87,7 @@ defmodule PhoenixIntegration.Assertions do
   end
 
   @doc """
-  Refutes a set of content for the response fields in a conn. Returns the conn on success
+  Refutes a set of conditions for the response fields in a conn. Returns the conn on success
   so that it can be used in the next integration call.
 
   ### Parameters
