@@ -16,8 +16,8 @@ defmodule PhoenixIntegration.Mixfile do
         maintainers: ["Boyd Multerer"],
         licenses: ["MIT"],
         links: %{
-          github: @url,
-          docs: "http://hexdocs.pm/phoenix_integration"
+          "GitHub" => @url,
+          "Docs" => "http://hexdocs.pm/phoenix_integration"
         }
       ],
       name: "phoenix_integration",
