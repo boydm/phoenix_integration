@@ -1,5 +1,11 @@
-PhoenixIntegration
+phoenix_integration
 ========
+
+## Documentation
+
+You can read [the full documentation here](https://hexdocs.pm/phoenix_integration).
+
+## Overview
 
 PhoenixIntegration is set of lightweight, server-side integration test functions for Phoenix.
 Works within the existing `Phoenix.ConnTest` framework and emphasizes both speed and readability.
