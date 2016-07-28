@@ -10,8 +10,8 @@ You can read [the full documentation here](https://hexdocs.pm/phoenix_integratio
 PhoenixIntegration is set of lightweight, server-side integration test functions for Phoenix.
 Works within the existing `Phoenix.ConnTest` framework and emphasizes both speed and readability.
 
-The goal is to chain together a string of requests and assertions that thouroughly
-excersize your application in as lightweight and readable manner as possible.
+The goal is to chain together a string of requests and assertions that thoroughly
+exercise your application in as lightweight and readable manner as possible.
 
 Each function accepts a conn and some other data, and returns a conn intended to be
 passed into the next function via a pipe.
