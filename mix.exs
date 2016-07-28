@@ -15,14 +15,18 @@ defmodule PhoenixIntegration.Mixfile do
         contributors: ["Boyd Multerer"],
         maintainers: ["Boyd Multerer"],
         licenses: ["MIT"],
-        links: %{github: @url}
+        links: %{
+          github: @url,
+          docs: "http://hexdocs.pm/phoenix_integration"
+        }
       ],
       name: "phoenix_integration",
       source_url: @url,
       docs: docs(),
       description: """
       Lightweight server-side integration test functions for Phoenix.
-      Works within the existing Phoenix.ConnTest framework and emphasizes both speed and readability.
+      Optimized for Elixir Pipes and the existing Phoenix.ConnTest
+      framework to emphasize both speed and readability.
       """
     ]
   end
