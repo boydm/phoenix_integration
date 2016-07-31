@@ -341,9 +341,41 @@ defmodule PhoenixIntegration.Requests do
     |> follow_redirect( opts.max_redirects )
   end
 
+  #----------------------------------------------------------------------------
+  @doc """
+  Calls a function and follows the any redirects in the returned conn.
+  If the function returns anything other than a conn, then the result is ignored
+  and follow_fn will simply return the original conn
 
+  This gives a way to insert custom assertions, or other setup code without breaking
+  the chain of piped functions
 
+  ### Parameters
+    * `conn` A conn that has been set up to work in the test environment.
+      Could be the conn originally passed in to the test;
+    * `func` a function in the form of `fn(conn) -> end`;
+    * `opts` A map of additional options
+      * `:max_redirects` - Maximum number of redirects to follow. Defaults to `5`;
 
+  ### Example:
+      follow_fn( conn, fn(c) ->
+          "/some_path/" <> token = c.request_path
+          assert token == "valid_token"
+          # in this case, I am not returning a conn. This means the result
+          # is ignored and the original conn is returned
+        end)
+  """
+  def follow_fn(conn, func, opts \\ %{} )
+  def follow_fn(conn, func, opts ) when is_list(opts), do:
+    follow_fn(conn, func, Enum.into(opts, %{}))
+  def follow_fn(conn, func, opts ) do
+    opts = Map.merge(%{ max_redirects: 5 }, opts)
+    case func.(conn) do
+      c = %Plug.Conn{} ->
+        follow_redirect( c, opts.max_redirects )
+      _ -> conn
+    end
+  end
 
 
   #============================================================================

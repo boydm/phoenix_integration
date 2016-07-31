@@ -124,6 +124,24 @@ defmodule PhoenixIntegration.RequestTest do
     |> assert_response( status: 200, path: "/second" )
   end
 
+  #============================================================================
+  # follow_fn
+
+  test "follow_form returns fn's conn", %{conn: conn} do
+    refute conn.assigns[:test]
+    conn = follow_fn( conn, fn(c) -> Plug.Conn.assign(c, :test, "response") end)
+    assert conn.assigns[:test] == "response"
+  end
+
+  test "follow_form ignores non conn responses", %{conn: conn} do
+    assert follow_fn( conn, fn(_) -> "some string" end) == conn
+  end
+
+  test "follow_fn follows redirects in the returned conn", %{conn: conn} do
+    follow_fn( conn, fn(c) -> get(c, "/test_redir") end)
+    |> assert_response( status: 200, path: "/sample" )
+  end
+
 end
 
 
