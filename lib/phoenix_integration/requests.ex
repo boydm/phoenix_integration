@@ -343,12 +343,12 @@ defmodule PhoenixIntegration.Requests do
 
   #----------------------------------------------------------------------------
   @doc """
-  Calls a function and follows the any redirects in the returned conn.
-  If the function returns anything other than a conn, then the result is ignored
-  and follow_fn will simply return the original conn
+  Calls a function and follows the any redirects in the returned `conn`.
+  If the function returns anything other than a `conn`, then the result is ignored
+  and `follow_fn` will simply return the original `conn`
 
   This gives a way to insert custom assertions, or other setup code without breaking
-  the chain of piped functions
+  the piped chain of functions.
 
   ### Parameters
     * `conn` A conn that has been set up to work in the test environment.
@@ -361,8 +361,6 @@ defmodule PhoenixIntegration.Requests do
       follow_fn( conn, fn(c) ->
           "/some_path/" <> token = c.request_path
           assert token == "valid_token"
-          # in this case, I am not returning a conn. This means the result
-          # is ignored and the original conn is returned
         end)
   """
   def follow_fn(conn, func, opts \\ %{} )
