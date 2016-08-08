@@ -52,6 +52,8 @@ defmodule PhoenixIntegration.Assertions do
       * `:redirect` checks that `conn.status` is 302 and that the path in the "location" redirect
         header equals the given path.
       * `:to` same as `:redirect`
+      * `:assigns` checks that conn.assigns contains the given values, which could be in the form of `%{key => value}`
+        or `[{key, value}]`
 
   Conditions can be used multiple times within a single call to `assert_response`. This can be useful
   to look for multiple text strings in the body.
@@ -60,10 +62,11 @@ defmodule PhoenixIntegration.Assertions do
 
       # test a rendered page
       assert_response( conn,
-        status: 200,
-        path:   page_path(conn, :index),
-        html:   "Some Content",
-        html:   "More Content"
+        status:   200,
+        path:     page_path(conn, :index),
+        html:     "Some Content",
+        html:     "More Content",
+        assigns:  %{current_user_id: user.id}
       )
 
       # test a redirection
@@ -81,6 +84,7 @@ defmodule PhoenixIntegration.Assertions do
         :path ->          assert_uri(conn, value, :path)
         :redirect ->      assert_redirect(conn, value)
         :to ->            assert_redirect(conn, value, :to)
+        :assigns ->       assert_assigns(conn, value)
       end
     end)
     conn
@@ -105,6 +109,8 @@ defmodule PhoenixIntegration.Assertions do
       * `:redirect` checks if `conn.status` is 302. If it is, then checks that the path in the "location" redirect
         header is not the given path.
       * `:to` same as `:redirect`
+      * `:assigns` checks that conn.assigns does not contain the given values, which could be in the form of `%{key: value}`
+        or `[{:key, value}]`
 
   `refute_response` is often used in conjuntion with `assert_response` to form a complete condition check.
 
@@ -131,10 +137,46 @@ defmodule PhoenixIntegration.Assertions do
         :path ->          refute_uri(conn, value, :path)
         :redirect ->      refute_redirect(conn, value)
         :to ->            refute_redirect(conn, value, :to)
+        :assigns ->       refute_assigns(conn, value)
       end
     end)
     conn
   end
+
+
+  #----------------------------------------------------------------------------
+  defp assert_assigns(conn, expected, err_type \\ :assigns)
+  defp assert_assigns(conn, expected, err_type) when is_map(expected) do
+    Enum.each(expected, fn({key, value}) -> 
+      if conn.assigns[key] != value do
+        # raise an appropriate error
+        msg = error_msg_type( conn, err_type ) <>
+          error_msg_expected( "conn.assigns to contain: " <> inspect(expected) ) <>
+          error_msg_found( inspect(conn.assigns) )
+        raise %ResponseError{ message: msg }
+      end
+    end)
+  end
+  defp assert_assigns(conn, expected, err_type) when is_list(expected), do:
+    assert_assigns(conn, Enum.into(expected, %{}), err_type )
+
+
+  #----------------------------------------------------------------------------
+  defp refute_assigns(conn, expected, err_type \\ :assigns)
+  defp refute_assigns(conn, expected, err_type) when is_map(expected) do
+    Enum.each(expected, fn({key, value}) -> 
+      if conn.assigns[key] != value do
+        # raise an appropriate error
+        msg = error_msg_type( conn, err_type ) <>
+          error_msg_expected( "conn.assigns to NOT contain: " <> inspect(expected) ) <>
+          error_msg_found( inspect(conn.assigns) )
+        raise %ResponseError{ message: msg }
+      end
+    end)
+  end
+  defp refute_assigns(conn, expected, err_type) when is_list(expected), do:
+    assert_assigns(conn, Enum.into(expected, %{}), err_type )
+
 
   #----------------------------------------------------------------------------
   defp assert_uri(conn, expected, err_type \\ :uri) do

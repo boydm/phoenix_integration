@@ -41,6 +41,32 @@ defmodule PhoenixIntegration.AssertionsTest do
   end
 
   #----------------------------------------------------------------------------
+  # assert assigns
+  test "assert_response :assigns succeeds", %{conn: conn} do
+    conn = assign(conn, :some_key, "some_value")
+    PhoenixIntegration.Assertions.assert_response(conn, assigns: %{
+      some_key: "some_value"}
+    )
+  end
+  test "assert_response :assigns fails if missing a key", %{conn: conn} do
+    conn = assign(conn, :some_key, "some_value")
+    assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
+      PhoenixIntegration.Assertions.assert_response(conn, assigns: %{
+        some_key:     "some_value",
+        missing_key: "missing_value"
+      })
+    end    
+  end
+  test "assert_response :assigns fails if wrong value", %{conn: conn} do
+    conn = assign(conn, :some_key, "some_value")
+    assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
+      PhoenixIntegration.Assertions.assert_response(conn, assigns: %{
+        some_key:     "wrong_value"
+      })
+    end    
+  end
+
+  #----------------------------------------------------------------------------
   # assert  uri / path
   test "assert_response :uri succeeds", %{conn: conn} do
     conn = get conn, "/sample"
