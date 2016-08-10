@@ -211,7 +211,7 @@ The `refute_response` function is very similar in form to `assert_response`, exc
 |> follow_link( "Show Thing" )
 |> assert_response(
     status: 200,
-    path:   page_path(conn, :index)
+    path:   thing_path(conn, :show, thing)
     html:   "Good Content"
   )
 |> refute_response(
