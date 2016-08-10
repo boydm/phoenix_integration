@@ -19,6 +19,20 @@ You can read [the full documentation here](https://hexdocs.pm/phoenix_integratio
 
 ### Step 1
 
+You need to tell phoenix_integration which endpoint to use. Add the following to your phoenix application's `config/test.exs` file.
+
+```elixir
+config :phoenix_integration,
+  endpoint: MyApp.Endpoint
+```
+
+Where MyApp is the name of your application.
+
+Do this up before compiling phoenix_integration as part of step 2. If you change the endpoint in the config file, you will need to recompile the phoenix_integration dependency.
+
+
+### Step 2
+
 Add PhoenixIntegration to the deps section of your application's `mix.exs` file
 
 ```elixir
@@ -32,18 +46,6 @@ end
 ```
 
 Don't forget to run `mix deps.get`
-
-### Step 2
-
-You need to tell phoenix_integration which endpoint to use. Add the following to your phoenix application's `config/test.exs` file.
-
-```elixir
-config :phoenix_integration,
-  endpoint: MyApp.Endpoint
-```
-
-Where MyApp is the name of your application.
-
 
 ### Step 3
 
