@@ -34,6 +34,19 @@ end
 Don't forget to run `mix deps.get`
 
 ### Step 2
+
+You need to tell phoenix_integration which endpoint to use. Add the following to your phoenix application's `config/test.exs` file.
+
+```elixir
+config :phoenix_integration,
+  endpoint: MyApp.Endpoint
+```
+
+Where MyApp is the name of your application.
+
+
+### Step 3
+
 Create a test/support/integration_case.ex file. Mine simply looks like this:
 
 ```elixir
@@ -53,7 +66,7 @@ end
 
 Alternately you could place the call to `use PhoenixIntegration` in your conn_case.ex file. Just make sure it is after the definition of `@endpoint`.
 
-### Step 3
+### Step 4
 Start writing integration tests. They should use your integration_conn.ex file. Here is a full example (just the name of the app is changed). This is from the location test/integration/page_integration_test.exs
 
 ```elixir
