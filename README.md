@@ -1,10 +1,6 @@
 phoenix_integration
 ========
 
-## Documentation
-
-You can read [the full documentation here](https://hexdocs.pm/phoenix_integration).
-
 ## Overview
 
 PhoenixIntegration is set of lightweight, server-side integration test functions for Phoenix.
@@ -14,6 +10,10 @@ The goal is to chain together a string of requests and assertions that thoroughl
 exercise your application in as lightweight and readable manner as possible.
 
 I love the pipe `|>` command in Elixir. By using the pipe to chain together calls in an integration test, phoenix_integration is able to be very readable. Tight integration with Phoenix.ConnTest means the call all use the fast-path to your application for speed.
+
+## Documentation
+
+You can read [the full documentation here](https://hexdocs.pm/phoenix_integration).
 
 ## Configuration
 
