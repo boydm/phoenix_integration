@@ -187,7 +187,7 @@ The following line, which is very common in Phoenix.ConnTest controller tests wo
 
 `assert html_response(conn, 200) =~ “Some text”`
 
-So, the `PhoenixIntegration.Assertions` module introduces two new functions, which can test multiple conditions in a single call, and always return the (unchained) conn being tested.
+So, the `PhoenixIntegration.Assertions` module introduces two new functions, which can test multiple conditions in a single call, and always return the (unchanged) conn being tested.
 
 See [the full documentation](https://hexdocs.pm/phoenix_integration/PhoenixIntegration.Assertions.html) for details.
 
