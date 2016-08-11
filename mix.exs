@@ -17,7 +17,7 @@ defmodule PhoenixIntegration.Mixfile do
         licenses: ["MIT"],
         links: %{
           "GitHub" => @url,
-          "Docs" => "http://hexdocs.pm/phoenix_integration"
+          "Blog Post" => "https://medium.com/@boydm/integration-testing-phoenix-applications-b2a46acae9cb"
         }
       ],
       name: "phoenix_integration",
