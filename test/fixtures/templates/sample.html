@@ -41,7 +41,7 @@ A sample form link using DELETE
 </form>
 
 -----------------------------
-One more form. A proper one this time, with fields to be filled out.
+A proper one this time, with fields to be filled out.
 <form accept-charset="UTF-8" action="/form" method="post" id="proper_form">
   Text in the proper form
   <input name="_method" type="hidden" value="put">
@@ -84,6 +84,19 @@ One more form. A proper one this time, with fields to be filled out.
       Narn
     </label>
   </div>
+
+  <div class="form-group">
+    <input class="btn btn-primary" type="submit" value="Update">
+  </div>
+
+</form>
+
+
+-----------------------------
+A multipart form with an upload field.
+<form accept-charset="UTF-8" action="/form" method="post" id="upload_form" enctype="multipart/form-data">
+
+  <input class="form-control" id="user_photo" name="user[photo]" type="file">
 
   <div class="form-group">
     <input class="btn btn-primary" type="submit" value="Update">

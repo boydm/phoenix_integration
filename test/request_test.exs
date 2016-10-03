@@ -124,6 +124,14 @@ defmodule PhoenixIntegration.RequestTest do
     |> assert_response( status: 200, path: "/second" )
   end
 
+  test "follow_form works on upload", %{conn: conn} do
+    upload = %Plug.Upload{content_type: "text", path: "mix.exs", filename: "mix.exs"}
+    
+    get( conn, "/sample" )
+    |> follow_form( %{user: %{photo: upload}}, %{identifier: "#upload_form"} )
+    |> assert_response( status: 200, path: "/second" )
+  end
+
   #============================================================================
   # follow_fn
 
