@@ -67,7 +67,8 @@
   # build form data to send
 
   test "build form data works", %{form: form} do
-    data = PhoenixIntegration.Requests.test_build_form_data( form, @user_data )
+    form_action = "/form"
+    data = PhoenixIntegration.Requests.test_build_form_data( form, form_action, @user_data )
     %{user: user_params} = data
     assert user_params.name ==    @user_data.user.name
     assert user_params.type ==    @user_data.user.type
@@ -76,8 +77,9 @@
   end
 
   test "build form data sets just text field", %{form: form} do
+    form_action = "/form"
     user_data = %{user: %{name: "Just Name"}}
-    data = PhoenixIntegration.Requests.test_build_form_data( form, user_data )
+    data = PhoenixIntegration.Requests.test_build_form_data( form, form_action, user_data )
     %{user: user_params} = data
     assert user_params.name == "Just Name"
     assert user_params.type == "type_two"
@@ -86,8 +88,9 @@
   end
 
   test "build form data sets just select field", %{form: form} do
+    form_action = "/form"
     user_data = %{user: %{type: "type_three"}}
-    data = PhoenixIntegration.Requests.test_build_form_data( form, user_data )
+    data = PhoenixIntegration.Requests.test_build_form_data( form, form_action, user_data )
     %{user: user_params} = data
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_three"
@@ -96,8 +99,9 @@
   end
 
   test "build form data sets just text area", %{form: form} do
+    form_action = "/form"
     user_data = %{user: %{story: "Just story."}}
-    data = PhoenixIntegration.Requests.test_build_form_data( form, user_data )
+    data = PhoenixIntegration.Requests.test_build_form_data( form, form_action, user_data )
     %{user: user_params} = data
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_two"
@@ -106,8 +110,9 @@
   end
 
   test "build form data sets just radio", %{form: form} do
+    form_action = "/form"
     user_data = %{user: %{species: "narn"}}
-    data = PhoenixIntegration.Requests.test_build_form_data( form, user_data )
+    data = PhoenixIntegration.Requests.test_build_form_data( form, form_action, user_data )
     %{user: user_params} = data
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_two"
@@ -116,9 +121,10 @@
   end
 
   test "build form raises setting missing field", %{form: form} do
+    form_action = "/form"
     user_data = Map.merge @user_data, %{missing: "something"}
     assert_raise RuntimeError, fn ->
-      PhoenixIntegration.Requests.test_build_form_data( form, user_data )
+      PhoenixIntegration.Requests.test_build_form_data( form, form_action, user_data )
     end    
   end
 
