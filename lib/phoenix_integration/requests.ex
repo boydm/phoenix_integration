@@ -287,7 +287,7 @@ defmodule PhoenixIntegration.Requests do
       find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
 
     # build the data to send to the action pointed to by the form
-    form_data = build_form_data(form, fields)
+    form_data = build_form_data(form, form_action, fields)
 
     # use ConnCase to call the form's handler. return the new conn
     request_path(conn, form_action, form_method, form_data )
@@ -387,8 +387,8 @@ defmodule PhoenixIntegration.Requests do
     def test_find_html_form( html, identifier, method, form_finder ) do
       find_html_form( html, identifier, method, form_finder )
     end
-    def test_build_form_data(form, fields) do
-      build_form_data(form, fields)
+    def test_build_form_data(form, form_action, fields) do
+      build_form_data(form, form_action, fields)
     end
   end
 
@@ -556,13 +556,13 @@ defmodule PhoenixIntegration.Requests do
   # support for building form data
 
   #----------------------------------------------------------------------------
-  defp build_form_data(form, fields) do
+  defp build_form_data(form, form_action, fields) do
     form_data = build_form_by_type(form, %{}, "input")
     form_data = build_form_by_type(form, form_data, "textarea")
     form_data = build_form_by_type(form, form_data, "select")
 
     # merge the data from the form and that provided by the test
-    merge_grouped_fields( form_data, fields )
+    merge_grouped_fields( form_data, form_action, fields )
   end
 
   #----------------------------------------------------------------------------
@@ -605,24 +605,25 @@ defmodule PhoenixIntegration.Requests do
   end
 
   #----------------------------------------------------------------------------
-  defp merge_grouped_fields(map, fields) do
+  defp merge_grouped_fields(map, form_action, fields) do
     Enum.reduce(fields, map, fn({k,v}, acc) ->
       cond do
         is_map(v) && ! is_struct(v) ->
-          sub_map = merge_grouped_fields( acc[k] || %{}, v )
-          put_if_available!(acc, k, sub_map)
+          sub_map = merge_grouped_fields( acc[k] || %{}, form_action, v )
+          put_if_available!(acc, k, sub_map, form_action)
         true ->
-          put_if_available!(acc, k, v)
+          put_if_available!(acc, k, v, form_action)
       end
     end)
   end
 
   #----------------------------------------------------------------------------
-  defp put_if_available!(map, key, value) do
+  defp put_if_available!(map, key, value, form_action) do
     case Map.has_key?(map, key) do
       true ->   Map.put(map, key, value)
       false ->
         msg = "#{IO.ANSI.red}Attempted to set missing input in form\n" <>
+          "#{IO.ANSI.green}Form action: #{IO.ANSI.red}#{form_action}\n" <>
           "#{IO.ANSI.green}Setting key: #{IO.ANSI.red}#{key}\n" <>
           "#{IO.ANSI.green}And value: #{IO.ANSI.red}#{value}\n" <>
           "#{IO.ANSI.green}Into fields: #{IO.ANSI.yellow}" <>
