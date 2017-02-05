@@ -1,6 +1,8 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
 
+  import IEx
+
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
   of `get`, `post`, `put`, `patch`, and `delete`.
@@ -437,6 +439,7 @@ defmodule PhoenixIntegration.Requests do
             _ -> nil
           end
         _ ->
+          IEx.pry()
           cond do
             # see if the identifier is in the links's text
             Floki.text(kids) =~ identifier -> link
