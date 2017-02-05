@@ -654,7 +654,8 @@ defmodule PhoenixIntegration.Requests do
     case Regex.scan(~r/\w+[\w+]/, name) do
       [[key]] ->            {:ok, String.to_atom(key), value}
       [[key], [sub_key]] -> {:ok, String.to_atom(key), %{String.to_atom(sub_key) => value}}
-      _ ->                  {:error, :unknown_format}
+      [[key], [sub_key], [sub_sub_key]] -> {:ok, String.to_atom(key), %{String.to_atom(sub_key) => value}}
+      _ ->                {:error, :unknown_format}
     end
   end
 
