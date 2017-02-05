@@ -3,8 +3,8 @@
   use Phoenix.ConnTest
   @endpoint PhoenixIntegration.TestEndpoint
 
-  @href_first_get   "/links/first"
-  @href_second_get  "https://www.example.com/links/second"
+ #@href_first_get   "/links/first"
+ #@href_second_get  "https://www.example.com/links/second"
 
   @form_action      "/form"
   @form_method      "put"
