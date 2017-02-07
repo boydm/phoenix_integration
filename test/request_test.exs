@@ -132,6 +132,12 @@ defmodule PhoenixIntegration.RequestTest do
     |> assert_response( status: 200, path: "/second" )
   end
 
+  test "follow_form works on dates", %{conn: conn} do
+    get( conn, "/sample" )
+    |> follow_form( %{user: %{joined_at: %DateTime{year: 2017, month: 02, day: 05, zone_abbr: "UTC", hour: 12, minute: 0, second: 0, time_zone: "UTC", utc_offset: 0, std_offset: 0}}}, %{identifier: "#proper_form"} )
+    |> assert_response( status: 200, path: "/second" )
+  end
+
   #============================================================================
   # follow_fn
 
