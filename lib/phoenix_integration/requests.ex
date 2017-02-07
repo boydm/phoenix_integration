@@ -1,8 +1,6 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
 
-  import IEx
-
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
   of `get`, `post`, `put`, `patch`, and `delete`.
@@ -439,10 +437,10 @@ defmodule PhoenixIntegration.Requests do
             _ -> nil
           end
         _ ->
-          IEx.pry()
           cond do
             # see if the identifier is in the links's text
-            Floki.text(kids) =~ identifier -> link
+            Floki.text(link) =~ identifier -> link
+            Floki.FlatText.get(kids) =~ identifier -> link            
             # all other cases fail
             true -> nil 
           end
@@ -481,8 +479,8 @@ defmodule PhoenixIntegration.Requests do
     # is equal to the identifier
     Floki.find(html, form_finder)
     |> Enum.find_value( fn(form) ->
-      {"form", _attribs, _kids} = form
- 
+      {"form", _attribs, kids} = form
+
       case identifier do
         nil -> form         # if nil identifier, return the first form
         "#" <> id ->
@@ -504,6 +502,7 @@ defmodule PhoenixIntegration.Requests do
           cond do
             # see if the identifier is in the links's text
             Floki.text(form) =~ identifier -> form
+            Floki.FlatText.get(kids) =~ identifier -> form
             # all other cases fail
             true -> nil
           end
@@ -637,7 +636,7 @@ defmodule PhoenixIntegration.Requests do
 
   #----------------------------------------------------------------------------
   defp get_input_value( input, "input" ),     do: Floki.attribute(input, "value")
-  defp get_input_value( input, "textarea" ),  do: [Floki.text(input)]
+  defp get_input_value( input, "textarea" ),  do: [Floki.FlatText.get(input)]
   defp get_input_value( input, "select" ) do
     Floki.find(input, "option[selected]")
     |> Floki.attribute("value")
