@@ -1,7 +1,7 @@
 defmodule PhoenixIntegration.Mixfile do
   use Mix.Project
 
-  @version "0.1.3"
+  @version "0.2.0"
   @url "https://github.com/boydm/phoenix_integration"
 
   def project do

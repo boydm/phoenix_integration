@@ -39,7 +39,7 @@ Add PhoenixIntegration to the deps section of your application's `mix.exs` file
 defp deps do
   [
     # ...
-    {:phoenix_integration, "~> 0.1", only: :test}
+    {:phoenix_integration, "~> 0.2", only: :test}
     # ...
   ]
 end
