@@ -54,6 +54,7 @@ defmodule PhoenixIntegration.Assertions do
       * `:to` same as `:redirect`
       * `:assigns` checks that conn.assigns contains the given values, which could be in the form of `%{key => value}`
         or `[{key, value}]`
+      * `:value` checks that the value returned by a callback (in the form `fn(conn)`) is truthy
 
   Conditions can be used multiple times within a single call to `assert_response`. This can be useful
   to look for multiple text strings in the body.
@@ -71,6 +72,11 @@ defmodule PhoenixIntegration.Assertions do
 
       # test a redirection
       assert_response( conn, to: page_path(conn, :index) )
+
+      # test a callback value
+      assert_response( conn, value: fn(conn) ->
+        Guardian.Plug.current_resource(conn)
+      end)
   """
   def assert_response(conn = %Plug.Conn{}, conditions) do
     Enum.each(conditions, fn({condition, value}) ->
@@ -85,6 +91,7 @@ defmodule PhoenixIntegration.Assertions do
         :redirect ->      assert_redirect(conn, value)
         :to ->            assert_redirect(conn, value, :to)
         :assigns ->       assert_assigns(conn, value)
+        :value ->         assert_value(conn, value)
       end
     end)
     conn
@@ -111,6 +118,7 @@ defmodule PhoenixIntegration.Assertions do
       * `:to` same as `:redirect`
       * `:assigns` checks that conn.assigns does not contain the given values, which could be in the form of `%{key: value}`
         or `[{:key, value}]`
+      * `:value` checks that the value returned by a callback (in the form `fn(conn)`) is false or nil
 
   `refute_response` is often used in conjuntion with `assert_response` to form a complete condition check.
 
@@ -138,11 +146,41 @@ defmodule PhoenixIntegration.Assertions do
         :redirect ->      refute_redirect(conn, value)
         :to ->            refute_redirect(conn, value, :to)
         :assigns ->       refute_assigns(conn, value)
+        :value ->         refute_value(conn, value)
       end
     end)
     conn
   end
 
+  #----------------------------------------------------------------------------
+  defp assert_value(conn, callback, err_type \\ :value)
+  defp assert_value(conn, callback, err_type) when is_function(callback, 1) do
+    value = callback.(conn)
+    if value do
+      conn
+    else
+      # raise an appropriate error
+      msg = error_msg_type( conn, err_type ) <>
+        error_msg_expected( "callback response to be truthy" ) <>
+        error_msg_found( inspect(value) )
+      raise %ResponseError{ message: msg }
+    end
+  end
+
+  #----------------------------------------------------------------------------
+  defp refute_value(conn, callback, err_type \\ :value)
+  defp refute_value(conn, callback, err_type) when is_function(callback, 1) do
+    value = callback.(conn)
+    unless value do
+      conn
+    else
+      # raise an appropriate error
+      msg = error_msg_type( conn, err_type ) <>
+        error_msg_expected( "callback response to be nil or false" ) <>
+        error_msg_found( inspect(value) )
+      raise %ResponseError{ message: msg }
+    end
+  end
 
   #----------------------------------------------------------------------------
   defp assert_assigns(conn, expected, err_type \\ :assigns)

@@ -41,6 +41,25 @@ defmodule PhoenixIntegration.AssertionsTest do
   end
 
   #----------------------------------------------------------------------------
+  # assert value
+  test "assert_response :value succeeds for truthy value", %{conn: conn} do
+    conn = get conn, "/sample"
+    PhoenixIntegration.Assertions.assert_response(conn, value: fn(_) -> 123 end)
+  end
+  test "assert_response :value fails for false value", %{conn: conn} do
+    conn = get conn, "/sample"
+    assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
+      PhoenixIntegration.Assertions.assert_response(conn, value: fn(_) -> false end)
+    end    
+  end
+  test "assert_response :value fails for nil value", %{conn: conn} do
+    conn = get conn, "/sample"
+    assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
+      PhoenixIntegration.Assertions.assert_response(conn, value: fn(_) -> nil end)
+    end    
+  end
+
+  #----------------------------------------------------------------------------
   # assert assigns
   test "assert_response :assigns succeeds", %{conn: conn} do
     conn = assign(conn, :some_key, "some_value")
@@ -271,6 +290,25 @@ defmodule PhoenixIntegration.AssertionsTest do
       PhoenixIntegration.Assertions.refute_response(conn, status: 200 )
     end    
   end
+
+
+  #----------------------------------------------------------------------------
+  # refute value
+  test "refute_response :value succeeds for false value", %{conn: conn} do
+    conn = get conn, "/sample"
+    PhoenixIntegration.Assertions.refute_response(conn, value: fn(_) -> false end)
+  end
+  test "refute_response :value succeeds for nil value", %{conn: conn} do
+    conn = get conn, "/sample"
+    PhoenixIntegration.Assertions.refute_response(conn, value: fn(_) -> nil end)
+  end
+  test "refute_response :value fails for truthy value", %{conn: conn} do
+    conn = get conn, "/sample"
+    assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
+      PhoenixIntegration.Assertions.refute_response(conn, value: fn(_) -> 123 end)
+    end    
+  end
+
 
   #----------------------------------------------------------------------------
   # refute html
