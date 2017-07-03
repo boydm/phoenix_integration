@@ -1,7 +1,7 @@
 defmodule PhoenixIntegration.Mixfile do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.3.0"
   @url "https://github.com/boydm/phoenix_integration"
 
   def project do
@@ -44,7 +44,7 @@ defmodule PhoenixIntegration.Mixfile do
     [
       {:phoenix, "~> 1.1"},
       {:phoenix_html, "~> 2.3"},
-      {:floki, "~> 0.13"},             # html parser
+      {:floki, ">= 0.13.0"},             # html parser
 
      # Docs dependencies
      {:ex_doc, "~> 0.13", only: :dev},
