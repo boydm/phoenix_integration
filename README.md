@@ -73,7 +73,7 @@ Start writing integration tests. They should use your integration_conn.ex file. 
 
 ```elixir
 defmodule MyApp.AboutIntegrationTest do
-  use Loom.IntegrationCase, async: true
+  use MyApp.IntegrationCase, async: true
 
   test "Basic page flow", %{conn: conn} do
     # get the root index page
@@ -163,11 +163,11 @@ test "admin can create a thing", %{conn: conn} do
       status: 200,
       path: admin_path(conn, :index),
       html: "New Thing" )
-      
+
   # load the thing
   thing = Repo.get_by(Thing, name: "New Thing")
   assert thing
-      
+
   # the user should be able to view the thing
   get( user_conn, page_path(conn, :index) )
   |> follow_link( thing.name )
@@ -181,7 +181,7 @@ end
 
 ## Asserting Responses
 
-I really wanted to see unbroken chains of piped call to make it really clear that this was a chain of events/state being tested. 
+I really wanted to see unbroken chains of piped call to make it really clear that this was a chain of events/state being tested.
 
 The following line, which is very common in Phoenix.ConnTest controller tests works well, but doesn’t allow you to build that chain of commands.
 
@@ -237,4 +237,3 @@ The `refute_response` function is very similar in form to `assert_response`, exc
 ## Documentation
 
 You can read [the full documentation here](https://hexdocs.pm/phoenix_integration).
-
