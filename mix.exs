@@ -45,6 +45,7 @@ defmodule PhoenixIntegration.Mixfile do
       {:phoenix, "~> 1.1"},
       {:phoenix_html, "~> 2.3"},
       {:floki, ">= 0.13.0"},             # html parser
+      {:deep_merge, "~> 0.1.0"},
 
      # Docs dependencies
      {:ex_doc, "~> 0.13", only: :dev},

@@ -18,7 +18,7 @@
   }}
 
   #============================================================================
-  # set up context 
+  # set up context
   setup do
     html = get( build_conn(:get, "/"), "/sample" ).resp_body
     {:ok, _action, _method, form} =
@@ -48,19 +48,19 @@
   test "find form raises on missing path", %{html: html} do
     assert_raise RuntimeError, fn ->
       PhoenixIntegration.Requests.test_find_html_form( html, "/invalid/path", nil, "form" )
-    end    
+    end
   end
 
   test "find form raises on invalid id", %{html: html} do
     assert_raise RuntimeError, fn ->
       PhoenixIntegration.Requests.test_find_html_form( html, "#other", nil, "form" )
-    end    
+    end
   end
 
   test "find form raises on missing text", %{html: html} do
     assert_raise RuntimeError, fn ->
       PhoenixIntegration.Requests.test_find_html_form( html, "Invalid Text", nil, "form" )
-    end    
+    end
   end
 
   #============================================================================
@@ -120,41 +120,24 @@
     assert user_params.species == "narn"
   end
 
+  test "build form dataa sets nested forms", %{form: form} do
+    form_action = "/form"
+    user_data = %{user: %{tag: %{name: "new tag"}}}
+    data = PhoenixIntegration.Requests.test_build_form_data( form, form_action, user_data )
+    %{user: user_params} = data
+    assert user_params.name == "Initial Name"
+    assert user_params.type == "type_two"
+    assert user_params.story == "Initial user story"
+    assert user_params.species == "human"
+    assert user_params.tag.name == "new tag"
+  end
+
   test "build form raises setting missing field", %{form: form} do
     form_action = "/form"
     user_data = Map.merge @user_data, %{missing: "something"}
     assert_raise RuntimeError, fn ->
       PhoenixIntegration.Requests.test_build_form_data( form, form_action, user_data )
-    end    
+    end
   end
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
