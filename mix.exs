@@ -8,7 +8,7 @@ defmodule PhoenixIntegration.Mixfile do
     [
       app: :phoenix_integration,
       version: @version,
-      elixir: "~> 1.1",
+      elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
       deps: deps(),
       package: [
@@ -42,12 +42,12 @@ defmodule PhoenixIntegration.Mixfile do
 
   defp deps do
     [
-      {:phoenix, "~> 1.1"},
-      {:phoenix_html, "~> 2.3"},
-      {:floki, ">= 0.13.0"},             # html parser
+      {:phoenix, "~> 1.3"},
+      {:phoenix_html, "~> 2.10"},
+      {:floki, ">= 0.18.0"},
 
      # Docs dependencies
-     {:ex_doc, "~> 0.13", only: :dev},
+     {:ex_doc, "~> 0.16", only: :dev},
      {:inch_ex, "~> 0.5", only: :dev}
     ]
   end
