@@ -3,6 +3,7 @@
 ### 0.4.0
   * support for nested forms. Thank you https://github.com/bitboxer
   * support follow_link for phoenix_html 2.10. Thank you https://github.com/andreapavoni
+  * bump up to Elixir 1.4
 
 ### 0.3.0
   * added a new :value assertion type that checks the result of a callback for truthyness
