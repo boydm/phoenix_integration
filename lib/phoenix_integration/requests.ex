@@ -47,7 +47,7 @@ defmodule PhoenixIntegration.Requests do
             html: "New User" )
       end
   """
-  
+
   @endpoint Application.get_env(:phoenix_integration, :endpoint)
 
   #----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ defmodule PhoenixIntegration.Requests do
 
   ### Links that don't use the :get method
 
-  When Phoneix.Html renders a link, it usually generates an `<a>` tag. However, if you 
+  When Phoneix.Html renders a link, it usually generates an `<a>` tag. However, if you
   specify a method other than :get, then Phoenix generates html looks like a link, but
   is really a form using the method. This is why you must specify the method used in `opts`
   if you used anything other than the standard :get in your link.
@@ -212,7 +212,7 @@ defmodule PhoenixIntegration.Requests do
 
   ### Links that don't use the :get method
 
-  When Phoneix.Html renders a link, it usually generates an `<a>` tag. However, if you 
+  When Phoneix.Html renders a link, it usually generates an `<a>` tag. However, if you
   specify a method other than :get, then Phoenix generates html looks like a link, but
   is really a form using the method. This is why you must specify the method used in `opts`
   if you used anything other than the standard :get in your link.
@@ -399,9 +399,9 @@ defmodule PhoenixIntegration.Requests do
         get( conn, path, data )
       "post" ->
         post( conn, path, data )
-      "put" -> 
+      "put" ->
         put( conn, path, data )
-      "patch" -> 
+      "patch" ->
         patch( conn, path, data )
       "delete" ->
         delete( conn, path, data )
@@ -409,7 +409,7 @@ defmodule PhoenixIntegration.Requests do
   end
   #----------------------------------------------------------------------------
   # don't really care if there are multiple copies of the same link,
-  # jsut that it is actually on the page
+  # just that it is actually on the page
   defp find_html_link( html, identifier, :get ), do: find_html_link( html, identifier, "get" )
   defp find_html_link( html, identifier, "get" ) do
     identifier = String.trim(identifier)
@@ -440,9 +440,9 @@ defmodule PhoenixIntegration.Requests do
           cond do
             # see if the identifier is in the links's text
             Floki.text(link) =~ identifier -> link
-            Floki.FlatText.get(kids) =~ identifier -> link            
+            Floki.FlatText.get(kids) =~ identifier -> link
             # all other cases fail
-            true -> nil 
+            true -> nil
           end
       end
     end)
@@ -462,11 +462,61 @@ defmodule PhoenixIntegration.Requests do
         {:ok, path}
     end
   end
-  defp find_html_link( html, identifier, method ) do
-    {:ok, path, _method, _form} =
-      find_html_form(html, identifier, method, "form")
-    {:ok, path}
+  defp find_html_link( html, identifier, method) do
+    identifier = String.trim(identifier)
+
+    # scan all links, return the first where either the path or the content
+    # is equal to the identifier
+    Floki.find(html, "a")
+    |> Enum.find_value( fn(link) ->
+      {"a", _attribs, kids} = link
+
+      case identifier do
+        "#" <> id ->
+          case Floki.attribute(link, "id") do
+            [^id] -> link
+            _ -> nil
+          end
+        "/" <> _ ->
+          case Floki.attribute(link, "data-to") do
+            [^identifier] -> link
+            _ -> nil
+          end
+        "http" <> _ ->
+          case Floki.attribute(link, "data-to") do
+            [^identifier] -> link
+            _ -> nil
+          end
+        _ ->
+          cond do
+            # see if the identifier is in the links's text
+            Floki.text(link) =~ identifier -> link
+            Floki.FlatText.get(kids) =~ identifier -> link
+            # all other cases fail
+            true -> nil
+          end
+      end
+    end)
+    |> case do
+      nil ->
+        {err_type, err_ident} = case identifier do
+          "#" <> id   ->  {"id=", id}
+          "/" <> _    ->  {"href=", identifier}
+          "http" <> _ ->  {"href=", identifier}
+          _           ->  {"text containing ", identifier}
+        end
+        msg = "Failed to find link \"#{identifier}\", :#{method} in the response\n" <>
+          "Expected to find an anchor with #{err_type}\"#{err_ident}\""
+        raise msg
+      link ->
+        [path] = Floki.attribute(link, "data-to")
+        {:ok, path}
+    end
   end
+  #----------------------------------------------------------------------------
+
+  # defp find_html_link_identifier() do
+  # end
 
   #----------------------------------------------------------------------------
   defp find_html_form( html, identifier, method, form_finder ) do
