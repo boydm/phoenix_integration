@@ -412,7 +412,7 @@ defmodule PhoenixIntegration.Requests do
   # jsut that it is actually on the page
   defp find_html_link( html, identifier, :get ), do: find_html_link( html, identifier, "get" )
   defp find_html_link( html, identifier, "get" ) do
-    identifier = String.strip(identifier)
+    identifier = String.trim(identifier)
 
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
@@ -571,14 +571,8 @@ defmodule PhoenixIntegration.Requests do
   defp build_form_by_type(form, acc, input_type) do
     Enum.reduce(Floki.find(form, input_type), acc, fn(input, acc) ->
       case input_to_key_value(input, input_type) do
-        {:ok, key, value} ->
-          cond do
-            is_map(value) ->
-              # merge group named inputs together
-              Map.put(acc, key, Map.merge( acc[key] || %{}, value))
-            true ->
-              Map.put(acc, key, value)
-          end
+        {:ok, map} ->
+          DeepMerge.deep_merge(acc, map)
         {:error, _} ->
           acc # do nothing
       end
@@ -654,10 +648,10 @@ defmodule PhoenixIntegration.Requests do
   #----------------------------------------------------------------------------'
   defp build_named_value(name, value) do
     case Regex.scan(~r/\w+[\w+]/, name) do
-      [[key]] ->            {:ok, String.to_atom(key), value}
-      [[key], [sub_key]] -> {:ok, String.to_atom(key), %{String.to_atom(sub_key) => value}}
-      [[key], [sub_key], [_sub_sub_key]] -> {:ok, String.to_atom(key), %{String.to_atom(sub_key) => value}}
-      _ ->                {:error, :unknown_format}
+      [[key]] ->            {:ok, %{String.to_atom(key) => value}}
+      [[key], [sub_key]] -> {:ok, %{String.to_atom(key) => %{String.to_atom(sub_key) => value}}}
+      [[key], [sub_key], [sub_sub_key]] -> {:ok, %{String.to_atom(key) => %{String.to_atom(sub_key) => %{String.to_atom(sub_sub_key) => value}}}}
+      _ ->                  {:error, :unknown_format}
     end
   end
 

@@ -157,11 +157,3 @@ defmodule PhoenixIntegration.RequestTest do
   end
 
 end
-
-
-
-
-
-
-
-
