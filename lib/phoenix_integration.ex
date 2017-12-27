@@ -6,13 +6,58 @@ defmodule PhoenixIntegration do
 
   ## Configuration
 
-  You need to tell phoenix_integration what Endpoint to use for the request calls to work.
-  To do this, add the following to your `config/test.exs` file
+  ### Step 1
 
-      config :phoenix_integration,
-        endpoint: MyApp.Endpoint
+  You need to tell phoenix_integration which endpoint to use. Add the following to your phoenix application's `config/test.exs` file.
 
-  Where MyApp is the name of your app.
+  ```elixir
+  config :phoenix_integration,
+    endpoint: MyApp.Endpoint
+  ```
+
+  Where MyApp is the name of your application.
+
+  Do this up before compiling phoenix_integration as part of step 2. If you change the endpoint in the config file, you will need to recompile the phoenix_integration dependency.
+
+
+  ### Step 2
+
+  Add PhoenixIntegration to the deps section of your application's `mix.exs` file
+
+  ```elixir
+  defp deps do
+    [
+      # ...
+      {:phoenix_integration, "~> 0.1", only: :test}
+      # ...
+    ]
+  end
+  ```
+
+  Don't forget to run `mix deps.get`
+
+  ### Step 3
+
+  Create a test/support/integration_case.ex file. Mine simply looks like this:
+
+  ```elixir
+  defmodule MyApp.IntegrationCase do
+    use ExUnit.CaseTemplate
+
+    using do
+      quote do
+        use MyApp.ConnCase
+        use PhoenixIntegration
+      end
+    end
+
+  end
+
+  ```
+
+  Alternately you could place the call to `use PhoenixIntegration` in your conn_case.ex file. Just make sure it is after the definition of `@endpoint`.
+
+
 
 
   ## Overview
