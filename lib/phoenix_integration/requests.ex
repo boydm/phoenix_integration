@@ -406,14 +406,18 @@ defmodule PhoenixIntegration.Requests do
     {:ok, _form_action, _form_method, raw_form} = find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
     
     # fetch the main form attributes
-    [action] = Floki.attribute( raw_form, "action" )
-    [id] = Floki.attribute( raw_form, "id" )
-    %{
+    form = %{
       method:   form_method(raw_form),
-      action:   action,
-      id:       id,
       inputs:   get_form_data( raw_form )
     }
+    form = case Floki.attribute( raw_form, "action" ) do
+      [action] -> Map.put(form, :action, action)
+      _ -> form
+    end
+    case Floki.attribute( raw_form, "id" ) do
+      [id] -> Map.put(form, :id, id)
+      _ -> form
+    end
   end
 
 
