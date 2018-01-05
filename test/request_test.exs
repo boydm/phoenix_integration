@@ -5,7 +5,7 @@ defmodule PhoenixIntegration.RequestTest do
   
   use PhoenixIntegration
 
-  import IEx
+#  import IEx
 
   #============================================================================
   # set up context 
