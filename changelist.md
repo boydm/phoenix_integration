@@ -1,6 +1,7 @@
 ## phoenix_integration Changelist
 
 ### 0.4.0
+  * add the fetch_form function to the Request module
   * support for nested forms. Thank you https://github.com/bitboxer
   * support follow_link for phoenix_html 2.10. Thank you https://github.com/andreapavoni
   * bump up to Elixir 1.4

@@ -341,6 +341,82 @@ defmodule PhoenixIntegration.Requests do
     |> follow_redirect( opts.max_redirects )
   end
 
+
+  #----------------------------------------------------------------------------
+  @doc """
+  Convenience function to find and return a form in a conn.resp_body.
+
+  Returns the form as a map.
+
+  ### Parameters
+    * `conn` should be a conn returned from a previous request that rendered some html. The
+      functions are designed to pass the conn from one call into the next via pipes.
+    * `opts` A map of additional options
+      * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
+        in the following forms:
+          * `"/some/path"` specify the link's href starting with a `"/"` character
+          * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
+          * `"#element-id"` specify the html element id of the link you are looking for. Must start
+            start with the `"#"` character (same as css id specifier).
+          * `"Some Text"` specify text contained within the link you are looking for.
+      * `:method` - restricts the forms searched to those whose action uses the given
+      method (such as "post" or "put"). Defaults to `nil`;
+      * `:finder` - finding string passed to `Floki.find`. Defaults to `"form"`
+
+  If no `opts.identifier` is specified, the first form that makes sense is used. Unless you
+  have multiple forms on your page, this often is the most understandable pattern.
+
+  If no appropriate form is found, `fetch_form` raises an error.
+
+  If you have more than one form in the response, you will probably need to use the identifier options
+  similar to what how you specify a form for submit_form or follow_form.
+
+  ### Example:
+        # get the value from a form on the page.
+        fetch_form( conn )
+
+        ## returns something like...
+        %{
+          id:     "some_id",
+          method: "put",
+          action: "/some/action"
+          inputs: %{
+            user: %{
+              first_name: "Jane",
+              last_name:  "Doe"
+            }
+          }
+        }
+
+  Note: this fetches the form as it is in the response. It will not show you updates you are making as
+  you prepare for the next submission.
+  """
+  def fetch_form(conn, opts \\ %{} )
+  def fetch_form(conn = %Plug.Conn{}, opts ) when is_list(opts) do
+    fetch_form(conn, Enum.into(opts, %{}) )
+  end
+  def fetch_form(%Plug.Conn{} = conn, %{} = opts) do
+    opts = Map.merge( %{
+        identifier: nil,
+        method: nil,
+        finder: "form"
+      }, opts )
+
+    # find the form
+    {:ok, _form_action, _form_method, raw_form} = find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
+    
+    # fetch the main form attributes
+    [action] = Floki.attribute( raw_form, "action" )
+    [id] = Floki.attribute( raw_form, "id" )
+    %{
+      method:   form_method(raw_form),
+      action:   action,
+      id:       id,
+      inputs:   get_form_data( raw_form )
+    }
+  end
+
+
   #----------------------------------------------------------------------------
   @doc """
   Calls a function and follows the any redirects in the returned `conn`.
@@ -609,16 +685,22 @@ defmodule PhoenixIntegration.Requests do
 
   #----------------------------------------------------------------------------
   defp build_form_data(form, form_action, fields) do
-    form_data = build_form_by_type(form, %{}, "input")
-    form_data = build_form_by_type(form, form_data, "textarea")
-    form_data = build_form_by_type(form, form_data, "select")
+    form_data = get_form_data(form)
 
     # merge the data from the form and that provided by the test
     merge_grouped_fields( form_data, form_action, fields )
   end
 
   #----------------------------------------------------------------------------
-  defp build_form_by_type(form, acc, input_type) do
+  defp get_form_data(form) do
+    %{}
+    |> build_form_by_type(form, "input")
+    |> build_form_by_type(form, "textarea")
+    |> build_form_by_type(form, "select")
+  end
+
+  #----------------------------------------------------------------------------
+  defp build_form_by_type(acc, form, input_type) do
     Enum.reduce(Floki.find(form, input_type), acc, fn(input, acc) ->
       case input_to_key_value(input, input_type) do
         {:ok, map} ->

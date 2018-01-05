@@ -5,6 +5,8 @@ defmodule PhoenixIntegration.RequestTest do
   
   use PhoenixIntegration
 
+  import IEx
+
   #============================================================================
   # set up context 
   setup do
@@ -137,6 +139,34 @@ defmodule PhoenixIntegration.RequestTest do
     |> follow_form( %{user: %{joined_at: %DateTime{year: 2017, month: 02, day: 05, zone_abbr: "UTC", hour: 12, minute: 0, second: 0, time_zone: "UTC", utc_offset: 0, std_offset: 0}}}, %{identifier: "#proper_form"} )
     |> assert_response( status: 200, path: "/second" )
   end
+
+  #============================================================================
+  # fetch_form
+  test "fetch_form works", %{conn: conn} do
+    form = get( conn, "/sample" )
+    |> fetch_form( %{identifier: "#proper_form"} )
+
+    %{
+      action: "/form",
+      id: "proper_form",
+      inputs: %{
+        _csrf_token: csrf_token,
+        _method: "put",
+        _utf8: "✓",
+        user: %{
+          joined_at: %{day: nil, hour: nil, minute: nil, month: nil, year: nil},
+          name: "Initial Name",
+          species: "human",
+          story: "Initial user story",
+          tag: %{name: "tag"},
+          type: "type_two"}
+        },
+      method: "put"
+    } = form
+
+    assert is_bitstring(csrf_token)
+  end
+
 
   #============================================================================
   # follow_fn
