@@ -1,6 +1,7 @@
 ## phoenix_integration Changelist
 
 ### 0.4.0
+  * fix issue #11, was incorrectly reading the method of the form in the case of a get
   * add the fetch_form function to the Request module
   * support for nested forms. Thank you https://github.com/bitboxer
   * support follow_link for phoenix_html 2.10. Thank you https://github.com/andreapavoni
