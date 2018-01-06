@@ -1,6 +1,12 @@
 phoenix_integration
 ========
 
+[![Build Status](https://travis-ci.org/boydm/phoenix_integration.svg?branch=master)](https://travis-ci.org/boydm/phoenix_integration)
+[![Hex.pm](https://img.shields.io/hexpm/v/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
+[![Hex.pm](https://img.shields.io/hexpm/dw/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
+[![Hex.pm](https://img.shields.io/hexpm/dt/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
+
+
 ## Overview
 
 PhoenixIntegration is set of lightweight, server-side integration test functions for Phoenix.
@@ -39,7 +45,7 @@ Add PhoenixIntegration to the deps section of your application's `mix.exs` file
 defp deps do
   [
     # ...
-    {:phoenix_integration, "~> 0.3", only: :test}
+    {:phoenix_integration, "~> 0.4", only: :test}
     # ...
   ]
 end
