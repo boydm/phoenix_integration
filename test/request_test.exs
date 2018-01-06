@@ -143,8 +143,8 @@ defmodule PhoenixIntegration.RequestTest do
 
   test "follow_form works with a :get method form", %{conn: conn} do
     get( conn, "/sample" )
-    |> follow_form( %{query: "search stuff"}, %{identifier: "#get_form"} )
-    |> assert_response( status: 200, path: "/second" )
+    |> follow_form( %{query: "search stuff"}, identifier: "/admin/search", method: :get )
+    |> assert_response( status: 200, path: "/admin/search" )
   end
 
 

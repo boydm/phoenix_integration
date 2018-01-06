@@ -674,15 +674,19 @@ defmodule PhoenixIntegration.Requests do
 
   #--------------------------------------------------------
   defp form_method(form) do
+    # turns out get is right on the top level of the form
+    case Floki.attribute( form, "method" ) do
+      ["get"] -> "get"
+      _->
         case Floki.find( form, "input[name=\"_method\"]" ) do
-      [] ->
-        "post"
-      [found_input] ->
-        [found_method] = Floki.attribute(found_input, "value")
-        found_method
+          [] ->
+            "post"
+          [found_input] ->
+            [found_method] = Floki.attribute(found_input, "value")
+            found_method
+        end
     end
   end
-
 
   #========================================================
   # support for building form data
