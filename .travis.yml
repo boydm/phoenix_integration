@@ -1,28 +1,34 @@
 language: elixir
-sudo: false
 
 branches:
   only:
     - master
 
+before_script:
+  - mix local.hex --force
+  - mix deps.get --only test
+
+script:
+  - bin/test
+
+after_script:
+  - MIX_ENV=docs mix deps.get
+  - MIX_ENV=docs mix inch.report
+
 elixir:
-  - 1.5.2
   - 1.5.3
+  - 1.6.0-rc.1
 otp_release:
   - 19.2
   - 20.0
 
 matrix:
   include:
-    - elixir: 1.4.4
-      otp_release: 19.2
     - elixir: 1.5.3
       otp_release: 19.2
-    - elixir: 1.5.0
-      otp_release: 20.0
-    - elixir: 1.5.1
-      otp_release: 20.0
-    - elixir: 1.5.2
-      otp_release: 20.0
     - elixir: 1.5.3
+      otp_release: 20.0
+    - elixir: 1.6.0-rc.1
+      otp_release: 19.2
+    - elixir: 1.6.0-rc.1
       otp_release: 20.0

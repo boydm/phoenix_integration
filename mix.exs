@@ -48,8 +48,8 @@ defmodule PhoenixIntegration.Mixfile do
       {:deep_merge, "~> 0.1.0"},
 
       # Docs dependencies
-      {:ex_doc, "~> 0.16", only: :dev},
-      {:inch_ex, "~> 0.5", only: :dev}
+      {:ex_doc, ">= 0.0.0", only: [:dev, :docs]},
+      {:inch_ex, ">= 0.0.0", only: :docs}
     ]
   end
 

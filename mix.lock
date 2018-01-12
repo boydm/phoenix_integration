@@ -1,6 +1,7 @@
-%{"deep_merge": {:hex, :deep_merge, "0.1.1", "c27866a7524a337b6a039eeb8dd4f17d458fd40fbbcb8c54661b71a22fffe846", [:mix], [], "hexpm"},
-  "earmark": {:hex, :earmark, "1.2.3", "206eb2e2ac1a794aa5256f3982de7a76bf4579ff91cb28d0e17ea2c9491e46a4", [:mix], [], "hexpm"},
-  "ex_doc": {:hex, :ex_doc, "0.16.4", "4bf6b82d4f0a643b500366ed7134896e8cccdbab4d1a7a35524951b25b1ec9f0", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
+%{
+  "deep_merge": {:hex, :deep_merge, "0.1.1", "c27866a7524a337b6a039eeb8dd4f17d458fd40fbbcb8c54661b71a22fffe846", [:mix], [], "hexpm"},
+  "earmark": {:hex, :earmark, "1.2.4", "99b637c62a4d65a20a9fb674b8cffb8baa771c04605a80c911c4418c69b75439", [:mix], [], "hexpm"},
+  "ex_doc": {:hex, :ex_doc, "0.18.1", "37c69d2ef62f24928c1f4fdc7c724ea04aecfdf500c4329185f8e3649c915baf", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, repo: "hexpm", optional: false]}], "hexpm"},
   "floki": {:hex, :floki, "0.18.0", "643d5e4bb325905328d250760ea622faebac4f7e1521f770d35fbb43d8dd4f5f", [:mix], [{:mochiweb, "~> 2.15", [hex: :mochiweb, repo: "hexpm", optional: false]}], "hexpm"},
   "inch_ex": {:hex, :inch_ex, "0.5.6", "418357418a553baa6d04eccd1b44171936817db61f4c0840112b420b8e378e67", [:mix], [{:poison, "~> 1.5 or ~> 2.0 or ~> 3.0", [hex: :poison, repo: "hexpm", optional: false]}], "hexpm"},
   "mime": {:hex, :mime, "1.1.0", "01c1d6f4083d8aa5c7b8c246ade95139620ef8effb009edde934e0ec3b28090a", [], [], "hexpm"},
@@ -9,4 +10,5 @@
   "phoenix_html": {:hex, :phoenix_html, "2.10.4", "d4f99c32d5dc4918b531fdf163e1fd7cf20acdd7703f16f5d02d4db36de803b7", [:mix], [{:plug, "~> 1.0", [hex: :plug, repo: "hexpm", optional: false]}], "hexpm"},
   "phoenix_pubsub": {:hex, :phoenix_pubsub, "1.0.2", "bfa7fd52788b5eaa09cb51ff9fcad1d9edfeb68251add458523f839392f034c1", [:mix], [], "hexpm"},
   "plug": {:hex, :plug, "1.4.3", "236d77ce7bf3e3a2668dc0d32a9b6f1f9b1f05361019946aae49874904be4aed", [:mix], [{:cowboy, "~> 1.0.1 or ~> 1.1", [hex: :cowboy, repo: "hexpm", optional: true]}, {:mime, "~> 1.0", [hex: :mime, repo: "hexpm", optional: false]}], "hexpm"},
-  "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], [], "hexpm"}}
+  "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], [], "hexpm"},
+}
