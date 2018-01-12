@@ -27,8 +27,8 @@ defmodule PhoenixIntegration.Assertions do
   """
 
   #  import IEx
-
   defmodule ResponseError do
+    @doc false
     defexception message: "#{IO.ANSI.red()}The conn's response was not formed as expected\n"
   end
 

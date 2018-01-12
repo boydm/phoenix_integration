@@ -5,6 +5,7 @@ phoenix_integration
 [![Hex.pm](https://img.shields.io/hexpm/v/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
 [![Hex.pm](https://img.shields.io/hexpm/dw/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
 [![Hex.pm](https://img.shields.io/hexpm/dt/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
+[![Inline docs](http://inch-ci.org/github/boydm/phoenix_integration.svg?branch=master)](http://inch-ci.org/github/boydm/phoenix_integration)
 
 
 ## Overview
