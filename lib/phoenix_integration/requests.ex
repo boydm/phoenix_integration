@@ -50,7 +50,7 @@ defmodule PhoenixIntegration.Requests do
 
   @endpoint Application.get_env(:phoenix_integration, :endpoint)
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   @doc """
   Given a conn who's response is a redirect, `follow_redirect` calls the path indicated
   by the "location" response header and returns the conn from that call.
@@ -67,18 +67,22 @@ defmodule PhoenixIntegration.Requests do
     if max_redirects == 0 do
       raise "Too Many Redirects"
     end
+
     case conn.status do
       302 ->
         # we want to use the returned conn for the redirects as it
         # contains state that might be needed
         [location] = Plug.Conn.get_resp_header(conn, "location")
+
         get(conn, location)
         |> follow_redirect(max_redirects - 1)
-      _ -> conn
+
+      _ ->
+        conn
     end
   end
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   @doc """
   Similar to a standard get/post/put/patch/delete call in a ConnTest except that
   `follow_path` follows any redirects returned in the conn's response header.
@@ -98,21 +102,27 @@ defmodule PhoenixIntegration.Requests do
       follow_path( conn, thing_path(conn, :index) )
       |> assert_response( status: 200, path: think_path(conn, :index) )
   """
-  def follow_path(conn, path, opts \\ %{} )
-  def follow_path(conn = %Plug.Conn{}, path, opts ) when is_list(opts) do
-    follow_path(conn, path, Enum.into(opts, %{}) )
+  def follow_path(conn, path, opts \\ %{})
+
+  def follow_path(conn = %Plug.Conn{}, path, opts) when is_list(opts) do
+    follow_path(conn, path, Enum.into(opts, %{}))
   end
-  def follow_path(conn = %Plug.Conn{}, path, opts ) do
-    opts = Map.merge(%{
-      method: "get",
-      max_redirects: 5
-      }, opts)
+
+  def follow_path(conn = %Plug.Conn{}, path, opts) do
+    opts =
+      Map.merge(
+        %{
+          method: "get",
+          max_redirects: 5
+        },
+        opts
+      )
 
     request_path(conn, path, opts.method)
-    |> follow_redirect( opts.max_redirects )
+    |> follow_redirect(opts.max_redirects)
   end
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   @doc """
   Finds a link in conn.resp_body, requests it as if the user had clicked on it,
   and returns the resulting conn.
@@ -168,17 +178,19 @@ defmodule PhoenixIntegration.Requests do
       click_link( conn, thing_path(conn, :delete), method: :delete )
   """
   def click_link(conn, identifer, opts \\ %{})
-  def click_link(conn = %Plug.Conn{}, path, opts ) when is_list(opts) do
-    click_link(conn, path, Enum.into(opts, %{}) )
+
+  def click_link(conn = %Plug.Conn{}, path, opts) when is_list(opts) do
+    click_link(conn, path, Enum.into(opts, %{}))
   end
+
   def click_link(conn = %Plug.Conn{}, identifer, opts) do
-    opts = Map.merge( %{method: "get"}, opts )
+    opts = Map.merge(%{method: "get"}, opts)
 
     {:ok, href} = find_html_link(conn.resp_body, identifer, opts.method)
     request_path(conn, href, opts.method)
   end
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   @doc """
   Finds a link in conn.resp_body, requests it as if the user had clicked on it,
   follows any redirects, and returns the resulting conn.
@@ -220,21 +232,27 @@ defmodule PhoenixIntegration.Requests do
       # follow a non-get link
       follow_link( conn, thing_path(conn, :delete), method: :delete )
   """
-  def follow_link(conn, indentifer, opts \\ %{} )
-  def follow_link(conn = %Plug.Conn{}, indentifer, opts ) when is_list(opts) do
-    follow_link(conn, indentifer, Enum.into(opts, %{}) )
+  def follow_link(conn, indentifer, opts \\ %{})
+
+  def follow_link(conn = %Plug.Conn{}, indentifer, opts) when is_list(opts) do
+    follow_link(conn, indentifer, Enum.into(opts, %{}))
   end
-  def follow_link(conn = %Plug.Conn{}, indentifer, opts ) do
-    opts = Map.merge(%{
-      method: "get",
-      max_redirects: 5
-      }, opts)
+
+  def follow_link(conn = %Plug.Conn{}, indentifer, opts) do
+    opts =
+      Map.merge(
+        %{
+          method: "get",
+          max_redirects: 5
+        },
+        opts
+      )
 
     click_link(conn, indentifer, opts)
-    |> follow_redirect( opts.max_redirects )
+    |> follow_redirect(opts.max_redirects)
   end
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   @doc """
   Finds a form in conn.resp_body, fills out the fields with the given
   data, requests the form's action and returns the resulting conn.
@@ -271,16 +289,22 @@ defmodule PhoenixIntegration.Requests do
           }})
         |> assert_response( status: 302, to: thing_path(conn, :show, thing) )
   """
-  def submit_form(conn, fields, opts \\ %{} )
-  def submit_form(conn = %Plug.Conn{}, fields, opts ) when is_list(opts) do
-    submit_form(conn, fields, Enum.into(opts, %{}) )
+  def submit_form(conn, fields, opts \\ %{})
+
+  def submit_form(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
+    submit_form(conn, fields, Enum.into(opts, %{}))
   end
-  def submit_form(conn = %Plug.Conn{}, fields, opts ) do
-    opts = Map.merge( %{
-        identifier: nil,
-        method: nil,
-        finder: "form"
-      }, opts )
+
+  def submit_form(conn = %Plug.Conn{}, fields, opts) do
+    opts =
+      Map.merge(
+        %{
+          identifier: nil,
+          method: nil,
+          finder: "form"
+        },
+        opts
+      )
 
     # find the form
     {:ok, form_action, form_method, form} =
@@ -290,10 +314,10 @@ defmodule PhoenixIntegration.Requests do
     form_data = build_form_data(form, form_action, fields)
 
     # use ConnCase to call the form's handler. return the new conn
-    request_path(conn, form_action, form_method, form_data )
+    request_path(conn, form_action, form_method, form_data)
   end
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   @doc """
   Finds a form in conn.resp_body, fills out the fields with the given
   data, requests the form's action, follows any redirects and returns the resulting conn.
@@ -331,18 +355,19 @@ defmodule PhoenixIntegration.Requests do
         |> assert_response( status: 200, path: thing_path(conn, :show, thing) )
   """
   def follow_form(conn, fields, opts \\ %{})
-  def follow_form(conn = %Plug.Conn{}, fields, opts ) when is_list(opts) do
-    follow_form(conn, fields, Enum.into(opts, %{}) )
+
+  def follow_form(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
+    follow_form(conn, fields, Enum.into(opts, %{}))
   end
+
   def follow_form(conn = %Plug.Conn{}, fields, opts) do
-    opts = Map.merge( %{max_redirects: 5}, opts)
+    opts = Map.merge(%{max_redirects: 5}, opts)
 
     submit_form(conn, fields, opts)
-    |> follow_redirect( opts.max_redirects )
+    |> follow_redirect(opts.max_redirects)
   end
 
-
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   @doc """
   Convenience function to find and return a form in a conn.resp_body.
 
@@ -391,37 +416,46 @@ defmodule PhoenixIntegration.Requests do
   Note: this fetches the form as it is in the response. It will not show you updates you are making as
   you prepare for the next submission.
   """
-  def fetch_form(conn, opts \\ %{} )
-  def fetch_form(conn = %Plug.Conn{}, opts ) when is_list(opts) do
-    fetch_form(conn, Enum.into(opts, %{}) )
+  def fetch_form(conn, opts \\ %{})
+
+  def fetch_form(conn = %Plug.Conn{}, opts) when is_list(opts) do
+    fetch_form(conn, Enum.into(opts, %{}))
   end
+
   def fetch_form(%Plug.Conn{} = conn, %{} = opts) do
-    opts = Map.merge( %{
-        identifier: nil,
-        method: nil,
-        finder: "form"
-      }, opts )
+    opts =
+      Map.merge(
+        %{
+          identifier: nil,
+          method: nil,
+          finder: "form"
+        },
+        opts
+      )
 
     # find the form
-    {:ok, _form_action, _form_method, raw_form} = find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
-    
+    {:ok, _form_action, _form_method, raw_form} =
+      find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
+
     # fetch the main form attributes
     form = %{
-      method:   form_method(raw_form),
-      inputs:   get_form_data( raw_form )
+      method: form_method(raw_form),
+      inputs: get_form_data(raw_form)
     }
-    form = case Floki.attribute( raw_form, "action" ) do
-      [action] -> Map.put(form, :action, action)
-      _ -> form
-    end
-    case Floki.attribute( raw_form, "id" ) do
+
+    form =
+      case Floki.attribute(raw_form, "action") do
+        [action] -> Map.put(form, :action, action)
+        _ -> form
+      end
+
+    case Floki.attribute(raw_form, "id") do
       [id] -> Map.put(form, :id, id)
       _ -> form
     end
   end
 
-
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   @doc """
   Calls a function and follows the any redirects in the returned `conn`.
   If the function returns anything other than a `conn`, then the result is ignored
@@ -443,61 +477,73 @@ defmodule PhoenixIntegration.Requests do
           assert token == "valid_token"
         end)
   """
-  def follow_fn(conn, func, opts \\ %{} )
-  def follow_fn(conn, func, opts ) when is_list(opts), do:
-    follow_fn(conn, func, Enum.into(opts, %{}))
-  def follow_fn(conn, func, opts ) do
-    opts = Map.merge(%{ max_redirects: 5 }, opts)
+  def follow_fn(conn, func, opts \\ %{})
+
+  def follow_fn(conn, func, opts) when is_list(opts),
+    do: follow_fn(conn, func, Enum.into(opts, %{}))
+
+  def follow_fn(conn, func, opts) do
+    opts = Map.merge(%{max_redirects: 5}, opts)
+
     case func.(conn) do
       c = %Plug.Conn{} ->
-        follow_redirect( c, opts.max_redirects )
-      _ -> conn
+        follow_redirect(c, opts.max_redirects)
+
+      _ ->
+        conn
     end
   end
 
-
-  #============================================================================
-  #============================================================================
+  # ============================================================================
+  # ============================================================================
   # private below
 
-  if Mix.env == :test do
-    def test_find_html_link( html, identifier, method) do
-      find_html_link( html, identifier, method)
+  if Mix.env() == :test do
+    def test_find_html_link(html, identifier, method) do
+      find_html_link(html, identifier, method)
     end
-    def test_find_html_form( html, identifier, method, form_finder ) do
-      find_html_form( html, identifier, method, form_finder )
+
+    def test_find_html_form(html, identifier, method, form_finder) do
+      find_html_form(html, identifier, method, form_finder)
     end
+
     def test_build_form_data(form, form_action, fields) do
       build_form_data(form, form_action, fields)
     end
   end
 
-  #----------------------------------------------------------------------------
-  defp request_path(conn, path, method, data \\ %{} ) do
+  # ----------------------------------------------------------------------------
+  defp request_path(conn, path, method, data \\ %{}) do
     case to_string(method) do
       "get" ->
-        get( conn, path, data )
+        get(conn, path, data)
+
       "post" ->
-        post( conn, path, data )
+        post(conn, path, data)
+
       "put" ->
-        put( conn, path, data )
+        put(conn, path, data)
+
       "patch" ->
-        patch( conn, path, data )
+        patch(conn, path, data)
+
       "delete" ->
-        delete( conn, path, data )
+        delete(conn, path, data)
     end
   end
-  #----------------------------------------------------------------------------
+
+  # ----------------------------------------------------------------------------
   # don't really care if there are multiple copies of the same link,
   # just that it is actually on the page
-  defp find_html_link( html, identifier, :get ), do: find_html_link( html, identifier, "get" )
-  defp find_html_link( html, identifier, "get" ) do
+  defp find_html_link(html, identifier, :get), do: find_html_link(html, identifier, "get")
+
+  defp find_html_link(html, identifier, "get") do
     identifier = String.trim(identifier)
 
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
     Floki.find(html, "a")
-    |> Enum.find_value( fn(link) ->
+    |> Enum.find_value(fn link ->
       {"a", _attribs, kids} = link
 
       case identifier do
@@ -506,49 +552,63 @@ defmodule PhoenixIntegration.Requests do
             [^id] -> link
             _ -> nil
           end
+
         "/" <> _ ->
           case Floki.attribute(link, "href") do
             [^identifier] -> link
             _ -> nil
           end
+
         "http" <> _ ->
           case Floki.attribute(link, "href") do
             [^identifier] -> link
             _ -> nil
           end
+
         _ ->
           cond do
             # see if the identifier is in the links's text
-            Floki.text(link) =~ identifier -> link
-            Floki.FlatText.get(kids) =~ identifier -> link
+            Floki.text(link) =~ identifier ->
+              link
+
+            Floki.FlatText.get(kids) =~ identifier ->
+              link
+
             # all other cases fail
-            true -> nil
+            true ->
+              nil
           end
       end
     end)
     |> case do
       nil ->
-        {err_type, err_ident} = case identifier do
-          "#" <> id ->    {"id=", id}
-          "/" <> _ ->     {"href=", identifier}
-          "http" <> _ ->  {"href=", identifier}
-          _ ->            {"text containing ", identifier}
-        end
-        msg = "Failed to find link \"#{identifier}\", :get in the response\n" <>
-          "Expected to find an anchor with #{err_type}\"#{err_ident}\""
+        {err_type, err_ident} =
+          case identifier do
+            "#" <> id -> {"id=", id}
+            "/" <> _ -> {"href=", identifier}
+            "http" <> _ -> {"href=", identifier}
+            _ -> {"text containing ", identifier}
+          end
+
+        msg =
+          "Failed to find link \"#{identifier}\", :get in the response\n" <>
+            "Expected to find an anchor with #{err_type}\"#{err_ident}\""
+
         raise msg
+
       link ->
         [path] = Floki.attribute(link, "href")
         {:ok, path}
     end
   end
-  defp find_html_link( html, identifier, method) do
+
+  defp find_html_link(html, identifier, method) do
     identifier = String.trim(identifier)
 
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
     Floki.find(html, "a")
-    |> Enum.find_value( fn(link) ->
+    |> Enum.find_value(fn link ->
       {"a", _attribs, kids} = link
 
       case identifier do
@@ -557,114 +617,148 @@ defmodule PhoenixIntegration.Requests do
             [^id] -> link
             _ -> nil
           end
+
         "/" <> _ ->
           case Floki.attribute(link, "data-to") do
             [^identifier] -> link
             _ -> nil
           end
+
         "http" <> _ ->
           case Floki.attribute(link, "data-to") do
             [^identifier] -> link
             _ -> nil
           end
+
         _ ->
           cond do
             # see if the identifier is in the links's text
-            Floki.text(link) =~ identifier -> link
-            Floki.FlatText.get(kids) =~ identifier -> link
+            Floki.text(link) =~ identifier ->
+              link
+
+            Floki.FlatText.get(kids) =~ identifier ->
+              link
+
             # all other cases fail
-            true -> nil
+            true ->
+              nil
           end
       end
     end)
     |> case do
       nil ->
-        {err_type, err_ident} = case identifier do
-          "#" <> id   ->  {"id=", id}
-          "/" <> _    ->  {"href=", identifier}
-          "http" <> _ ->  {"href=", identifier}
-          _           ->  {"text containing ", identifier}
-        end
-        msg = "Failed to find link \"#{identifier}\", :#{method} in the response\n" <>
-          "Expected to find an anchor with #{err_type}\"#{err_ident}\""
+        {err_type, err_ident} =
+          case identifier do
+            "#" <> id -> {"id=", id}
+            "/" <> _ -> {"href=", identifier}
+            "http" <> _ -> {"href=", identifier}
+            _ -> {"text containing ", identifier}
+          end
+
+        msg =
+          "Failed to find link \"#{identifier}\", :#{method} in the response\n" <>
+            "Expected to find an anchor with #{err_type}\"#{err_ident}\""
+
         raise msg
+
       link ->
         [path] = Floki.attribute(link, "data-to")
         {:ok, path}
     end
   end
-  #----------------------------------------------------------------------------
+
+  # ----------------------------------------------------------------------------
 
   # defp find_html_link_identifier() do
   # end
 
-  #----------------------------------------------------------------------------
-  defp find_html_form( html, identifier, method, form_finder ) do
-    method = case method do
-      nil -> nil
-      other -> to_string(other)
-    end
+  # ----------------------------------------------------------------------------
+  defp find_html_form(html, identifier, method, form_finder) do
+    method =
+      case method do
+        nil -> nil
+        other -> to_string(other)
+      end
 
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
     Floki.find(html, form_finder)
-    |> Enum.find_value( fn(form) ->
+    |> Enum.find_value(fn form ->
       {"form", _attribs, kids} = form
 
       case identifier do
-        nil -> form         # if nil identifier, return the first form
+        # if nil identifier, return the first form
+        nil ->
+          form
+
         "#" <> id ->
           case Floki.attribute(form, "id") do
             [^id] -> form
             _ -> nil
           end
+
         "/" <> _ ->
           case Floki.attribute(form, "action") do
             [^identifier] -> form
             _ -> nil
           end
+
         "http" <> _ ->
           case Floki.attribute(form, "action") do
             [^identifier] -> form
             _ -> nil
           end
+
         _ ->
           cond do
             # see if the identifier is in the links's text
-            Floki.text(form) =~ identifier -> form
-            Floki.FlatText.get(kids) =~ identifier -> form
+            Floki.text(form) =~ identifier ->
+              form
+
+            Floki.FlatText.get(kids) =~ identifier ->
+              form
+
             # all other cases fail
-            true -> nil
+            true ->
+              nil
           end
       end
       |> verify_form_method(method)
     end)
     |> case do
       nil ->
-        {err_type, err_ident} = case identifier do
-          "#" <> id ->    {"id=", id}
-          "/" <> _ ->     {"action=", identifier}
-          "http" <> _ ->  {"action=", identifier}
-          _ ->            {"text containing ", identifier}
-        end
-        msg = "Failed to find form \"#{identifier}\", :#{method} in the response\n" <>
-          "Expected to find a form with #{err_type}\"#{err_ident}\""
+        {err_type, err_ident} =
+          case identifier do
+            "#" <> id -> {"id=", id}
+            "/" <> _ -> {"action=", identifier}
+            "http" <> _ -> {"action=", identifier}
+            _ -> {"text containing ", identifier}
+          end
+
+        msg =
+          "Failed to find form \"#{identifier}\", :#{method} in the response\n" <>
+            "Expected to find a form with #{err_type}\"#{err_ident}\""
+
         raise msg
+
       form ->
         [path] = Floki.attribute(form, "action")
         {:ok, path, form_method(form), form}
     end
   end
 
-  #========================================================
+  # ========================================================
   # support for find
 
-  #--------------------------------------------------------
-  defp verify_form_method(false, _method),  do: false
-  defp verify_form_method(nil, _method),    do: false
-  defp verify_form_method(form, nil), do: form            # return form f no method requested
+  # --------------------------------------------------------
+  defp verify_form_method(false, _method), do: false
+  defp verify_form_method(nil, _method), do: false
+  # return form f no method requested
+  defp verify_form_method(form, nil), do: form
+
   defp verify_form_method(form, method) do
     method = to_string(method)
+
     form_method(form)
     |> case do
       ^method -> form
@@ -672,15 +766,18 @@ defmodule PhoenixIntegration.Requests do
     end
   end
 
-  #--------------------------------------------------------
+  # --------------------------------------------------------
   defp form_method(form) do
     # turns out get is right on the top level of the form
-    case Floki.attribute( form, "method" ) do
-      ["get"] -> "get"
-      _->
-        case Floki.find( form, "input[name=\"_method\"]" ) do
+    case Floki.attribute(form, "method") do
+      ["get"] ->
+        "get"
+
+      _ ->
+        case Floki.find(form, "input[name=\"_method\"]") do
           [] ->
             "post"
+
           [found_input] ->
             [found_method] = Floki.attribute(found_input, "value")
             found_method
@@ -688,18 +785,18 @@ defmodule PhoenixIntegration.Requests do
     end
   end
 
-  #========================================================
+  # ========================================================
   # support for building form data
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   defp build_form_data(form, form_action, fields) do
     form_data = get_form_data(form)
 
     # merge the data from the form and that provided by the test
-    merge_grouped_fields( form_data, form_action, fields )
+    merge_grouped_fields(form_data, form_action, fields)
   end
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   defp get_form_data(form) do
     %{}
     |> build_form_by_type(form, "input")
@@ -707,97 +804,118 @@ defmodule PhoenixIntegration.Requests do
     |> build_form_by_type(form, "select")
   end
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   defp build_form_by_type(acc, form, input_type) do
-    Enum.reduce(Floki.find(form, input_type), acc, fn(input, acc) ->
+    Enum.reduce(Floki.find(form, input_type), acc, fn input, acc ->
       case input_to_key_value(input, input_type) do
         {:ok, map} ->
           DeepMerge.deep_merge(acc, map)
+
         {:error, _} ->
-          acc # do nothing
+          # do nothing
+          acc
       end
-    end )
+    end)
   end
 
-  #----------------------------------------------------------------------------'
+  # ----------------------------------------------------------------------------'
   defp input_to_key_value(input, input_type) do
     case Floki.attribute(input, "type") do
       ["radio"] ->
         case Floki.attribute(input, "checked") do
           ["checked"] ->
             really_input_to_key_value(input, input_type)
+
           _ ->
             {:error, "skip"}
         end
-      _ -> really_input_to_key_value(input, input_type)
-    end
-  end
-  defp really_input_to_key_value(input, input_type) do
-    case Floki.attribute(input, "name") do
-      [] ->     {:error, :no_name}
-      [name] -> interpret_named_value(name, get_input_value(input, input_type))
-      _ ->      {:error, :unknown_format}
+
+      _ ->
+        really_input_to_key_value(input, input_type)
     end
   end
 
-  #----------------------------------------------------------------------------
+  defp really_input_to_key_value(input, input_type) do
+    case Floki.attribute(input, "name") do
+      [] -> {:error, :no_name}
+      [name] -> interpret_named_value(name, get_input_value(input, input_type))
+      _ -> {:error, :unknown_format}
+    end
+  end
+
+  # ----------------------------------------------------------------------------
   defp merge_grouped_fields(map, form_action, fields) do
-    Enum.reduce(fields, map, fn({k,v}, acc) ->
+    Enum.reduce(fields, map, fn {k, v}, acc ->
       cond do
-        is_map(v) && ! is_struct(v) ->
-          sub_map = merge_grouped_fields( acc[k] || %{}, form_action, v )
+        is_map(v) && !is_struct(v) ->
+          sub_map = merge_grouped_fields(acc[k] || %{}, form_action, v)
           put_if_available!(acc, k, sub_map, form_action)
+
         true ->
           put_if_available!(acc, k, v, form_action)
       end
     end)
   end
 
-  #----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
   defp put_if_available!(map, key, value, form_action) do
     case Map.has_key?(map, key) do
-      true ->   Map.put(map, key, value)
+      true ->
+        Map.put(map, key, value)
+
       false ->
-        msg = "#{IO.ANSI.red}Attempted to set missing input in form\n" <>
-          "#{IO.ANSI.green}Form action: #{IO.ANSI.red}#{form_action}\n" <>
-          "#{IO.ANSI.green}Setting key: #{IO.ANSI.red}#{key}\n" <>
-          "#{IO.ANSI.green}And value: #{IO.ANSI.red}#{value}\n" <>
-          "#{IO.ANSI.green}Into fields: #{IO.ANSI.yellow}" <>
-          inspect( map )
+        msg =
+          "#{IO.ANSI.red()}Attempted to set missing input in form\n" <>
+            "#{IO.ANSI.green()}Form action: #{IO.ANSI.red()}#{form_action}\n" <>
+            "#{IO.ANSI.green()}Setting key: #{IO.ANSI.red()}#{key}\n" <>
+            "#{IO.ANSI.green()}And value: #{IO.ANSI.red()}#{value}\n" <>
+            "#{IO.ANSI.green()}Into fields: #{IO.ANSI.yellow()}" <> inspect(map)
+
         raise msg
     end
   end
 
-  #----------------------------------------------------------------------------
-  defp get_input_value( input, "input" ),     do: Floki.attribute(input, "value")
-  defp get_input_value( input, "textarea" ),  do: [Floki.FlatText.get(input)]
-  defp get_input_value( input, "select" ) do
+  # ----------------------------------------------------------------------------
+  defp get_input_value(input, "input"), do: Floki.attribute(input, "value")
+  defp get_input_value(input, "textarea"), do: [Floki.FlatText.get(input)]
+
+  defp get_input_value(input, "select") do
     Floki.find(input, "option[selected]")
     |> Floki.attribute("value")
   end
 
-  #----------------------------------------------------------------------------'
+  # ----------------------------------------------------------------------------'
   defp interpret_named_value(name, value) do
     case value do
-      [] ->       build_named_value(name, nil)
-      [value] ->  build_named_value(name, value)
-      _ ->        {:error, :unknown_format}
+      [] -> build_named_value(name, nil)
+      [value] -> build_named_value(name, value)
+      _ -> {:error, :unknown_format}
     end
   end
 
-  #----------------------------------------------------------------------------'
+  # ----------------------------------------------------------------------------'
   defp build_named_value(name, value) do
     case Regex.scan(~r/\w+[\w+]/, name) do
-      [[key]] ->            {:ok, %{String.to_atom(key) => value}}
-      [[key], [sub_key]] -> {:ok, %{String.to_atom(key) => %{String.to_atom(sub_key) => value}}}
-      [[key], [sub_key], [sub_sub_key]] -> {:ok, %{String.to_atom(key) => %{String.to_atom(sub_key) => %{String.to_atom(sub_sub_key) => value}}}}
-      _ ->                  {:error, :unknown_format}
+      [[key]] ->
+        {:ok, %{String.to_atom(key) => value}}
+
+      [[key], [sub_key]] ->
+        {:ok, %{String.to_atom(key) => %{String.to_atom(sub_key) => value}}}
+
+      [[key], [sub_key], [sub_sub_key]] ->
+        {:ok,
+         %{
+           String.to_atom(key) => %{
+             String.to_atom(sub_key) => %{String.to_atom(sub_sub_key) => value}
+           }
+         }}
+
+      _ ->
+        {:error, :unknown_format}
     end
   end
 
   defp is_struct(v) do
     v |> Map.has_key?(:__struct__)
   end
-
-
 end
