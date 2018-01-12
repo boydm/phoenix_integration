@@ -1,5 +1,9 @@
 ## phoenix_integration Changelist
 
+### 0.4.1
+  * run the code through the elixir 1.6 formatter
+  * update travis tests
+
 ### 0.4.0
   * fix issue #11, was incorrectly reading the method of the form in the case of a get
   * add the fetch_form function to the Request module
