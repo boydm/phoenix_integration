@@ -1,4 +1,5 @@
 language: elixir
+sudo: false
 
 branches:
   only:
