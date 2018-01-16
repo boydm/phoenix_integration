@@ -126,7 +126,8 @@ defmodule PhoenixIntegration.RequestTest do
     |> assert_response(status: 302, to: "/second")
   end
 
-  test "click_button :post clicks a link in the conn's html - getting the method from the button", %{conn: conn} do
+  test "click_button :post clicks a link in the conn's html - getting the method from the button",
+       %{conn: conn} do
     get(conn, "/sample")
     |> click_button("#post_button_id")
     |> assert_response(status: 302, to: "/second")
@@ -167,7 +168,8 @@ defmodule PhoenixIntegration.RequestTest do
     |> assert_response(status: 200, path: "/second")
   end
 
-  test "follow_button :post clicks a link in the conn's html - getting the method from the button", %{conn: conn} do
+  test "follow_button :post clicks a link in the conn's html - getting the method from the button",
+       %{conn: conn} do
     get(conn, "/sample")
     |> click_button("#post_button_id")
     |> assert_response(status: 302, to: "/second")

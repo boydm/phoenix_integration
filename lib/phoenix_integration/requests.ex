@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
-  
+
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
   of `get`, `post`, `put`, `patch`, and `delete`.
