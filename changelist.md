@@ -3,6 +3,7 @@
 ### 0.5.0
   * added Request.click_button to find and click simple buttons on the page
   * added Request.follow_button to find, click, and follow simple buttons on the page
+  * improved error message when usinga link, while asking for the wrong method.
 
 ### 0.4.1
   * run the code through the elixir 1.6 formatter
