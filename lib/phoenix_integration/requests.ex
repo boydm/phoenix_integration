@@ -300,6 +300,8 @@ defmodule PhoenixIntegration.Requests do
       |> follow_redirect()
       |> assert_response( status: 200, path: think_path(conn, :new) )
 
+  Returns the transformed conn after submitting the request.
+
   ### Button request methods that don't use the :get method
 
   Unlike trying to click anchor tags, Phoenix always puts the method in button tags as an attribute.
@@ -342,10 +344,6 @@ defmodule PhoenixIntegration.Requests do
       * `:method` - method to use when requesting the path. Defaults to `"get"`;
       * `:max_redirects` - Maximum number of redirects to follow. Defaults to `5`;
 
-  This is similar to `click_button`, except that it follows returned redirects. This
-  is very useful during integration tests as you typically want to emulate what the
-  user is really doing. You will probably use `follow_button` more than `click_button`.
-
   If the link is not found in the body, `follow_button` raises an error.
 
   ### Example:
@@ -356,6 +354,8 @@ defmodule PhoenixIntegration.Requests do
         |> assert_response( path: thing_path(conn, :index) )
 
   ### Button request methods that don't use the :get method
+
+  Returns the transformed conn after submitting, then following the request.
 
   Unlike trying to follow anchor tags, Phoenix always puts the method in button tags as an attribute.
 
@@ -796,8 +796,6 @@ defmodule PhoenixIntegration.Requests do
         {:ok, path}
     end
   end
-
-  import IEx
 
   # ----------------------------------------------------------------------------
   # don't really care if there are multiple copies of the same button,
