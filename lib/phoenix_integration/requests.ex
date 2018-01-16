@@ -254,6 +254,136 @@ defmodule PhoenixIntegration.Requests do
 
   # ----------------------------------------------------------------------------
   @doc """
+  Finds a button in conn.resp_body and acts as if the user had clicked on it,
+  and returns the resulting conn.
+
+  This is very similar to `click_link` except that it looks for button tags
+  as rendered by PhoenixHtml.
+
+  ### Parameters
+    * `conn` should be a conn returned from a previous request that rendered some html. The
+      functions are designed to pass the conn from one call into the next via pipes.
+    * `identifier` indicates which link to find in the html. Valid values can be in the following
+      forms:
+        * `"/some/path"` specify the link's href starting with a `"/"` character
+        * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
+        * `"#element-id"` specify the html element id of the link you are looking for. Must start
+          start with the `"#"` character (same as css id specifier).
+        * `"Some Text"` specify text contained within the link you are looking for.
+    * `opts` A map of additional options
+      * `:method` - method to use when requesting the path. Defaults to `"get"`;
+
+  `click_button` does __not__ follow any redirects returned by the request. This allows
+  you to explicitly check that the redirect is correct. Use `follow_redirect` to request
+  the location redirected to, or just use `follow_link` to do it in one call.
+
+  If the link is not found in the body, `click_button` raises an error.
+
+  ### Examples:
+
+      # click a link specified by path or uri
+      get( conn, thing_path(conn, :index) )
+      |> click_button( page_path(conn, :index) )
+
+      # click a link specified by html id with a non-get method
+      get( conn, thing_path(conn, :index) )
+      |> click_button( "#button_id", method: :delete )
+
+      # click a link containing the given text
+      get( conn, thing_path(conn, :index) )
+      |> click_button( "Settings" )
+
+      # test a redirect and continue
+      get( conn, thing_path(conn, :index) )
+      |> click_button( "something that redirects to new" )
+      |> assert_response( status: 302, to: think_path(conn, :new) )
+      |> follow_redirect()
+      |> assert_response( status: 200, path: think_path(conn, :new) )
+
+  ### Button request methods that don't use the :get method
+
+  Unlike trying to click anchor tags, Phoenix always puts the method in button tags as an attribute.
+
+  This means that if you want to match agains tags with a non-get method you can, but you don't
+  really need to.
+  """
+  def click_button(conn, identifer, opts \\ %{})
+
+  def click_button(conn = %Plug.Conn{}, path, opts) when is_list(opts) do
+    click_button(conn, path, Enum.into(opts, %{}))
+  end
+
+  def click_button(conn = %Plug.Conn{}, identifer, opts) do
+    opts = Map.merge(%{method: "get"}, opts)
+
+    {:ok, href} = find_html_button(conn.resp_body, identifer, opts.method)
+    request_path(conn, href, opts.method)
+  end
+
+  # ----------------------------------------------------------------------------
+  @doc """
+  Finds a button in conn.resp_body, acts as if the user had clicked on it,
+  follows any redirects, and returns the resulting conn.
+
+  This is very similar to `follow_link` except that it looks for button tags
+  as rendered by PhoenixHtml.
+
+  ### Parameters
+    * `conn` should be a conn returned from a previous request that rendered some html. The
+      functions are designed to pass the conn from one call into the next via pipes.
+    * `identifier` indicates which link to find in the html. Valid values can be in the following
+      forms:
+        * `"/some/path"` specify the link's href starting with a `"/"` character
+        * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
+        * `"#element-id"` specify the html element id of the link you are looking for. Must start
+          start with the `"#"` character (same as css id specifier).
+        * `"Some Text"` specify text contained within the link you are looking for.
+    * `opts` A map of additional options
+      * `:method` - method to use when requesting the path. Defaults to `"get"`;
+      * `:max_redirects` - Maximum number of redirects to follow. Defaults to `5`;
+
+  This is similar to `click_button`, except that it follows returned redirects. This
+  is very useful during integration tests as you typically want to emulate what the
+  user is really doing. You will probably use `follow_button` more than `click_button`.
+
+  If the link is not found in the body, `follow_button` raises an error.
+
+  ### Example:
+        # click through several pages that should point to each other
+        get( conn, thing_path(conn, :index) )
+        |> follow_button( "#settings_button" )
+        |> follow_button( "Cancel" )
+        |> assert_response( path: thing_path(conn, :index) )
+
+  ### Button request methods that don't use the :get method
+
+  Unlike trying to follow anchor tags, Phoenix always puts the method in button tags as an attribute.
+
+  This means that if you want to match agains tags with a non-get method you can, but you don't
+  really need to.
+  """
+  def follow_button(conn, indentifer, opts \\ %{})
+
+  def follow_button(conn = %Plug.Conn{}, indentifer, opts) when is_list(opts) do
+    follow_button(conn, indentifer, Enum.into(opts, %{}))
+  end
+
+  def follow_button(conn = %Plug.Conn{}, indentifer, opts) do
+    opts =
+      Map.merge(
+        %{
+          method: "get",
+          max_redirects: 5
+        },
+        opts
+      )
+
+    click_button(conn, indentifer, opts)
+    |> follow_redirect(opts.max_redirects)
+  end
+
+  # ----------------------------------------------------------------------------
+  @doc """
   Finds a form in conn.resp_body, fills out the fields with the given
   data, requests the form's action and returns the resulting conn.
 
@@ -663,6 +793,78 @@ defmodule PhoenixIntegration.Requests do
 
       link ->
         [path] = Floki.attribute(link, "data-to")
+        {:ok, path}
+    end
+  end
+
+  import IEx
+
+  # ----------------------------------------------------------------------------
+  # don't really care if there are multiple copies of the same button,
+  # just that it is actually on the page
+  defp find_html_button(html, identifier, :get), do: find_html_button(html, identifier, "get")
+
+  defp find_html_button(html, identifier, method) do
+    identifier = String.trim(identifier)
+
+    # scan all links, return the first where either the path or the content
+    # is equal to the identifier
+    Floki.find(html, "button")
+    |> Enum.find_value(fn button ->
+      {"button", _attribs, kids} = button
+
+      case identifier do
+        "#" <> id ->
+          case Floki.attribute(button, "id") do
+            [^id] -> button
+            _ -> nil
+          end
+
+        "/" <> _ ->
+          case Floki.attribute(button, "data-to") do
+            [^identifier] -> button
+            _ -> nil
+          end
+
+        "http" <> _ ->
+          case Floki.attribute(button, "data-to") do
+            [^identifier] -> button
+            _ -> nil
+          end
+
+        _ ->
+          cond do
+            # see if the identifier is in the links's text
+            Floki.text(button) =~ identifier ->
+              button
+
+            Floki.FlatText.get(kids) =~ identifier ->
+              button
+
+            # all other cases fail
+            true ->
+              nil
+          end
+      end
+    end)
+    |> case do
+      nil ->
+        {err_type, err_ident} =
+          case identifier do
+            "#" <> id -> {"id=", id}
+            "/" <> _ -> {"href=", identifier}
+            "http" <> _ -> {"href=", identifier}
+            _ -> {"text containing ", identifier}
+          end
+
+        msg =
+          "Failed to find button \"#{identifier}\", :#{method} in the response\n" <>
+            "Expected to find an button tag with #{err_type}\"#{err_ident}\""
+
+        raise msg
+
+      button ->
+        [path] = Floki.attribute(button, "data-to")
         {:ok, path}
     end
   end

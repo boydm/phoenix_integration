@@ -2,6 +2,13 @@
 
 <a href="/links/first">First Link</a>
 
+<button 
+ class="btn btn-info btn-block" 
+ data-csrf="csrf=="
+ data-method="get"
+ data-to="/buttons/first"
+ role="button">First Button</button>
+
 <a id="second" href="https://www.example.com/links/second">Second Link</a>
 
 <p id="other">
@@ -31,6 +38,42 @@ A sample link using DELETE
 <a id="delete_id" class="link" data-csrf="CDECJGdRAFYIHT93R3QqBG8EHyRHEAAAorWIRdCfP2ZF/1ENDKQuvg==" data-method="delete" data-to="/links/delete" href="#">
   DELETE link text
 </a>
+
+-----------------------------
+A sample button using POST
+<button 
+ id="post_button_id"
+ data-csrf="csrf=="
+ data-method="post"
+ data-to="/buttons/post"
+ role="button">POST button text</button>
+
+-----------------------------
+A sample button using PUT
+<button 
+ id="put_button_id"
+ data-csrf="csrf=="
+ data-method="put"
+ data-to="/buttons/put"
+ role="button">PUT button text</button>
+
+-----------------------------
+A sample button using PATCH
+<button 
+ id="patch_button_id"
+ data-csrf="csrf=="
+ data-method="patch"
+ data-to="/buttons/patch"
+ role="button">PATCH button text</button>
+
+-----------------------------
+A sample button using DELETE
+<button 
+ id="delete_button_id"
+ data-csrf="csrf=="
+ data-method="delete"
+ data-to="/buttons/delete"
+ role="button">DELETE button text</button>
 
 -----------------------------
 A proper one this time, with fields to be filled out.

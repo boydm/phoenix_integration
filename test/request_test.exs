@@ -110,6 +110,76 @@ defmodule PhoenixIntegration.RequestTest do
   end
 
   # ============================================================================
+  # click_button
+
+  test "click_button :get clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> click_button("First Button")
+    |> assert_response(status: 200, path: "/buttons/first")
+    |> click_button("#return_button")
+    |> assert_response(status: 200, path: "/sample")
+  end
+
+  test "click_button :post clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> click_button("#post_button_id", method: :post)
+    |> assert_response(status: 302, to: "/second")
+  end
+
+  test "click_button :put clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> click_button("#put_button_id", method: :put)
+    |> assert_response(status: 302, to: "/second")
+  end
+
+  test "click_button :patch clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> click_button("#patch_button_id", method: :patch)
+    |> assert_response(status: 302, to: "/second")
+  end
+
+  test "click_button :delete clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> click_button("#delete_button_id", method: :delete)
+    |> assert_response(status: 302, to: "/second")
+  end
+
+  # ============================================================================
+  # follow_button
+
+  test "follow_button :get clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> follow_button("First Button")
+    |> assert_response(status: 200, path: "/buttons/first")
+    |> follow_button("#return_button")
+    |> assert_response(status: 200, path: "/sample")
+  end
+
+  test "follow_button :post clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> follow_button("#post_button_id", method: :post)
+    |> assert_response(status: 200, path: "/second")
+  end
+
+  test "follow_button :put clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> follow_button("#put_button_id", method: :put)
+    |> assert_response(status: 200, path: "/second")
+  end
+
+  test "follow_button :patch clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> follow_button("#patch_button_id", method: :patch)
+    |> assert_response(status: 200, path: "/second")
+  end
+
+  test "follow_button :delete clicks a link in the conn's html", %{conn: conn} do
+    get(conn, "/sample")
+    |> follow_button("#delete_button_id", method: :delete)
+    |> assert_response(status: 200, path: "/second")
+  end
+
+  # ============================================================================
   # submit_form
 
   test "submit_form works", %{conn: conn} do
