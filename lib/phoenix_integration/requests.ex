@@ -785,14 +785,19 @@ defmodule PhoenixIntegration.Requests do
             _ -> {"text containing ", identifier}
           end
 
-        msg =
-          "Failed to find link \"#{identifier}\", :#{method} in the response\n" <>
-            "Expected to find an anchor with #{err_type}\"#{err_ident}\""
-
+        msg = "Failed to find link \"#{identifier}\", :#{method} in the response\n" <>
+        "Expected to find an anchor with #{err_type}\"#{err_ident}\""
         raise msg
 
       link ->
-        [path] = Floki.attribute(link, "data-to")
+        path = case Floki.attribute(link, "data-to") do
+          [] ->
+            msg = "Failed to find link \"#{identifier}\", :#{method} in the response\n" <>
+            "#{IO.ANSI.yellow()}Did you ask for the right method?" <> IO.ANSI.default_color()
+            raise msg
+
+          [path] -> path
+        end
         {:ok, path}
     end
   end
