@@ -90,6 +90,7 @@ defmodule MyApp.AboutIntegrationTest do
     |> follow_link( "Contact" )
     |> follow_link( "Privacy" )
     |> follow_link( "Terms of Service" )
+    |> follow_button( "Accept" )
     |> follow_link( "Home" )
     |> assert_response( status: 200, path: page_path(conn, :index) )
   end
@@ -210,6 +211,8 @@ test "Basic page flow", %{conn: conn} do
   |> follow_link( "Contact" )
   |> assert_response( content_type: "text/html" )
   |> follow_link( "Privacy" )
+  |> assert_response( html: "Privacy Policy" )
+  |> follow_button( "Accept" )
   |> assert_response( html: "Privacy Policy" )
   |> follow_link( "Home" )
   |> assert_response( status: 200, path: page_path(conn, :index) )
