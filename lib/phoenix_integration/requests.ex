@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
-
+  
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
   of `get`, `post`, `put`, `patch`, and `delete`.
@@ -316,10 +316,11 @@ defmodule PhoenixIntegration.Requests do
   end
 
   def click_button(conn = %Plug.Conn{}, identifer, opts) do
-    opts = Map.merge(%{method: "get"}, opts)
+    # setting the method to nil means get it out of data-method
+    opts = Map.merge(%{method: nil}, opts)
 
-    {:ok, href} = find_html_button(conn.resp_body, identifer, opts.method)
-    request_path(conn, href, opts.method)
+    {:ok, href, method} = find_html_button(conn.resp_body, identifer, opts.method)
+    request_path(conn, href, method)
   end
 
   # ----------------------------------------------------------------------------
@@ -372,7 +373,6 @@ defmodule PhoenixIntegration.Requests do
     opts =
       Map.merge(
         %{
-          method: "get",
           max_redirects: 5
         },
         opts
@@ -869,14 +869,15 @@ defmodule PhoenixIntegration.Requests do
           end
 
         msg =
-          "Failed to find button \"#{identifier}\", :#{method} in the response\n" <>
+          "Failed to find button \"#{identifier}\", #{inspect(method)} in the response\n" <>
             "Expected to find an button tag with #{err_type}\"#{err_ident}\""
 
         raise msg
 
       button ->
         [path] = Floki.attribute(button, "data-to")
-        {:ok, path}
+        [method] = Floki.attribute(button, "data-method")
+        {:ok, path, method}
     end
   end
 
