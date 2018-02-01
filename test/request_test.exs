@@ -249,6 +249,14 @@ defmodule PhoenixIntegration.RequestTest do
     |> assert_response(status: 200, path: "/admin/search")
   end
 
+  test "follow_form works with radio buttons", %{conn: conn} do
+    get(conn, "/sample")
+    |> follow_form(%{user: %{usage: "moderate", locale: "rural"}}, identifier: "#proper_form")
+    |> assert_response(status: 200, path: "/second")
+  end
+
+
+
   # ============================================================================
   # fetch_form
   test "fetch_form works", %{conn: conn} do

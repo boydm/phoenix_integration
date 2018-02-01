@@ -1,5 +1,9 @@
 ## phoenix_integration Changelist
 
+### 0.5.1
+  * fixed bug (issue #20) where it didn't find radio input fields if none were intially checked
+  * removed dependency on DeepMerge
+
 ### 0.5.0
   * added Request.click_button to find and click simple buttons on the page
   * added Request.follow_button to find, click, and follow simple buttons on the page

@@ -1005,7 +1005,6 @@ defmodule PhoenixIntegration.Requests do
   # ----------------------------------------------------------------------------
   defp build_form_data(form, form_action, fields) do
     form_data = get_form_data(form)
-
     # merge the data from the form and that provided by the test
     merge_grouped_fields(form_data, form_action, fields)
   end
@@ -1022,8 +1021,8 @@ defmodule PhoenixIntegration.Requests do
   defp build_form_by_type(acc, form, input_type) do
     Enum.reduce(Floki.find(form, input_type), acc, fn input, acc ->
       case input_to_key_value(input, input_type) do
-        {:ok, map} ->
-          DeepMerge.deep_merge(acc, map)
+        {:ok, input_map} ->
+          merge_input(acc, input_map)
 
         {:error, _} ->
           # do nothing
@@ -1032,24 +1031,37 @@ defmodule PhoenixIntegration.Requests do
     end)
   end
 
-  # ----------------------------------------------------------------------------'
-  defp input_to_key_value(input, input_type) do
-    case Floki.attribute(input, "type") do
-      ["radio"] ->
-        case Floki.attribute(input, "checked") do
-          ["checked"] ->
-            really_input_to_key_value(input, input_type)
+  defp merge_input(acc, input_map) do
+    Enum.reduce(input_map, acc, fn {k, v}, acc ->
+      case v do
+        nil ->
+          case acc[k] do
+            nil ->
+              Map.put(acc, k, nil)
 
-          _ ->
-            {:error, "skip"}
-        end
+            _ ->
+              acc
+          end
 
-      _ ->
-        really_input_to_key_value(input, input_type)
-    end
+        # nested input
+        %{} = input_child ->
+          case acc[k] do
+            nil ->
+              Map.put(acc, k, v)
+
+            %{} = acc_child ->
+              Map.put(acc, k, merge_input(acc_child, input_child))
+          end
+
+        # simple non-map value
+        _ ->
+          Map.put(acc, k, v)
+      end
+    end)
   end
 
-  defp really_input_to_key_value(input, input_type) do
+  # ----------------------------------------------------------------------------
+  defp input_to_key_value(input, input_type) do
     case Floki.attribute(input, "name") do
       [] -> {:error, :no_name}
       [name] -> interpret_named_value(name, get_input_value(input, input_type))
@@ -1090,7 +1102,25 @@ defmodule PhoenixIntegration.Requests do
   end
 
   # ----------------------------------------------------------------------------
-  defp get_input_value(input, "input"), do: Floki.attribute(input, "value")
+  defp get_input_value(input, "input") do
+    # if the input is a radio input, then see if it is checked. If it isn't, the value is nil
+    case Floki.attribute(input, "type") do
+      ["radio"] ->
+        case Floki.attribute(input, "checked") do
+          ["checked"] ->
+            Floki.attribute(input, "value")
+
+          # not checked. value is nil
+          _ ->
+            [nil]
+        end
+
+      _ ->
+        # not a radio. simply get the value
+        Floki.attribute(input, "value")
+    end
+  end
+
   defp get_input_value(input, "textarea"), do: [Floki.FlatText.get(input)]
 
   defp get_input_value(input, "select") do
