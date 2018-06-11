@@ -1,7 +1,7 @@
 ## phoenix_integration Changelist
 
 ### 0.5.2
-  * Merged pull request from wooga to allow single-character input names in forms
+  * Merged pull request #22 from wooga to allow single-character input names in forms
 
 ### 0.5.1
   * fixed bug (issue #20) where it didn't find radio input fields if none were intially checked
