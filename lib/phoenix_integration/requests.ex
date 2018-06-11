@@ -1139,7 +1139,7 @@ defmodule PhoenixIntegration.Requests do
 
   # ----------------------------------------------------------------------------'
   defp build_named_value(name, value) do
-    case Regex.scan(~r/\w+[\w+]/, name) do
+    case Regex.scan(~r/\w+/, name) do
       [[key]] ->
         {:ok, %{String.to_atom(key) => value}}
 

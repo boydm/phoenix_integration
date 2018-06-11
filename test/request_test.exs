@@ -198,7 +198,9 @@ defmodule PhoenixIntegration.RequestTest do
 
   test "submit_form works", %{conn: conn} do
     get(conn, "/sample")
-    |> submit_form(%{user: %{name: "Fine Name"}}, %{identifier: "#proper_form"})
+    |> submit_form(%{user: %{name: "Fine Name", grades: %{a: "true", b: "false"}}}, %{
+      identifier: "#proper_form"
+    })
     |> assert_response(status: 302, to: "/second")
   end
 
@@ -254,8 +256,6 @@ defmodule PhoenixIntegration.RequestTest do
     |> follow_form(%{user: %{usage: "moderate", locale: "rural"}}, identifier: "#proper_form")
     |> assert_response(status: 200, path: "/second")
   end
-
-
 
   # ============================================================================
   # fetch_form
