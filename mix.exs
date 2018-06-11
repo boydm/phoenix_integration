@@ -1,7 +1,7 @@
 defmodule PhoenixIntegration.Mixfile do
   use Mix.Project
 
-  @version "0.5.2"
+  @version "0.5.1"
   @url "https://github.com/boydm/phoenix_integration"
 
   def project do
@@ -34,7 +34,6 @@ defmodule PhoenixIntegration.Mixfile do
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_),     do: ["lib"]
-
 
   def application do
     [applications: [:phoenix]]
