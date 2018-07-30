@@ -14,20 +14,14 @@ after_script:
   - MIX_ENV=docs mix inch.report
 
 elixir:
-  - 1.5.3
   - 1.6.6
   - 1.7.1
 otp_release:
-  - 19.2
   - 20.0
   - 21.0
 
 matrix:
   include:
-    - elixir: 1.5.3
-      otp_release: 19.2
-    - elixir: 1.5.3
-      otp_release: 20.0
     - elixir: 1.6.6
       otp_release: 20.0
     - elixir: 1.7.1
