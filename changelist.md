@@ -1,5 +1,8 @@
 ## phoenix_integration Changelist
 
+### 0.5.3
+  * Merged pull request #23 from jonasschmidt to support deeply nested forms.
+
 ### 0.5.2
   * Merged pull request #22 from wooga to allow single-character input names in forms
 
