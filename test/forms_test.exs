@@ -130,9 +130,16 @@ defmodule PhoenixIntegration.FormsTest do
     assert user_params.species == "narn"
   end
 
-  test "build form dataa sets nested forms", %{form: form} do
+  test "build form data sets nested forms", %{form: form} do
     form_action = "/form"
-    user_data = %{user: %{tag: %{name: "new tag"}}}
+
+    user_data = %{
+      user: %{
+        tag: %{name: "new tag"},
+        friends: %{"0": %{address: %{city: %{zip: "67890"}}}}
+      }
+    }
+
     data = PhoenixIntegration.Requests.test_build_form_data(form, form_action, user_data)
     %{user: user_params} = data
     assert user_params.name == "Initial Name"
@@ -140,6 +147,7 @@ defmodule PhoenixIntegration.FormsTest do
     assert user_params.story == "Initial user story"
     assert user_params.species == "human"
     assert user_params.tag.name == "new tag"
+    assert user_params.friends[:"0"].address.city.zip == "67890"
   end
 
   test "build form raises setting missing field", %{form: form} do
