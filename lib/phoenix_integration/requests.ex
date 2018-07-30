@@ -1140,23 +1140,20 @@ defmodule PhoenixIntegration.Requests do
   # ----------------------------------------------------------------------------'
   defp build_named_value(name, value) do
     case Regex.scan(~r/\w+/, name) do
-      [[key]] ->
-        {:ok, %{String.to_atom(key) => value}}
-
-      [[key], [sub_key]] ->
-        {:ok, %{String.to_atom(key) => %{String.to_atom(sub_key) => value}}}
-
-      [[key], [sub_key], [sub_sub_key]] ->
-        {:ok,
-         %{
-           String.to_atom(key) => %{
-             String.to_atom(sub_key) => %{String.to_atom(sub_sub_key) => value}
-           }
-         }}
-
-      _ ->
+      [] ->
         {:error, :unknown_format}
+
+      keys ->
+        {:ok, nested_value(keys, value)}
     end
+  end
+
+  defp nested_value([[key] | keys], value) do
+    %{String.to_atom(key) => nested_value(keys, value)}
+  end
+
+  defp nested_value([], value) do
+    value
   end
 
   defp is_struct(v) do

@@ -8,7 +8,7 @@ defmodule PhoenixIntegration.RequestTest do
   #  import IEx
 
   # ============================================================================
-  # set up context 
+  # set up context
   setup do
     %{conn: build_conn(:get, "/")}
   end
@@ -277,7 +277,8 @@ defmodule PhoenixIntegration.RequestTest do
           species: "human",
           story: "Initial user story",
           tag: %{name: "tag"},
-          type: "type_two"
+          type: "type_two",
+          friends: %{"0": %{address: %{city: %{zip: "12345"}}}}
         }
       },
       method: "put"

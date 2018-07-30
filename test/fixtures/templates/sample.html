@@ -134,6 +134,11 @@ A proper one this time, with fields to be filled out.
     <input id="user_tag_name" name="user[tag][name]" type="text" value="tag">
   </div>
 
+  A deeply nested form field
+  <div class="form-group">
+    <input name="user[friends][0][address][city][zip]" type="text" value="12345">
+  </div>
+
   A datetime select
   <div class="form-group">
     <label for="user_joined_at">Joined at</label>
