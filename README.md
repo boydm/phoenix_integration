@@ -16,7 +16,7 @@ Works within the existing `Phoenix.ConnTest` framework and emphasizes both speed
 The goal is to chain together a string of requests and assertions that thoroughly
 exercise your application in as lightweight and readable manner as possible.
 
-I love the pipe `|>` command in Elixir. By using the pipe to chain together calls in an integration test, phoenix_integration is able to be very readable. Tight integration with Phoenix.ConnTest means the call all use the fast-path to your application for speed.
+I love the pipe `|>` command in Elixir. By using the pipe to chain together calls in an integration test, phoenix_integration is able to be very readable. Tight integration with Phoenix.ConnTest means the calls all use the fast-path to your application for speed.
 
 ## Documentation
 
