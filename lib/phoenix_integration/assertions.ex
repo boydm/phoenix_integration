@@ -385,7 +385,7 @@ defmodule PhoenixIntegration.Assertions do
   defp assert_body_json(conn, expected, err_type \\ :json) do
     assert_content_type(conn, "application/json", err_type)
 
-    case Poison.decode!(conn.resp_body) do
+    case Jason.decode!(conn.resp_body) do
       ^expected ->
         conn
 
@@ -408,7 +408,7 @@ defmodule PhoenixIntegration.Assertions do
       [header] ->
         cond do
           header =~ "json" ->
-            case Poison.decode!(conn.resp_body) do
+            case Jason.decode!(conn.resp_body) do
               ^expected ->
                 msg =
                   error_msg_type(conn, err_type) <>
