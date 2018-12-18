@@ -18,7 +18,7 @@ defmodule PhoenixIntegration.TestEndpoint do
 
   def respond(conn, "GET", "/test_json") do
     pre_get_json(conn, conn_request_path(conn))
-    |> resp(200, Poison.encode!(@expected_json_data))
+    |> resp(200, Jason.encode!(@expected_json_data))
   end
 
   def respond(conn, "GET", "/test_redir") do

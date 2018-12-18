@@ -1,5 +1,8 @@
 ## phoenix_integration Changelist
 
+### 0.6.0
+  * Moved from Poison to Jason for json parsing
+
 ### 0.5.3
   * Merged pull request #23 from jonasschmidt to support deeply nested forms.
   * Add Travis tests for elixir 1.7
