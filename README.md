@@ -18,6 +18,8 @@ exercise your application in as lightweight and readable manner as possible.
 
 I love the pipe `|>` command in Elixir. By using the pipe to chain together calls in an integration test, phoenix_integration is able to be very readable. Tight integration with Phoenix.ConnTest means the calls all use the fast-path to your application for speed.
 
+Version 0.6 moves from Poison to Jason for Phoenix 1.4 compatibility.
+
 ## Documentation
 
 You can read [the full documentation here](https://hexdocs.pm/phoenix_integration).
