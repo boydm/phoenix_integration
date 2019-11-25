@@ -42,7 +42,7 @@ defmodule PhoenixIntegration.Assertions do
     * `conditions` a list of conditions to test against. Conditions can include:
       * `:status` checks that `conn.status` equals the given numeric value
       * `:content_type` the conn's content-type header should contain the given text. Typical
-        values are `"text/html"` or `"applicaiton/json"`
+        values are `"text/html"` or `"application/json"`
       * `:body` conn.resp_body should contain the given text. Does not check the content_type.
       * `:html` checks that content_type is html, then looks for the given text in the body.
       * `:json` checks that content_type is json, then checks that the json data equals the given map.
