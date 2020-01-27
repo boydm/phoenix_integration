@@ -1,5 +1,9 @@
 ## phoenix_integration Changelist
 
+### 0.6.1
+  * changed a private functions "is_struct" to "do_is_struct" to avoid a conflict with
+    the new Kernel.is_struct function in Elixir v1.10
+
 ### 0.6.0
   * Moved from Poison to Jason for json parsing
 
