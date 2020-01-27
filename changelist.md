@@ -5,6 +5,7 @@
     the new Kernel.is_struct function in Elixir v1.10
   * Change the minimum required version of Floki to 0.24.0 and then use the new 
     Floki.parse_document pattern to get rid of the deprecation warnings.
+  * add .formatter.exs and format the code
 
 ### 0.6.0
   * Moved from Poison to Jason for json parsing
