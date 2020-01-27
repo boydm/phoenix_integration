@@ -1073,7 +1073,7 @@ defmodule PhoenixIntegration.Requests do
   defp merge_grouped_fields(map, form_action, fields) do
     Enum.reduce(fields, map, fn {k, v}, acc ->
       cond do
-        is_map(v) && !is_struct(v) ->
+        is_map(v) && !do_is_struct(v) ->
           sub_map = merge_grouped_fields(acc[k] || %{}, form_action, v)
           put_if_available!(acc, k, sub_map, form_action)
 
@@ -1156,7 +1156,7 @@ defmodule PhoenixIntegration.Requests do
     value
   end
 
-  defp is_struct(v) do
+  defp do_is_struct(v) do
     v |> Map.has_key?(:__struct__)
   end
 end
