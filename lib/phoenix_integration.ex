@@ -1,5 +1,4 @@
 defmodule PhoenixIntegration do
-
   @moduledoc """
   Lightweight server-side integration test functions for Phoenix. Works within the existing
   Phoenix.ConnTest framework and emphasizes both speed and readability.
@@ -205,8 +204,10 @@ defmodule PhoenixIntegration do
     quote do
       import PhoenixIntegration.Assertions
       import PhoenixIntegration.Requests
-    end # quote
-  end # defmacro
+    end
 
+    # quote
+  end
 
+  # defmacro
 end

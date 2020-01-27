@@ -9,7 +9,7 @@ defmodule PhoenixIntegration.Mixfile do
       app: :phoenix_integration,
       version: @version,
       elixir: "~> 1.4",
-      elixirc_paths: elixirc_paths(Mix.env),
+      elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       package: [
         contributors: ["Boyd Multerer"],
@@ -17,7 +17,8 @@ defmodule PhoenixIntegration.Mixfile do
         licenses: ["MIT"],
         links: %{
           "GitHub" => @url,
-          "Blog Post" => "https://medium.com/@boydm/integration-testing-phoenix-applications-b2a46acae9cb"
+          "Blog Post" =>
+            "https://medium.com/@boydm/integration-testing-phoenix-applications-b2a46acae9cb"
         }
       ],
       name: "phoenix_integration",
@@ -33,7 +34,7 @@ defmodule PhoenixIntegration.Mixfile do
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_),     do: ["lib"]
+  defp elixirc_paths(_), do: ["lib"]
 
   def application do
     [applications: [:phoenix]]
@@ -48,7 +49,7 @@ defmodule PhoenixIntegration.Mixfile do
 
       # Docs dependencies
       {:ex_doc, ">= 0.0.0", only: [:dev, :docs]},
-      {:inch_ex, ">= 0.0.0", only: :docs},
+      {:inch_ex, ">= 0.0.0", only: :docs}
       # {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end

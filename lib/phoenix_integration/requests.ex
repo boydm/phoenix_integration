@@ -670,7 +670,6 @@ defmodule PhoenixIntegration.Requests do
   defp find_html_link(html, identifier, "get") do
     identifier = String.trim(identifier)
 
-
     # Newer versions of Floki require parse_document to be explicitly called before use
     {:ok, parsed_html} = Floki.parse_document(html)
 
@@ -825,7 +824,7 @@ defmodule PhoenixIntegration.Requests do
   defp find_html_button(html, identifier, method) do
     identifier = String.trim(identifier)
 
-        # Newer versions of Floki require parse_document to be explicitly called before use
+    # Newer versions of Floki require parse_document to be explicitly called before use
     {:ok, parsed_html} = Floki.parse_document(html)
 
     # scan all links, return the first where either the path or the content
@@ -904,10 +903,8 @@ defmodule PhoenixIntegration.Requests do
         other -> to_string(other)
       end
 
-
     # Newer versions of Floki require parse_document to be explicitly called before use
     {:ok, parsed_html} = Floki.parse_document(html)
-   
 
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
