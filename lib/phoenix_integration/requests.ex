@@ -670,9 +670,12 @@ defmodule PhoenixIntegration.Requests do
   defp find_html_link(html, identifier, "get") do
     identifier = String.trim(identifier)
 
+    # Newer versions of Floki require parse_document to be explicitly called before use
+    {:ok, parsed_html} = Floki.parse_document(html)
+
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
-    Floki.find(html, "a")
+    Floki.find(parsed_html, "a")
     |> Enum.find_value(fn link ->
       {"a", _attribs, kids} = link
 
@@ -735,9 +738,12 @@ defmodule PhoenixIntegration.Requests do
   defp find_html_link(html, identifier, method) do
     identifier = String.trim(identifier)
 
+    # Newer versions of Floki require parse_document to be explicitly called before use
+    {:ok, parsed_html} = Floki.parse_document(html)
+
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
-    Floki.find(html, "a")
+    Floki.find(parsed_html, "a")
     |> Enum.find_value(fn link ->
       {"a", _attribs, kids} = link
 
@@ -818,9 +824,12 @@ defmodule PhoenixIntegration.Requests do
   defp find_html_button(html, identifier, method) do
     identifier = String.trim(identifier)
 
+    # Newer versions of Floki require parse_document to be explicitly called before use
+    {:ok, parsed_html} = Floki.parse_document(html)
+
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
-    Floki.find(html, "button")
+    Floki.find(parsed_html, "button")
     |> Enum.find_value(fn button ->
       {"button", _attribs, kids} = button
 
@@ -894,9 +903,12 @@ defmodule PhoenixIntegration.Requests do
         other -> to_string(other)
       end
 
+    # Newer versions of Floki require parse_document to be explicitly called before use
+    {:ok, parsed_html} = Floki.parse_document(html)
+
     # scan all links, return the first where either the path or the content
     # is equal to the identifier
-    Floki.find(html, form_finder)
+    Floki.find(parsed_html, form_finder)
     |> Enum.find_value(fn form ->
       {"form", _attribs, kids} = form
 
