@@ -1,6 +1,8 @@
 ## phoenix_integration Changelist
 
-### 0.6.1
+### 0.7.0
+  * __Marking this as 0.7.0 because it is requires a minor version update to Floki. Otherwise
+    the actual changes in phoenix_markdown are more patch-like...__
   * Changed a private functions "is_struct" to "do_is_struct" to avoid a conflict with
     the new Kernel.is_struct function in Elixir v1.10
   * Change the minimum required version of Floki to 0.24.0 and then use the new 
