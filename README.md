@@ -20,6 +20,8 @@ I love the pipe `|>` command in Elixir. By using the pipe to chain together call
 
 Version 0.6 moves from Poison to Jason for Phoenix 1.4 compatibility.
 
+Version 0.7 requires Floki 0.24.0 or higher. Otherwise it is a patch-like update.
+
 ## Documentation
 
 You can read [the full documentation here](https://hexdocs.pm/phoenix_integration).
