@@ -1017,7 +1017,6 @@ defmodule PhoenixIntegration.Requests do
   # ----------------------------------------------------------------------------
   defp build_form_data(form, form_action, fields) do
     form_data = get_form_data(form)
-
     # merge the data from the form and that provided by the test
     merge_grouped_fields(form_data, form_action, fields)
   end
@@ -1025,77 +1024,14 @@ defmodule PhoenixIntegration.Requests do
   # ----------------------------------------------------------------------------
   defp get_form_data(form) do
     %{}
-    |> build_form_by_input_type(form)
+    |> build_form_by_type(form, "input")
     |> build_form_by_type(form, "textarea")
     |> build_form_by_type(form, "select")
   end
 
-  defp build_form_by_input_type(acc, form) do
-    indexed_inputs = 
-      form
-      |> Floki.find("input")
-      |> Enum.with_index
-      |> Enum.map(fn {input, index} -> {index, input} end)
-
-    checkbox_indexes =
-      Enum.flat_map(indexed_inputs, fn {index, input} -> 
-           case Floki.attribute(input, "type") == ["checkbox"] do 
-             true -> [index]
-             false -> []
-           end
-      end)
-
-    {checkbox_map, remainder_map} =
-      indexed_inputs
-      |> Map.new
-      |> Map.split(checkbox_indexes)
-
-    checkbox_with_hidden = fn input, hidden_input ->
-      Floki.attr(input, "input", "value", fn _ ->
-        [value] = Floki.attribute(hidden_input, "value")
-        value
-      end)
-    end
-
-    checkbox_without_hidden = fn input ->
-      IO.inspect {:without, input}
-      input
-    end
-
-    reducer = fn {checkbox_index, checkbox}, {checkbox_acc, hidden_acc} ->
-      case Map.get(remainder_map, checkbox_index - 1) do
-        nil -> 
-          {[checkbox_without_hidden.(checkbox) | checkbox_acc],
-           hidden_acc}
-        other_input ->
-          if Floki.attribute(other_input, "name") == Floki.attribute(other_input, "name")
-          && Floki.attribute(other_input, "type") == ["hidden"] do
-            {[checkbox_with_hidden.(checkbox, other_input) | checkbox_acc],
-             [checkbox_index-1 | hidden_acc]}
-          else
-            {[checkbox_without_hidden.(checkbox) | checkbox_acc],
-             hidden_acc}
-          end
-      end
-    end
-
-    {checkbox_inputs, false_value_indexes} =
-      checkbox_map
-      |> Enum.reduce({[], []}, reducer)
-      
-    without_hidden =
-      Map.drop(remainder_map, false_value_indexes) |> Map.values
-
-    {"form", form_attrs, _} = form
-
-    new_form = {"form", form_attrs, without_hidden}
-    new_acc = build_form_from_inputs(acc, checkbox_inputs, "input")
-    build_form_by_type(new_acc, new_form, "input") |> IO.inspect
-    
-  end
-
-  defp build_form_from_inputs(acc, inputs, input_type) do
-    Enum.reduce(inputs, acc, fn input, acc ->
+  # ----------------------------------------------------------------------------
+  defp build_form_by_type(acc, form, input_type) do
+    Enum.reduce(Floki.find(form, input_type), acc, fn input, acc ->
       case input_to_key_value(input, input_type) do
         {:ok, input_map} ->
           merge_input(acc, input_map)
@@ -1105,16 +1041,7 @@ defmodule PhoenixIntegration.Requests do
           acc
       end
     end)
-  end 
-  
-
-  
-
-  # ----------------------------------------------------------------------------
-  defp build_form_by_type(acc, form, input_type) do
-    build_form_from_inputs(acc, Floki.find(form, input_type), input_type)
   end
-
 
   defp merge_input(acc, input_map) do
     Enum.reduce(input_map, acc, fn {k, v}, acc ->
