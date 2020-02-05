@@ -1,4 +1,5 @@
-defmodule PhoenixIntegration.MetaValue do
+defmodule PhoenixIntegration.Form.MetaValue do
+  import PhoenixIntegration.Form.Tag
 
   defstruct values: nil, metadata: %{}
 

@@ -1,8 +1,8 @@
 defmodule PhoenixIntegration.Details.TagTest do
   use ExUnit.Case, async: true
   import PhoenixIntegration.Assertions.Map
+  import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.Tag
-  
 
   describe "common transformations" do
     test "single-valued names" do
@@ -12,7 +12,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> Floki.parse_fragment!
 
       floki_tag
-      |> new_for_success("some_tag_name")
+      |> Tag.new!("some_tag_name")
       |> assert_fields(has_array_value: false,
                        values: ["x"],
                        name: "top_level[animal]",
@@ -29,7 +29,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> Floki.parse_fragment!
 
       floki_tag
-      |> new_for_success("some_tag_name")
+      |> Tag.new!("some_tag_name")
       |> assert_fields(has_array_value: true,
                        values: ["x"],
                        name: "top_level[animals][]",
@@ -44,7 +44,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     <input type="text" name="top_level[name]" value="name">
     """
     |> Floki.parse_fragment!
-    |> new_for_success("input")
+    |> Tag.new!("input")
     |> assert_field(type: "text")
   end
 
@@ -85,16 +85,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     end
   end
 
-  defp new_for_success(floki_tag, tag_name) do
-    {:ok, tag} = Tag.new(floki_tag, tag_name)
-    tag
-  end
-  
-  defp input_to_tag(fragment),
-    do: Floki.parse_fragment!(fragment) |> new_for_success("input")
-
   defp assert_input_values(fragment, values) do
     assert input_to_tag(fragment).values == values
   end
-  
 end

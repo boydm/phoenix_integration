@@ -40,6 +40,10 @@ defmodule PhoenixIntegration.Form.Tag do
   # Note the case where a form uses integer ids as keys (as in a list of
   # checkboxes from which a user will select a set of animals).
 
+  def new!(floki_tag, tag_name) do
+    {:ok, %__MODULE__{} = tag} = new(floki_tag, tag_name)
+    tag
+  end
 
   def new(floki_tag, tag_name) do
     [name] = Floki.attribute(floki_tag, "name")
