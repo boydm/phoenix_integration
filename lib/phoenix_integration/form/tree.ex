@@ -16,16 +16,18 @@ defmodule PhoenixIntegration.Form.Tree do
     end
   end
 
-  def add_tag(tree, [last], %Tag{} = tag) do
+  defp add_tag(tree, [last], %Tag{} = tag) do
     case Map.get(tree, last) do
       nil ->
         Map.put_new(tree, last, tag)
       %Tag{} ->
-        3 # Map.update!(tree, last, &(combine_values &1, tag))
+        Map.update!(tree, last, &(combine_values &1, tag))
+      _ ->
+        throw :lost_value
     end
   end
 
-  def add_tag(tree, [next | rest], %Tag{} = tag) do
+  defp add_tag(tree, [next | rest], %Tag{} = tag) do
     case Map.get(tree, next) do
       %Tag{} -> # we've reached a leaf but new Tag has path left
         throw :lost_value
@@ -36,4 +38,21 @@ defmodule PhoenixIntegration.Form.Tree do
     end
   end
 
+  defp combine_values(earlier_tag, later_tag) do
+    case {earlier_tag.type, later_tag.type, earlier_tag.has_array_value} do
+      {"hidden", "checkbox", _} ->
+        implement_hidden_hack(earlier_tag, later_tag)
+      {_, _, false} ->
+        later_tag
+      {_, _, true} ->
+        %{earlier_tag | values: earlier_tag.values ++ later_tag.values}
+    end
+  end
+
+  defp implement_hidden_hack(hidden_tag, checkbox_tag) do
+    case checkbox_tag.values == [] do
+      true -> hidden_tag
+      false -> checkbox_tag
+    end
+  end
 end  
