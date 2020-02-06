@@ -1,4 +1,4 @@
-defmodule PhoenixIntegration.Details.TreeTest do
+defmodule PhoenixIntegration.Details.TreeCreationTest do
   use ExUnit.Case, async: true
   import PhoenixIntegration.Assertions.Map
   import PhoenixIntegration.FormSupport
@@ -182,21 +182,5 @@ defmodule PhoenixIntegration.Details.TreeTest do
       |> assert_fields(values: ["replace"],
                        type: "checkbox")
     end
-  end
-
-
-  defp build_tree!(tags) when is_list(tags) do
-    Enum.reduce(tags, %{}, fn tag, acc ->
-      Tree.add_tag!(acc, tag)
-    end)
-  end
-
-  defp build_tree(tags) when is_list(tags) do
-    Enum.reduce_while(tags, %{}, fn tag, acc ->
-      case Tree.add_tag(acc, tag) do
-        {:ok, new_tree} -> {:cont, new_tree}
-        err -> {:halt, err}
-      end
-    end)
   end
 end
