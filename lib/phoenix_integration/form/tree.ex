@@ -1,11 +1,37 @@
 defmodule PhoenixIntegration.Form.Tree do
   alias PhoenixIntegration.Form.Tag
 
+  ### Main interface
+  
+  # Just a sketch
+  def build_tree(form) do
+    floki_tags = Floki.find(form, "input")
+    floki_tags
+    |> Enum.filter(fn floki_tag ->
+         [type] = Floki.attribute(floki_tag, "type")
+         type in ["text", "checkbox", "hidden"]
+       end)
+    |> Enum.reduce_while(%{}, fn floki_tag, acc ->
+         with(
+           {:ok, tag} <- Tag.new(floki_tag, "input"),
+           {:ok, new_tree} <- add_tag(acc, tag)
+         ) do
+           {:cont, new_tree}
+         else
+           err -> {:halt, err}
+         end
+       end)
+  end
+
+  def merge_user_tree(_form_data, _value_tree) do
+  end
+
+  #### Helpers, some exposed to tests
+  
   def add_tag!(tree, %Tag{} = tag) do
     {:ok, new_tree} = add_tag(tree, tag)
     new_tree
   end
-
   
   def add_tag(tree, %Tag{} = tag) do
     try do
@@ -55,4 +81,7 @@ defmodule PhoenixIntegration.Form.Tree do
       false -> checkbox_tag
     end
   end
+
+  
+  
 end  
