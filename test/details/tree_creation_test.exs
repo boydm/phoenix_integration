@@ -2,7 +2,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
   use ExUnit.Case, async: true
   import PhoenixIntegration.Assertions.Map
   import PhoenixIntegration.FormSupport
-  alias PhoenixIntegration.Form.Tree
+  alias PhoenixIntegration.Form.TreeCreation
 
   describe "adding tags that have no collisions" do
     test "into an empty tree" do
@@ -10,7 +10,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input type="text" name="top_level[param]" value="x">
       """ |> input_to_tag
 
-      assert Tree.add_tag!(%{}, tag) == %{top_level: %{param: tag}}
+      assert TreeCreation.add_tag!(%{}, tag) == %{top_level: %{param: tag}}
     end
 
     test "value at the same level" do

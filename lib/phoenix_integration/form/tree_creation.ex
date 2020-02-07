@@ -1,4 +1,4 @@
-defmodule PhoenixIntegration.Form.Tree do
+defmodule PhoenixIntegration.Form.TreeCreation do
   alias PhoenixIntegration.Form.Tag
 
   ### Main interface
