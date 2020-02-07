@@ -22,21 +22,13 @@ defmodule PhoenixIntegration.Form.TreeEdit do
 
   defp apply_change(tree, [last], %Change{} = change) do
     case Map.get(tree, last) do
-      nil ->
-        1 # Map.put_new(tree, last, change)
       %Tag{} = tag ->
         Map.put(tree, last, combine(tag, change))
-      _ ->
-        3 # throw :lost_value
     end
   end
 
   defp apply_change(tree, [next | rest], %Change{} = change) do
     case Map.get(tree, next) do
-      %Tag{} -> # we've reached a leaf but new Change has path left
-        4.5 # throw :lost_value
-      nil ->
-        5 # Map.put(tree, next, apply_change(%{}, rest, tag))
       _ -> 
         Map.update!(tree, next, &(apply_change &1, rest, change))
     end

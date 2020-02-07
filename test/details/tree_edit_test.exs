@@ -52,6 +52,18 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     end
   end
 
+  describe "error cases" do
+    @tag :skip
+    test "path of change is too short"
+    @tag :skip
+    test "path of change is too long"
+    @tag :skip
+    test "updating a scalar with an array"
+    @tag :skip
+    test "updating a list with a scalar"
+  end
+    
+
   defp require_ok({:ok, val}), do: val
 
   def assert_changed(new_tree, old_leaf, changes) do
