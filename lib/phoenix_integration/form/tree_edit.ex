@@ -1,48 +1,53 @@
 defmodule PhoenixIntegration.Form.TreeEdit do
-  alias PhoenixIntegration.Form.{UserValue, Tag}
+  @moduledoc """
+  Once a tree of `Tag` structures has been created, the values contained
+  within it can be overridden by leaves of a different tree provided by
+  a test.
+  """
+  alias PhoenixIntegration.Form.{Change, Tag}
 
-  def override!(tree, %UserValue{} = tag) do
-    {:ok, new_tree} = override(tree, tag)
+  def apply_change!(tree, %Change{} = tag) do
+    {:ok, new_tree} = apply_change(tree, tag)
     new_tree
   end
   
-  def override(tree, %UserValue{} = tag) do
+  def apply_change(tree, %Change{} = tag) do
     try do
-      {:ok, override(tree, tag.path, tag)}
+      {:ok, apply_change(tree, tag.path, tag)}
     catch
       error_code ->
         {:error, error_code}
     end
   end
 
-  defp override(tree, [last], %UserValue{} = user_value) do
+  defp apply_change(tree, [last], %Change{} = change) do
     case Map.get(tree, last) do
       nil ->
-        1 # Map.put_new(tree, last, user_value)
-      %UserValue{} ->
-        2 # Map.update!(tree, last, &(combine_values &1, user_value))
+        1 # Map.put_new(tree, last, change)
+      %Change{} ->
+        2 # Map.update!(tree, last, &(combine_values &1, change))
       %Tag{} = tag ->
-        Map.put(tree, last, combine(tag, user_value))
+        Map.put(tree, last, combine(tag, change))
       _ ->
         3 # throw :lost_value
     end
   end
 
-  defp override(tree, [next | rest], %UserValue{} = user_value) do
+  defp apply_change(tree, [next | rest], %Change{} = change) do
     case Map.get(tree, next) do
-      %UserValue{} -> # we've reached a leaf but new UserValue has path left
+      %Change{} -> # we've reached a leaf but new Change has path left
         4 # throw :lost_value
-      %Tag{} -> # we've reached a leaf but new UserValue has path left
+      %Tag{} -> # we've reached a leaf but new Change has path left
         4.5 # throw :lost_value
       nil ->
-        5 # Map.put(tree, next, override(%{}, rest, tag))
+        5 # Map.put(tree, next, apply_change(%{}, rest, tag))
       _ -> 
-        Map.update!(tree, next, &(override &1, rest, user_value))
+        Map.update!(tree, next, &(apply_change &1, rest, change))
     end
   end
   
 
-  def combine(%Tag{} = tag, %UserValue{} = user_value) do
-    %Tag{ tag | values: user_value.values}
+  def combine(%Tag{} = tag, %Change{} = change) do
+    %Tag{ tag | values: [change.value]}
   end
 end

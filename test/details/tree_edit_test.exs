@@ -2,7 +2,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
   use ExUnit.Case, async: true
   import PhoenixIntegration.Assertions.Map
   import PhoenixIntegration.FormSupport
-  alias PhoenixIntegration.Form.{TreeEdit, UserValue, Tag}
+  alias PhoenixIntegration.Form.{TreeEdit, Change, Tag}
 
   test "simple case" do
     first = """
@@ -19,9 +19,9 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     
     
     original = build_tree!([first, second, third])
-    replacement = UserValue.from(first, except: [values: ["zzzz"]])
+    change = Change.to(first.path, "zzzz")
     
-    TreeEdit.override(original, replacement)
+    TreeEdit.apply_change(original, change)
     |> require_ok
     |> refute_changed([second, third])
     |> assert_changed(first, values: ["zzzz"])
@@ -29,17 +29,17 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
 
   defp require_ok({:ok, val}), do: val
 
-  def assert_changed(tree, old_leaf, changes) do
-    get_in(tree, old_leaf.path)
+  def assert_changed(new_tree, old_leaf, changes) do
+    get_in(new_tree, old_leaf.path)
     |> assert_copy(old_leaf, except: changes)
   end
 
-  def refute_changed(tree, list) when is_list(list) do
-    for elt <- list, do: refute_changed(tree, elt)
-    tree
+  def refute_changed(new_tree, list) when is_list(list) do
+    for old_leaf <- list, do: refute_changed(new_tree, old_leaf)
+    new_tree
   end
   
-  def refute_changed(tree, %Tag{} = original_tag) do
-    tree
+  def refute_changed(new_tree, %Tag{} = old_leaf) do
+    assert get_in(new_tree, old_leaf.path) == old_leaf
   end
 end
