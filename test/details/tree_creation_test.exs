@@ -52,7 +52,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert actual == expected
     end
 
-    test "merging an array value" do
+    test "merging an list value" do
       first = """
         <input type="text" name="top_level[param]" value="x">
       """ |> input_to_tag
@@ -113,7 +113,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert build_tree!([first, second]) == %{top_level: %{param: second}}
     end
 
-    test "if the name is an array, new values add on" do
+    test "if the name is an list, new values add on" do
       first = """
         <input type="text" name="top_level[names][]" value="x">
       """ |> input_to_tag
@@ -127,7 +127,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert actual.values == ["x", "y"]
     end
 
-    test "the same behavior holds for checkbox arrays" do
+    test "the same behavior holds for checkbox lists" do
       first =  """
         <input type="checkbox" name="top_level[grades][]" checked="x" value="first">
       """ |> input_to_tag

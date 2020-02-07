@@ -13,7 +13,7 @@ defmodule PhoenixIntegration.Details.TagTest do
 
       floki_tag
       |> Tag.new!("some_tag_name")
-      |> assert_fields(has_array_value: false,
+      |> assert_fields(has_list_value: false,
                        values: ["x"],
                        name: "top_level[animal]",
                        path: [:top_level, :animal],
@@ -30,7 +30,7 @@ defmodule PhoenixIntegration.Details.TagTest do
 
       floki_tag
       |> Tag.new!("some_tag_name")
-      |> assert_fields(has_array_value: true,
+      |> assert_fields(has_list_value: true,
                        values: ["x"],
                        name: "top_level[animals][]",
                        path: [:top_level, :animals],
@@ -70,7 +70,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       """, ["on"]
     end
 
-    test "a checkbox that's part of an array has the same effect" do
+    test "a checkbox that's part of an list has the same effect" do
       assert_input_values """
         <input type="checkbox" name="top_level[grades][]" value="x">
       """, []

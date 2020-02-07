@@ -14,11 +14,11 @@ defmodule PhoenixIntegration.Form.Tag do
   """
 
   # There are two types of tags.
-  #   - some tags are associated with an array of values. Those tags
+  #   - some tags are associated with an list of values. Those tags
   #     will have named ending in `[]`: `name="animal[nicknames][]`.
   #   - others have one value, or occasionally zero values (such as an
   #     unchecked checkbox).
-  defstruct has_array_value: false,
+  defstruct has_list_value: false,
     # To accommodate the different tags, values are always stored in a
     # list. The empty list represents a tag without a value.
     values: [],
@@ -74,16 +74,16 @@ defmodule PhoenixIntegration.Form.Tag do
   end
 
   defp add_fields_that_depend_on_name(so_far) do
-    has_array_value = String.ends_with?(so_far.name, "[]")
+    has_list_value = String.ends_with?(so_far.name, "[]")
     path =
-      case has_array_value do
+      case has_list_value do
         false -> path_to(so_far.name)
         true -> path_to(String.trim_trailing(so_far.name, "[]"))
       end
 
     %{ so_far |
        path: path,
-       has_array_value: has_array_value}
+       has_list_value: has_list_value}
   end
 
   defp add_values(so_far) do

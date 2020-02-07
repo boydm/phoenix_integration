@@ -70,7 +70,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   end
 
   defp combine_values(earlier_tag, later_tag) do
-    case {earlier_tag.type, later_tag.type, earlier_tag.has_array_value} do
+    case {earlier_tag.type, later_tag.type, earlier_tag.has_list_value} do
       {"hidden", "checkbox", _} ->
         implement_hidden_hack(earlier_tag, later_tag)
       {_, _, false} ->

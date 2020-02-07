@@ -24,8 +24,6 @@ defmodule PhoenixIntegration.Form.TreeEdit do
     case Map.get(tree, last) do
       nil ->
         1 # Map.put_new(tree, last, change)
-      %Change{} ->
-        2 # Map.update!(tree, last, &(combine_values &1, change))
       %Tag{} = tag ->
         Map.put(tree, last, combine(tag, change))
       _ ->
@@ -35,8 +33,6 @@ defmodule PhoenixIntegration.Form.TreeEdit do
 
   defp apply_change(tree, [next | rest], %Change{} = change) do
     case Map.get(tree, next) do
-      %Change{} -> # we've reached a leaf but new Change has path left
-        4 # throw :lost_value
       %Tag{} -> # we've reached a leaf but new Change has path left
         4.5 # throw :lost_value
       nil ->
@@ -48,6 +44,11 @@ defmodule PhoenixIntegration.Form.TreeEdit do
   
 
   def combine(%Tag{} = tag, %Change{} = change) do
-    %Tag{ tag | values: [change.value]}
+    case {is_list(change.value), tag.has_list_value} do
+      {true, true} -> 
+        %Tag{ tag | values: change.value}
+      {false, false} ->
+        %Tag{ tag | values: [change.value]}
+    end
   end
 end

@@ -4,27 +4,52 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.{TreeEdit, Change, Tag}
 
-  test "simple case" do
-    first = """
-    <input type="text" name="top_level[first]" value="x">
+  @shallow """
+        <input type="text" name="top_level[first]" value="first value">
+      """ |> input_to_tag
+      
+  @deeper """
+        <input type="text" name="top_level[second][deeper]" value="deeper value">
+      """ |> input_to_tag
+
+  @original_tree build_tree!([
+    @shallow,
+    @deeper,
+    """
+      <input type="text" name="top_level[list][]" value="list 1"">
+    """ |> input_to_tag,
+    """
+      <input type="text" name="top_level[list][]" value="list 2"">
     """ |> input_to_tag
+    ])
     
-    second = """
-    <input type="text" name="top_level[param][deeper]" value="y">
-    """ |> input_to_tag
+  @list get_in(@original_tree, [:top_level, :list])
+
+  describe "successful updates" do
+    test "update a scalar" do 
+      change = Change.to(@shallow.path, "different value")
+      
+      TreeEdit.apply_change(@original_tree, change)
+      |> require_ok
+      |> refute_changed([@deeper, @list])
+      |> assert_changed(@shallow, values: ["different value"])
+    end
     
-    third = """
-    <input type="text" name="top_level[param][wider]" value="z">
-    """ |> input_to_tag
-    
-    
-    original = build_tree!([first, second, third])
-    change = Change.to(first.path, "zzzz")
-    
-    TreeEdit.apply_change(original, change)
-    |> require_ok
-    |> refute_changed([second, third])
-    |> assert_changed(first, values: ["zzzz"])
+    test "update a deeper one, just for fun" do 
+      change = Change.to(@deeper.path, "different value")
+      
+      TreeEdit.apply_change(@original_tree, change)
+      |> require_ok
+      |> assert_changed(@deeper, values: ["different value"])
+    end
+
+    test "update an list" do 
+      change = Change.to(@list.path, ["different", "values"])
+      
+      TreeEdit.apply_change(@original_tree, change)
+      |> require_ok
+      |> assert_changed(@list, values: ["different", "values"])
+    end
   end
 
   defp require_ok({:ok, val}), do: val
