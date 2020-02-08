@@ -10,6 +10,8 @@ defmodule PhoenixIntegration.FormSupport do
     end)
   end
 
+  def build_tree!(tag), do: build_tree!([tag])
+
   def build_tree(tags) when is_list(tags) do
     Enum.reduce_while(tags, %{}, fn tag, acc ->
       case TreeCreation.add_tag(acc, tag) do
