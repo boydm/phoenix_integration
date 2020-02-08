@@ -1,7 +1,7 @@
 defmodule PhoenixIntegration.CheckboxTest do
   use ExUnit.Case, async: true
   use Phoenix.ConnTest
-  import PhoenixIntegration.Requests, only: [test_build_form_data: 3]
+  import PhoenixIntegration.Requests, only: [test_build_form_data__2: 3]
   @endpoint PhoenixIntegration.TestEndpoint
 
   @form_action "/form"
@@ -43,12 +43,11 @@ defmodule PhoenixIntegration.CheckboxTest do
       assert_name_type_value(checkbox2, "animals[chosen][2]", "checkbox", "true")
     end
 
-    @tag :skip ## THIS FAILS
     test "if not 'checked' by the test, the default (hidden) values are used",
       %{form_with_hidden: form} do
       
       %{animals: %{chosen: checked}} =
-        test_build_form_data(form, @form_action, %{})
+        test_build_form_data__2(form, @form_action, %{})
       assert checked == %{"1": "false", "2": "false"}
       # ^^^ Both values are currently "true", which is not what should
       # be sent to the backend.
@@ -61,7 +60,7 @@ defmodule PhoenixIntegration.CheckboxTest do
     # if they are to be sent correctly.
     test "setting all the values", %{form_with_hidden: form} do
       %{animals: %{chosen: checked}} =
-        test_build_form_data(form, @form_action, %{animals: %{chosen: 
+        test_build_form_data__2(form, @form_action, %{animals: %{chosen: 
           %{:"1" => "false", :"2" => "true"}}})
 
       # Note that you have to convert what I think most people would
@@ -101,15 +100,14 @@ defmodule PhoenixIntegration.CheckboxTest do
       #
       #  %{animals: %{chosen: %{}}}
       assert %{animals: %{}} =
-        test_build_form_data(form, @form_action, %{})
+        test_build_form_data__2(form, @form_action, %{})
     end
 
-    @tag :skip  ## THIS FAILS
     test "if one value is checked in the test, only that value is sent",
       %{form_without_hidden: form} do
 
       %{animals: %{chosen: checked}} =
-        test_build_form_data(form, @form_action, %{animals: %{chosen: 
+        test_build_form_data__2(form, @form_action, %{animals: %{chosen: 
           %{:"1" => "true"}}})
 
       assert checked == %{:"1" => "true"}
@@ -120,7 +118,7 @@ defmodule PhoenixIntegration.CheckboxTest do
       %{form_without_hidden: form} do
 
       %{animals: %{chosen: checked}} =
-        test_build_form_data(form, @form_action, %{animals: %{chosen: 
+        test_build_form_data__2(form, @form_action, %{animals: %{chosen: 
           %{:"1" => "true", :"2" => "true"}}})
 
       assert checked == %{:"1" => "true", :"2" => "true"}
@@ -133,10 +131,15 @@ defmodule PhoenixIntegration.CheckboxTest do
       # We could say "well, just don't ever set a value to false then" but
       # someone might do that to better mimic what a bunch of checkboxes would
       # look like on the screen. Nicer not to surprise them.
+
+      # Later: it's not actually possible to tell what's an actual false
+      # value. We'd have to add something like this:
+      #
+      # %{:"1" => :checked, :"2" => :unchecked}}})
       %{form_without_hidden: form} do
 
       %{animals: %{chosen: checked}} =
-        test_build_form_data(form, @form_action, %{animals: %{chosen: 
+        test_build_form_data__2(form, @form_action, %{animals: %{chosen: 
           %{:"1" => "true", :"2" => "false"}}})
 
       assert checked == %{:"1" => "true"}

@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
-  alias PhoenixIntegration.Form.Tree
+  alias PhoenixIntegration.Form.{TreeCreation, TreeEdit, TreeFinish}
 
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
@@ -686,6 +686,10 @@ defmodule PhoenixIntegration.Requests do
     def test_build_form_data(form, form_action, fields) do
       build_form_data(form, form_action, fields)
     end
+
+    def test_build_form_data__2(form, form_action, fields) do
+      build_form_data__2(form, form_action, fields)
+    end
   end
 
   # ----------------------------------------------------------------------------
@@ -1068,9 +1072,13 @@ defmodule PhoenixIntegration.Requests do
   end
 
   defp build_form_data__2(form, _form_action, user_tree) do
-    form
-    |> Tree.build_tree
-    |> Tree.merge_user_tree(user_tree)
+    {:ok, edited} =
+      form
+      |> TreeCreation.build_tree
+      |> TreeEdit.apply_edits(user_tree)
+
+    
+    TreeFinish.to_action_params(edited) |> IO.inspect
   end
   
   # defp build_form_data__3(form, user_tree) do
