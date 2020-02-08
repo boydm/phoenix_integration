@@ -43,7 +43,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
       |> assert_changed(@deeper, values: ["different value"])
     end
 
-    test "update an list" do 
+    test "update a list" do 
       change = Change.to(@list.path, ["different", "values"])
       
       TreeEdit.apply_change(@original_tree, change)
@@ -62,6 +62,19 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     @tag :skip
     test "updating a list with a scalar"
   end
+
+  test "applying user edits" do
+    edits = %{top_level:
+              %{second: %{deeper: "new deeper value"},
+                list: ["shorter list"]}
+             }
+
+    TreeEdit.apply_edits(@original_tree, edits)
+    |> require_ok
+    |> assert_changed(@deeper, values: ["new deeper value"])
+    |> assert_changed(@list, values: ["shorter list"])
+    |> refute_changed(@shallow)
+  end
     
 
   defp require_ok({:ok, val}), do: val
@@ -69,6 +82,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
   def assert_changed(new_tree, old_leaf, changes) do
     get_in(new_tree, old_leaf.path)
     |> assert_copy(old_leaf, except: changes)
+    new_tree
   end
 
   def refute_changed(new_tree, list) when is_list(list) do

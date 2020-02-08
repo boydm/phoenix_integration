@@ -28,9 +28,6 @@ defmodule PhoenixIntegration.Form.TreeCreation do
        end)
   end
 
-  def merge_user_tree(_form_data, _value_tree) do
-  end
-
   #### Helpers, some exposed to tests
   
   def add_tag!(tree, %Tag{} = tag) do

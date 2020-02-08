@@ -6,6 +6,23 @@ defmodule PhoenixIntegration.Form.TreeEdit do
   """
   alias PhoenixIntegration.Form.{Change, Tag}
 
+  def apply_edits(tree, edit_tree) do
+    changes = Change.changes(edit_tree)
+    
+    reducer = fn change, {tree_so_far, errors_so_far} ->
+      case apply_change(tree_so_far, change) do
+        {:ok, new_tree} ->
+          {new_tree, errors_so_far}
+        {:error, error} ->
+          {tree_so_far, [error | errors_so_far]}
+      end
+    end
+
+    {new_tree, _errors} = Enum.reduce(changes, {tree, []}, reducer)
+    {:ok, new_tree}
+  end
+  
+
   def apply_change!(tree, %Change{} = tag) do
     {:ok, new_tree} = apply_change(tree, tag)
     new_tree
