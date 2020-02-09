@@ -7,6 +7,7 @@ case Mix.env() do
     config :phoenix_integration,
       endpoint: PhoenixIntegration.TestEndpoint
 
+    config :phoenix, :json_library, Jason
   _ ->
     nil
 end
