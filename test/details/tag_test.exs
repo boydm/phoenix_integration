@@ -163,6 +163,29 @@ defmodule PhoenixIntegration.Details.TagTest do
     end
   end
 
+  describe "radio buttons" do
+    test "checked" do 
+      """
+      <input name="user[role]" type="radio" value="admin" checked>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: ["admin"],
+                      name: "user[role]",
+                      has_list_value: false)
+    end
+
+
+    test "unchecked" do 
+      """
+      <input name="user[role]" type="radio" value="admin">
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: [])
+    end
+  end
+
   
 
   defp assert_input_values(fragment, values) do

@@ -124,6 +124,13 @@ defmodule PhoenixIntegration.Form.Tag do
     end
   end
 
+  defp calculate_values(%{type: "radio"} = so_far, raw_values) do
+    case so_far.checked do 
+      true -> raw_values
+      false -> []
+    end
+  end
+
   defp calculate_values(_so_far, raw_values), do: raw_values
 
   defp path_to(name) do

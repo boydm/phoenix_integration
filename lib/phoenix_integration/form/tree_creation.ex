@@ -28,7 +28,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   def form_tags(form, "input") do
     form
     |> Floki.find("input")
-    |> filter_types(["text", "checkbox", "hidden"])
+    |> filter_types(["text", "checkbox", "hidden", "radio"])
   end
 
   def form_tags(form, "textarea"), do: Floki.find(form, "textarea")
