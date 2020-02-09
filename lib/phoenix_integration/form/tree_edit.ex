@@ -18,8 +18,12 @@ defmodule PhoenixIntegration.Form.TreeEdit do
       end
     end
 
-    {new_tree, _errors} = Enum.reduce(changes, {tree, []}, reducer)
-    {:ok, new_tree}
+    case Enum.reduce(changes, {tree, []}, reducer) do
+      {new_tree, []} -> 
+        {:ok, new_tree}
+      {_, errors} ->
+        {:error, errors}
+    end
   end
 
   def apply_change!(tree, %Change{} = tag) do
@@ -31,8 +35,8 @@ defmodule PhoenixIntegration.Form.TreeEdit do
     try do
       {:ok, apply_change(tree, tag.path, tag)}
     catch
-      error_code ->
-        {:error, error_code}
+      description ->
+        {:error, {description, tag}}
     end
   end
 
@@ -40,6 +44,8 @@ defmodule PhoenixIntegration.Form.TreeEdit do
     case Map.get(tree, last) do
       %Tag{} = tag ->
         Map.put(tree, last, combine(tag, change))
+      _ ->
+        throw :no_such_name_in_form
     end
   end
 
@@ -49,7 +55,6 @@ defmodule PhoenixIntegration.Form.TreeEdit do
         Map.update!(tree, next, &(apply_change &1, rest, change))
     end
   end
-  
 
   def combine(%Tag{} = tag, %Change{} = change) do
     case {is_list(change.value), tag.has_list_value} do
