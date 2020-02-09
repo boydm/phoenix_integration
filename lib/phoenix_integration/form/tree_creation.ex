@@ -83,6 +83,8 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     case {earlier_tag.type, later_tag.type, earlier_tag.has_list_value} do
       {"hidden", "checkbox", _} ->
         implement_hidden_hack(earlier_tag, later_tag)
+      {"radio", "radio", false} ->
+        implement_radio(earlier_tag, later_tag)
       {_, _, false} ->
         later_tag
       {_, _, true} ->
@@ -97,6 +99,10 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     end
   end
 
-  
-  
+  defp implement_radio(earlier_tag, current_tag) do
+    case current_tag.values == [] do
+      true -> earlier_tag
+      false -> current_tag
+    end
+  end
 end  

@@ -183,4 +183,43 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
                        type: "checkbox")
     end
   end
+
+  describe "radio buttons" do
+    setup do
+      checked =
+        """
+         <input type="radio" name="top_level[contact]" value="email" checked>
+        """ |> input_to_tag
+      unchecked =
+        """
+         <input type="radio" name="top_level[contact]" value="phone">
+        """ |> input_to_tag
+
+      [checked: checked, unchecked: unchecked]
+    end
+    
+
+    test "checked radio replaces the unchecked value",
+      %{checked: checked, unchecked: unchecked} do
+
+      %{top_level: %{contact: actual}} = build_tree!([unchecked, checked])
+      assert_field(actual, values: ["email"])
+    end
+
+    test "unchecked radio does not replace the checked value",
+      %{checked: checked, unchecked: unchecked} do
+
+      %{top_level: %{contact: actual}} = build_tree!([checked, unchecked])
+      assert_field(actual, values: ["email"])
+    end
+
+    test "it's fine for there to be no checked button",
+      %{unchecked: unchecked} do
+
+      %{top_level: %{contact: actual}} = build_tree!(unchecked)
+      assert_field(actual, values: [])
+    end
+
+  end
+
 end

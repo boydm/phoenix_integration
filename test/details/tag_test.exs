@@ -156,10 +156,10 @@ defmodule PhoenixIntegration.Details.TagTest do
       """
       |> Floki.parse_fragment!
       |> Tag.new!
-      |> assert_field(values: ["1", "3"],
-                      name: "user[roles][]",
-                      path: [:user, :roles],
-                      has_list_value: true)
+      |> assert_fields(values: ["1", "3"],
+                       name: "user[roles][]",
+                       path: [:user, :roles],
+                       has_list_value: true)
     end
   end
 
@@ -170,11 +170,10 @@ defmodule PhoenixIntegration.Details.TagTest do
       """
       |> Floki.parse_fragment!
       |> Tag.new!
-      |> assert_field(values: ["admin"],
-                      name: "user[role]",
-                      has_list_value: false)
+      |> assert_fields(values: ["admin"],
+                       name: "user[role]",
+                       has_list_value: false)
     end
-
 
     test "unchecked" do 
       """
@@ -183,6 +182,15 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> Floki.parse_fragment!
       |> Tag.new!
       |> assert_field(values: [])
+    end
+
+    test "checked, but no value" do
+      """
+      <input name="user[role]" type="radio" checked>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: ["on"])
     end
   end
 

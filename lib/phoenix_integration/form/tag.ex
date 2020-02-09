@@ -116,22 +116,22 @@ defmodule PhoenixIntegration.Form.Tag do
 
   # Special cases as described in
   # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/checkbox
-  defp apply_input_special_cases(%{type: "checkbox"} = so_far, raw_values) do
+  # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio  
+  defp apply_input_special_cases(%{type: "checkbox"} = so_far, raw_values),
+    do: tags_with_checked_attribute(so_far, raw_values)
+
+  defp apply_input_special_cases(%{type: "radio"} = so_far, raw_values),
+    do: tags_with_checked_attribute(so_far, raw_values)
+
+  defp apply_input_special_cases(_so_far, raw_values), do: raw_values
+
+  defp tags_with_checked_attribute(so_far, raw_values) do
     case {so_far.checked, raw_values} do 
       {true,[]} -> ["on"]
       {true,values} -> values
       {false,_} -> []
     end
   end
-
-  defp apply_input_special_cases(%{type: "radio"} = so_far, raw_values) do
-    case so_far.checked do 
-      true -> raw_values
-      false -> []
-    end
-  end
-
-  defp apply_input_special_cases(_so_far, raw_values), do: raw_values
 
   defp path_to(name) do
     name
