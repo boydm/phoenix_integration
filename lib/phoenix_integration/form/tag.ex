@@ -92,7 +92,23 @@ defmodule PhoenixIntegration.Form.Tag do
     %{so_far | values: [raw_value]}
   end    
     
-
+  defp add_values(%{tag: "select"} = so_far) do
+    case Floki.find(so_far.original, "option[selected]") do
+      [] ->
+        %{so_far | values: []}
+      selected_option -> 
+        case Floki.attribute(selected_option, "value") do
+          [] ->
+            # "if no value attribute is included, the value defaults to the
+            # text contained inside the element" -
+            # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+            %{so_far | values: [Floki.FlatText.get(selected_option)]}
+          values  -> 
+            %{so_far | values: values}
+        end
+    end
+  end    
+    
   defp add_values(so_far) do
     raw_values = Floki.attribute(so_far.original, "value")
     %{so_far | values: calculate_values(so_far, raw_values)}

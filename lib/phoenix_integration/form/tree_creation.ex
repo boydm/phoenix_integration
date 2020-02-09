@@ -8,9 +8,9 @@ defmodule PhoenixIntegration.Form.TreeCreation do
 
   ### Main interface
   
-  # Just a sketch
   def build_tree(form) do
-    form_tags(form, "input")
+    ["input", "textarea", "select"]
+    |> Enum.flat_map(fn tag_name -> form_tags(form, tag_name) end)
     |> Enum.reduce_while(%{}, fn floki_tag, acc ->
          with(
            {:ok, tag} <- Tag.new(floki_tag),
@@ -32,6 +32,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   end
 
   def form_tags(form, "textarea"), do: Floki.find(form, "textarea")
+  def form_tags(form, "select"), do: Floki.find(form, "select")
 
 
   def filter_types(floki_tags, allowed) do

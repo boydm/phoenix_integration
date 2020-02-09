@@ -97,6 +97,72 @@ defmodule PhoenixIntegration.Details.TagTest do
                      path: [:user, :story])
   end
 
+  describe "select" do
+    test "a scalar form with one value selected" do
+      """
+      <select class="form-control" id="user_type" name="user[type]">
+        <option value="type_one">One</option>
+        <option selected="selected" value="type_two">Two</option>
+        <option value="type_three">Three</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_fields(values: ["type_two"],
+                       has_list_value: false,
+                       tag: "select",
+                       name: "user[type]",
+                       path: [:user, :type])
+    end
+
+    # "if no value attribute is included, the value defaults to the
+    # text contained inside the element" -
+    # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+    test "a scalar form with no `value` attribute" do
+      """
+      <select class="form-control" id="user_type" name="user[type]">
+        <option>One</option>
+        <option selected="selected">Two</option>
+        <option>Three</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: ["Two"],
+                      has_list_value: false)
+    end
+
+    test "a simple form with no value selected" do
+      """
+      <select class="form-control" id="user_type" name="user[type]">
+        <option value="type_one">One</option>
+        <option value="type_two">Two</option>
+        <option value="type_three">Three</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: [],
+                      has_list_value: false)
+    end
+
+    test "a multiple select" do
+      """
+      <select id="user_roles" name="user[roles][]">
+        <option value="1" selected="selected">Admin</option>
+        <option value="2">Power User</option>
+        <option value="3" selected="selected">Plain User</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: ["1", "3"],
+                      name: "user[roles][]",
+                      path: [:user, :roles],
+                      has_list_value: true)
+    end
+  end
+
   
 
   defp assert_input_values(fragment, values) do
