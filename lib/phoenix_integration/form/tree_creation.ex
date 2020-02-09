@@ -18,7 +18,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
        end)
     |> Enum.reduce_while(%{}, fn floki_tag, acc ->
          with(
-           {:ok, tag} <- Tag.new(floki_tag, "input"),
+           {:ok, tag} <- Tag.new(floki_tag),
            {:ok, new_tree} <- add_tag(acc, tag)
          ) do
            {:cont, new_tree}

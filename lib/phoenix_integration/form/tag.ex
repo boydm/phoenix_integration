@@ -40,21 +40,21 @@ defmodule PhoenixIntegration.Form.Tag do
   # Note the case where a form uses integer ids as keys (as in a list of
   # checkboxes from which a user will select a set of animals).
 
-  def new!(floki_tag, tag_name) do
-    {:ok, %__MODULE__{} = tag} = new(floki_tag, tag_name)
+  def new!(floki_tag) do
+    {:ok, %__MODULE__{} = tag} = new(floki_tag)
     tag
   end
 
-  def new(floki_tag, tag_name) do
+  def new(floki_tag) do
     [name] = Floki.attribute(floki_tag, "name")
 
     case check_phoenix_conventions(name) do
-      :ok -> {:ok, safe_new(floki_tag, tag_name, name)}
+      :ok -> {:ok, safe_new(floki_tag, name)}
       otherwise -> otherwise
     end
   end
 
-  defp safe_new(floki_tag, tag_name, name) do
+  defp safe_new(floki_tag, name) do
     type =
       case Floki.attribute(floki_tag, "type") do
         [] -> nil
@@ -63,7 +63,7 @@ defmodule PhoenixIntegration.Form.Tag do
 
     checked = Floki.attribute(floki_tag, "checked") != []
     
-    %__MODULE__{tag: tag_name,
+    %__MODULE__{tag: tag_name(floki_tag),
                 original: floki_tag,
                 type: type,
                 name: name,
@@ -120,5 +120,8 @@ defmodule PhoenixIntegration.Form.Tag do
   defp separate_name_pieces(name), do: Regex.scan(~r/\w+/, name)
 
   defp symbolize(anything), do: to_string(anything) |> String.to_atom
-  
+
+  # Floki allows tags to come in two forms
+  defp tag_name([floki_tag]), do: tag_name(floki_tag)
+  defp tag_name({name, _, _}), do: name
 end

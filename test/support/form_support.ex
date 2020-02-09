@@ -2,7 +2,7 @@ defmodule PhoenixIntegration.FormSupport do
   alias PhoenixIntegration.Form.{Tag,TreeCreation}
 
   def input_to_tag(fragment),
-    do: Floki.parse_fragment!(fragment) |> Tag.new!("input")
+    do: Floki.parse_fragment!(fragment) |> Tag.new!
 
   def build_tree!(tags) when is_list(tags) do
     Enum.reduce(tags, %{}, fn tag, acc ->

@@ -12,7 +12,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> Floki.parse_fragment!
 
       floki_tag
-      |> Tag.new!("some_tag_name")
+      |> Tag.new!
       |> assert_fields(has_list_value: false,
                        values: ["x"],
                        name: "top_level[animal]",
@@ -29,7 +29,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> Floki.parse_fragment!
 
       floki_tag
-      |> Tag.new!("some_tag_name")
+      |> Tag.new!
       |> assert_fields(has_list_value: true,
                        values: ["x"],
                        name: "top_level[animals][]",
@@ -44,7 +44,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     <input type="text" name="top_level[name]" value="name">
     """
     |> Floki.parse_fragment!
-    |> Tag.new!("input")
+    |> Tag.new!
     |> assert_field(type: "text")
   end
 
