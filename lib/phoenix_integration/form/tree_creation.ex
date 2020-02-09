@@ -35,7 +35,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     floki_tags
     |> Enum.filter(fn floki_tag ->
          [type] = Floki.attribute(floki_tag, "type")
-         type in ["text", "checkbox", "hidden"]
+         type in allowed
        end)
   end 
   

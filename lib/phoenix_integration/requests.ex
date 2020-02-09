@@ -1078,7 +1078,7 @@ defmodule PhoenixIntegration.Requests do
       |> TreeEdit.apply_edits(user_tree)
 
     
-    TreeFinish.to_action_params(edited) |> IO.inspect
+    TreeFinish.to_action_params(edited)
   end
   
   # defp build_form_data__3(form, user_tree) do

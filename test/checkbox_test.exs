@@ -4,6 +4,8 @@ defmodule PhoenixIntegration.CheckboxTest do
   import PhoenixIntegration.Requests, only: [test_build_form_data__2: 3]
   @endpoint PhoenixIntegration.TestEndpoint
 
+  @form_action "/form"
+
   setup do
     [form_with_hidden: find_form("#with_hidden"),
      form_without_hidden: find_form("#without_hidden")]
