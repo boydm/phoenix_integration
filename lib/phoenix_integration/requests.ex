@@ -1,5 +1,6 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
+  alias PhoenixIntegration.Form.{TreeCreation, TreeEdit, TreeFinish}
 
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
@@ -447,6 +448,38 @@ defmodule PhoenixIntegration.Requests do
     request_path(conn, form_action, form_method, form_data)
   end
 
+
+
+  def submit_form__2(conn, fields, opts \\ %{})
+
+  def submit_form__2(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
+    submit_form__2(conn, fields, Enum.into(opts, %{}))
+  end
+
+  def submit_form__2(conn = %Plug.Conn{}, fields, opts) do
+    opts =
+      Map.merge(
+        %{
+          identifier: nil,
+          method: nil,
+          finder: "form"
+        },
+        opts
+      )
+
+    # find the form
+    {:ok, form_action, form_method, form} =
+      find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
+
+    # build the data to send to the action pointed to by the form
+    form_data = build_form_data__2(form, form_action, fields)
+
+    # use ConnCase to call the form's handler. return the new conn
+    request_path(conn, form_action, form_method, form_data)
+  end
+
+
+
   # ----------------------------------------------------------------------------
   @doc """
   Finds a form in conn.resp_body, fills out the fields with the given
@@ -494,6 +527,19 @@ defmodule PhoenixIntegration.Requests do
     opts = Map.merge(%{max_redirects: 5}, opts)
 
     submit_form(conn, fields, opts)
+    |> follow_redirect(opts.max_redirects)
+  end
+
+  def follow_form__2(conn, fields, opts \\ %{})
+
+  def follow_form__2(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
+    follow_form__2(conn, fields, Enum.into(opts, %{}))
+  end
+
+  def follow_form__2(conn = %Plug.Conn{}, fields, opts) do
+    opts = Map.merge(%{max_redirects: 5}, opts)
+
+    submit_form__2(conn, fields, opts)
     |> follow_redirect(opts.max_redirects)
   end
 
@@ -639,6 +685,10 @@ defmodule PhoenixIntegration.Requests do
 
     def test_build_form_data(form, form_action, fields) do
       build_form_data(form, form_action, fields)
+    end
+
+    def test_build_form_data__2(form, form_action, fields) do
+      build_form_data__2(form, form_action, fields)
     end
   end
 
@@ -1020,6 +1070,30 @@ defmodule PhoenixIntegration.Requests do
     # merge the data from the form and that provided by the test
     merge_grouped_fields(form_data, form_action, fields)
   end
+
+  defp build_form_data__2(form, _form_action, user_tree) do
+    {:ok, edited} =
+      form
+      |> TreeCreation.build_tree
+      |> TreeEdit.apply_edits(user_tree)
+
+    
+    TreeFinish.to_action_params(edited) |> IO.inspect
+  end
+  
+  # defp build_form_data__3(form, user_tree) do
+  #   with(
+  #     {:ok, initial_tree, warnings} <- Tree.build_tree(form),
+  #     {:ok, result} <- Tree.merge_user_tree(initial_tree, user_tree)
+  #   ) do
+  #     log_form_warnings(warnings, form)
+  #     result
+  #   else
+  #     {:error, errors} ->
+  #       log_form_errors(errors, form)
+  #       raise "Stopping."
+  #   end
+  # end
 
   # ----------------------------------------------------------------------------
   defp get_form_data(form) do
