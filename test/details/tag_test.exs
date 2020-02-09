@@ -7,7 +7,7 @@ defmodule PhoenixIntegration.Details.TagTest do
   describe "common transformations" do
     test "single-valued names" do
       floki_tag = """
-        <some_tag_name name="top_level[animal]" value="x">
+        <input name="top_level[animal]" value="x">
       """
       |> Floki.parse_fragment!
 
@@ -17,14 +17,14 @@ defmodule PhoenixIntegration.Details.TagTest do
                        values: ["x"],
                        name: "top_level[animal]",
                        path: [:top_level, :animal],
-                       tag: "some_tag_name",
+                       tag: "input",
                        original: floki_tag)
     end
 
     
     test "multi-valued ([]-ending) names" do
       floki_tag = """
-        <some_tag_name name="top_level[animals][]" value="x">
+        <input name="top_level[animals][]" value="x">
       """
       |> Floki.parse_fragment!
 
@@ -34,7 +34,7 @@ defmodule PhoenixIntegration.Details.TagTest do
                        values: ["x"],
                        name: "top_level[animals][]",
                        path: [:top_level, :animals],
-                       tag: "some_tag_name",
+                       tag: "input",
                        original: floki_tag)
     end
   end

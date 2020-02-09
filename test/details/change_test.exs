@@ -6,7 +6,7 @@ defmodule PhoenixIntegration.Details.ChangeTest do
 
   test "to" do
     tag = """
-      <some_tag_name name="top_level[animal]" value="x">
+      <input name="top_level[animal]" value="x">
     """
     |> input_to_tag
 

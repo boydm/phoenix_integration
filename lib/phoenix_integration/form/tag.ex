@@ -109,14 +109,14 @@ defmodule PhoenixIntegration.Form.Tag do
     end
   end    
     
-  defp add_values(so_far) do
+  defp add_values(%{tag: "input"} = so_far) do
     raw_values = Floki.attribute(so_far.original, "value")
-    %{so_far | values: calculate_values(so_far, raw_values)}
+    %{so_far | values: apply_input_special_cases(so_far, raw_values)}
   end
 
   # Special cases as described in
   # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/checkbox
-  defp calculate_values(%{type: "checkbox"} = so_far, raw_values) do
+  defp apply_input_special_cases(%{type: "checkbox"} = so_far, raw_values) do
     case {so_far.checked, raw_values} do 
       {true,[]} -> ["on"]
       {true,values} -> values
@@ -124,14 +124,14 @@ defmodule PhoenixIntegration.Form.Tag do
     end
   end
 
-  defp calculate_values(%{type: "radio"} = so_far, raw_values) do
+  defp apply_input_special_cases(%{type: "radio"} = so_far, raw_values) do
     case so_far.checked do 
       true -> raw_values
       false -> []
     end
   end
 
-  defp calculate_values(_so_far, raw_values), do: raw_values
+  defp apply_input_special_cases(_so_far, raw_values), do: raw_values
 
   defp path_to(name) do
     name
