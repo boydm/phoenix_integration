@@ -85,6 +85,20 @@ defmodule PhoenixIntegration.Details.TagTest do
     end
   end
 
+  test "textareas" do
+    """
+    <textarea class="form-control" id="user_story" name="user[story]">Initial user story</textarea>
+    """
+    |> Floki.parse_fragment!
+    |> Tag.new!
+    |> assert_fields(values: ["Initial user story"],
+                     tag: "textarea",
+                     name: "user[story]",
+                     path: [:user, :story])
+  end
+
+  
+
   defp assert_input_values(fragment, values) do
     assert input_to_tag(fragment).values == values
   end

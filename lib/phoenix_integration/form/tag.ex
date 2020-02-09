@@ -87,6 +87,12 @@ defmodule PhoenixIntegration.Form.Tag do
        has_list_value: has_list_value}
   end
 
+  defp add_values(%{tag: "textarea"} = so_far) do
+    raw_value = Floki.FlatText.get(so_far.original)
+    %{so_far | values: [raw_value]}
+  end    
+    
+
   defp add_values(so_far) do
     raw_values = Floki.attribute(so_far.original, "value")
     %{so_far | values: calculate_values(so_far, raw_values)}
@@ -101,6 +107,7 @@ defmodule PhoenixIntegration.Form.Tag do
       {false,_} -> []
     end
   end
+
   defp calculate_values(_so_far, raw_values), do: raw_values
 
   defp path_to(name) do

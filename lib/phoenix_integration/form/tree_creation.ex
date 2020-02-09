@@ -10,7 +10,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   
   # Just a sketch
   def build_tree(form) do
-    input_tags(form)
+    form_tags(form, "input")
     |> Enum.reduce_while(%{}, fn floki_tag, acc ->
          with(
            {:ok, tag} <- Tag.new(floki_tag),
@@ -25,11 +25,14 @@ defmodule PhoenixIntegration.Form.TreeCreation do
 
   #### Helpers, some exposed to tests
 
-  def input_tags(form) do
+  def form_tags(form, "input") do
     form
     |> Floki.find("input")
     |> filter_types(["text", "checkbox", "hidden"])
   end
+
+  def form_tags(form, "textarea"), do: Floki.find(form, "textarea")
+
 
   def filter_types(floki_tags, allowed) do
     floki_tags
