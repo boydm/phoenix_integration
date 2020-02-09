@@ -4,9 +4,6 @@ defmodule PhoenixIntegration.CheckboxTest do
   import PhoenixIntegration.Requests, only: [test_build_form_data__2: 3]
   @endpoint PhoenixIntegration.TestEndpoint
 
-  @form_action "/form"
-  @form_id "#with_hidden"
-
   setup do
     [form_with_hidden: find_form("#with_hidden"),
      form_without_hidden: find_form("#without_hidden")]
@@ -49,33 +46,26 @@ defmodule PhoenixIntegration.CheckboxTest do
       %{animals: %{chosen: checked}} =
         test_build_form_data__2(form, @form_action, %{})
       assert checked == %{"1": "false", "2": "false"}
-      # ^^^ Both values are currently "true", which is not what should
-      # be sent to the backend.
-      #
-      # Note that the keys in the `checked` map are actually atoms, not strings.
-      # That affects the following tests.
     end
 
-    # Because of the previous bug, you have to explicitly set 'unchecked' values
-    # if they are to be sent correctly.
+    test "set just one value, check that the other one is retained",
+      %{form_with_hidden: form} do
+
+      %{animals: %{chosen: checked}} =
+        test_build_form_data__2(form, @form_action, %{animals: %{chosen: 
+          %{:"2" => "true"}}})
+
+      assert checked == %{"1": "false", "2": "true"}
+    end
+
     test "setting all the values", %{form_with_hidden: form} do
       %{animals: %{chosen: checked}} =
         test_build_form_data__2(form, @form_action, %{animals: %{chosen: 
           %{:"1" => "false", :"2" => "true"}}})
 
-      # Note that you have to convert what I think most people would
-      # expect to be an integer or string to a symbol. In my code,
-      # I convert all the keys to atoms with:
-      #
-      #     fn key -> to_string(key) |> String.to_atom end
-
       assert checked == %{"1": "false", "2": "true"}
-      # Currently, you don't actually need to set the `2` value, since
-      # it defaults to "true", but it would be weird to only set the
-      # false pair.
     end
   end
-
 
   describe "without the hidden input" do 
     test "what a checkbox looks like",
@@ -111,7 +101,6 @@ defmodule PhoenixIntegration.CheckboxTest do
           %{:"1" => "true"}}})
 
       assert checked == %{:"1" => "true"}
-      # Currently, what comes back is definitely wrong: %{"1": "true", "2": "true"}
     end
 
     test "if all values are set, they're all sent",

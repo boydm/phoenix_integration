@@ -1,4 +1,5 @@
 defmodule PhoenixIntegration.Form.Tag do
+  alias PhoenixIntegration.Form.Util
 
   @moduledoc """
   This is a representation of a value-providing tag in a Phoenix-style
@@ -105,7 +106,7 @@ defmodule PhoenixIntegration.Form.Tag do
   defp path_to(name) do
     name
     |> separate_name_pieces
-    |> Enum.map(&(List.first(&1) |> symbolize))
+    |> Enum.map(&(List.first(&1) |> Util.symbolize))
   end
     
   defp check_phoenix_conventions(name) do
@@ -118,8 +119,6 @@ defmodule PhoenixIntegration.Form.Tag do
   end
 
   defp separate_name_pieces(name), do: Regex.scan(~r/\w+/, name)
-
-  defp symbolize(anything), do: to_string(anything) |> String.to_atom
 
   # Floki allows tags to come in two forms
   defp tag_name([floki_tag]), do: tag_name(floki_tag)
