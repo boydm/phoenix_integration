@@ -194,6 +194,18 @@ defmodule PhoenixIntegration.Details.TagTest do
     end
   end
 
+  describe "warning cases" do
+    test "no name" do
+      floki_tag = 
+      """
+      <input type="radio" checked>
+      """ |> Floki.parse_fragment!
+
+      assert {:warning, :tag_has_no_name, ^floki_tag} = Tag.new(floki_tag)
+    end
+    
+  end
+
   
 
   defp assert_input_values(fragment, values) do

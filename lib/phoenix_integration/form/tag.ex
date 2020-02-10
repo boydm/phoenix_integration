@@ -47,11 +47,13 @@ defmodule PhoenixIntegration.Form.Tag do
   end
 
   def new(floki_tag) do
-    [name] = Floki.attribute(floki_tag, "name")
-
-    case check_phoenix_conventions(name) do
-      :ok -> {:ok, safe_new(floki_tag, name)}
-      otherwise -> otherwise
+    with(
+      [name] <- Floki.attribute(floki_tag, "name"),
+      :ok <- check_phoenix_conventions(name)
+    ) do
+      {:ok, safe_new(floki_tag, name)}
+    else
+      [] -> {:warning, :tag_has_no_name, floki_tag}
     end
   end
 
