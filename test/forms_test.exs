@@ -149,13 +149,4 @@ defmodule PhoenixIntegration.FormsTest do
     assert user_params.tag.name == "new tag"
     assert user_params.friends[:"0"].address.city.zip == "67890"
   end
-
-  test "build form raises setting missing field", %{form: form} do
-    form_action = "/form"
-    user_data = Map.merge(@user_data, %{missing: "something"})
-
-    assert_raise RuntimeError, fn ->
-      PhoenixIntegration.Requests.test_build_form_data__2(form, form_action, user_data)
-    end
-  end
 end

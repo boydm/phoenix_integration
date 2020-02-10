@@ -3,6 +3,11 @@ defmodule PhoenixIntegration.Form.Messages do
   The various messages - both warnings and errors - that can be given to the user. 
   """
 
+  @messages %{
+    no_such_name_in_form: "Attempted to set missing input in form"
+  }
+  
+
   def emit(message_atom, form, data) when is_list(data),
     do: apply(__MODULE__, message_atom, [form | data])
 
@@ -11,17 +16,17 @@ defmodule PhoenixIntegration.Form.Messages do
 
   def no_such_name_in_form(form, change) do
     error(
-      form_description(form, "Attempted to set missing input in form") <>
+      form_description(form, :no_such_name_in_form) <>
       key_values([
         "Setting key", inspect(change.path),
         "And value", inspect(change.value),
       ]))
   end
 
-  defp form_description(form, msg) do
+  defp form_description(form, message_key) do
     [action] = Floki.attribute(form, "action")
     
-    "#{IO.ANSI.red()}#{msg}\n" <>
+    "#{IO.ANSI.red()}#{get(message_key)}\n" <>
       key_value("Form action", inspect action) <>
       case Floki.attribute(form, "id") do
         [] -> ""
@@ -40,5 +45,8 @@ defmodule PhoenixIntegration.Form.Messages do
     "#{IO.ANSI.green()}#{key}: #{IO.ANSI.red()}#{value}\n"
   end
   
-  defp error(msg), do: IO.puts msg
+  defp error(msg), do: IO.puts :stderr, msg
+
+  # This is used for testing.
+  def get(key), do: @messages[key]
 end
