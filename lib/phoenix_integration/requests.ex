@@ -1072,14 +1072,14 @@ defmodule PhoenixIntegration.Requests do
     merge_grouped_fields(form_data, form_action, fields)
   end
 
-  defp build_form_data__2(form, form_action, user_tree) do
+  defp build_form_data__2(form, _form_action, user_tree) do
     form_tree = TreeCreation.build_tree(form)
     case TreeEdit.apply_edits(form_tree, user_tree) do 
       {:ok, edited_tree} ->
         TreeFinish.to_action_params(edited_tree)
       {:error, errors} ->
         Enum.map(errors, fn {error_atom, data} ->
-          apply(Form.Messages, error_atom, [data, form, form_action])
+          Form.Messages.emit(error_atom, form, data)
         end)
         raise "Stopping"
     end

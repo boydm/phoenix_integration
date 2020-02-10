@@ -3,15 +3,42 @@ defmodule PhoenixIntegration.Form.Messages do
   The various messages - both warnings and errors - that can be given to the user. 
   """
 
-  def no_such_name_in_form(change, form, form_action) do
-    IO.puts """
-      #{IO.ANSI.red()}Attempted to set missing input in form
-      #{IO.ANSI.green()}Form action: #{IO.ANSI.red()}#{form_action}
-      #{IO.ANSI.green()}Setting key: #{IO.ANSI.red()}#{inspect change.path}
-      #{IO.ANSI.green()}And value: #{IO.ANSI.red()}#{inspect change.value}
-      #{IO.ANSI.green()}Into form: #{IO.ANSI.yellow()}
-      """ <> Floki.raw_html(form)
+  def emit(message_atom, form, data) when is_list(data),
+    do: apply(__MODULE__, message_atom, [form | data])
+
+  def emit(message_atom, form, data),
+    do: emit(message_atom, form, [data])
+
+  def no_such_name_in_form(form, change) do
+    error(
+      form_description(form, "Attempted to set missing input in form") <>
+      key_values([
+        "Setting key", inspect(change.path),
+        "And value", inspect(change.value),
+      ]))
   end
 
-end
+  defp form_description(form, msg) do
+    [action] = Floki.attribute(form, "action")
+    
+    "#{IO.ANSI.red()}#{msg}\n" <>
+      key_value("Form action", inspect action) <>
+      case Floki.attribute(form, "id") do
+        [] -> ""
+        [id] -> key_value("Form id", inspect id)
+      end
+  end
+
+  defp key_values(list) do
+    list
+    |> Enum.chunk_every(2)
+    |> Enum.map(fn [key, value] -> key_value(key, value) end)
+    |> Enum.join
+  end
   
+  defp key_value(key, value) do
+    "#{IO.ANSI.green()}#{key}: #{IO.ANSI.red()}#{value}\n"
+  end
+  
+  defp error(msg), do: IO.puts msg
+end
