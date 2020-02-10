@@ -4,15 +4,24 @@ defmodule PhoenixIntegration.Form.Messages do
   """
 
   @messages %{
-    no_such_name_in_form: "Attempted to set missing input in form"
+    no_such_name_in_form: "Attempted to set missing input in form",
+    tag_has_no_name: "A tag has no name",
   }
-  
 
-  def emit(message_atom, form, data) when is_list(data),
-    do: apply(__MODULE__, message_atom, [form | data])
+  def emit(message_tuples, form) do
+    Enum.map(message_tuples, fn {message_atom, data} ->
+      emit(message_atom, form, data)
+    end)
+  end
 
-  def emit(message_atom, form, data),
-    do: emit(message_atom, form, [data])
+
+  def emit(message_atom, form, data) when is_list(data) do
+    apply(__MODULE__, message_atom, [form | data])
+  end
+
+  def emit(message_atom, form, data) do
+    emit(message_atom, form, [data])
+  end
 
   def no_such_name_in_form(form, change) do
     error(
@@ -21,6 +30,10 @@ defmodule PhoenixIntegration.Form.Messages do
         "Setting key", inspect(change.path),
         "And value", inspect(change.value),
       ]))
+  end
+
+  def tag_has_no_name(form, floki_tag) do
+    warning(get(:tag_has_no_name))
   end
 
   defp form_description(form, message_key) do
@@ -45,7 +58,9 @@ defmodule PhoenixIntegration.Form.Messages do
     "#{IO.ANSI.green()}#{key}: #{IO.ANSI.red()}#{value}\n"
   end
   
-  defp error(msg), do: IO.puts :stderr, msg
+  defp error(msg), do: IO.puts "Error: #{msg}"
+
+  defp warning(msg), do: IO.puts "Warning: #{msg}"
 
   # This is used for testing.
   def get(key), do: @messages[key]

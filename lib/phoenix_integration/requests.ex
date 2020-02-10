@@ -691,6 +691,10 @@ defmodule PhoenixIntegration.Requests do
     def test_build_form_data__2(form, form_action, fields) do
       build_form_data__2(form, form_action, fields)
     end
+
+    def test_build_form_data__2(form, fields) do
+      build_form_data__2(form, fields)
+    end
   end
 
   # ----------------------------------------------------------------------------
@@ -1072,16 +1076,22 @@ defmodule PhoenixIntegration.Requests do
     merge_grouped_fields(form_data, form_action, fields)
   end
 
-  defp build_form_data__2(form, _form_action, user_tree) do
-    form_tree = TreeCreation.build_tree(form)
-    case TreeEdit.apply_edits(form_tree, user_tree) do 
-      {:ok, edited_tree} ->
-        TreeFinish.to_action_params(edited_tree)
-      {:error, errors} ->
-        Enum.map(errors, fn {error_atom, data} ->
-          Form.Messages.emit(error_atom, form, data)
-        end)
-        raise "Stopping"
+  IO.puts "Remove this version of build_form_data__2"
+  defp build_form_data__2(form, _form_action, user_tree),
+    do: build_form_data__2(form, user_tree)
+  
+  defp build_form_data__2(form, user_tree) do
+    with(
+      {:ok, form_tree, warnings} <- TreeCreation.build_tree(form)
+    ) do
+      Form.Messages.emit(warnings, form)
+      case TreeEdit.apply_edits(form_tree, user_tree) do 
+        {:ok, edited_tree} ->
+          TreeFinish.to_action_params(edited_tree)
+        {:error, errors} ->
+          Form.Messages.emit(errors, form)
+          raise "Stopping"
+      end
     end
   end
   

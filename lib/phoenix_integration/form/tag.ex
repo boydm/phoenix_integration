@@ -53,7 +53,8 @@ defmodule PhoenixIntegration.Form.Tag do
     ) do
       {:ok, safe_new(floki_tag, name)}
     else
-      [] -> {:warning, :tag_has_no_name, floki_tag}
+      [] ->
+        {:warning, :tag_has_no_name, floki_tag}
     end
   end
 

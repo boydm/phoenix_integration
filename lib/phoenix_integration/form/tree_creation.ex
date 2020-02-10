@@ -9,18 +9,20 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   ### Main interface
   
   def build_tree(form) do
-    ["input", "textarea", "select"]
-    |> Enum.flat_map(fn tag_name -> form_tags(form, tag_name) end)
-    |> Enum.reduce_while(%{}, fn floki_tag, acc ->
-         with(
-           {:ok, tag} <- Tag.new(floki_tag),
-           {:ok, new_tree} <- add_tag(acc, tag)
-         ) do
-           {:cont, new_tree}
-         else
-           err -> {:halt, err}
-         end
-       end)
+    {tree, warnings} = 
+      ["input", "textarea", "select"]
+      |> Enum.flat_map(fn tag_name -> form_tags(form, tag_name) end)
+
+      |> Enum.reduce({%{}, []}, fn floki_tag, {acc, warnings} ->
+      case Tag.new(floki_tag) do
+        {:ok, tag} -> 
+          {:ok, new_tree} = add_tag(acc, tag)
+          {new_tree, warnings}
+        {:warning, message_atom, data} ->
+          {acc, warnings ++ [{message_atom, data}]}
+      end
+    end)
+    {:ok, tree, warnings}
   end
 
   #### Helpers, some exposed to tests
