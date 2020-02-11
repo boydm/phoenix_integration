@@ -1082,15 +1082,15 @@ defmodule PhoenixIntegration.Requests do
   
   defp build_form_data__2(form, user_tree) do
     with(
-      {:ok, form_tree} <- TreeCreation.build_tree(form)
+      {:ok, created} <- TreeCreation.build_tree(form),
+      _ = Form.Messages.emit(created.warnings, form),
+      {:ok, edited} <- TreeEdit.apply_edits(created.tree, user_tree)
     ) do
-      case TreeEdit.apply_edits(form_tree, user_tree) do 
-        {:ok, edited_tree} ->
-          TreeFinish.to_action_params(edited_tree)
-        {:error, errors} ->
-          Form.Messages.emit(errors, form)
-          raise "Stopping"
-      end
+      TreeFinish.to_action_params(edited)
+    else
+      {:error, errors} ->
+        Form.Messages.emit(errors, form)
+        raise "Stopping"
     end
   end
   

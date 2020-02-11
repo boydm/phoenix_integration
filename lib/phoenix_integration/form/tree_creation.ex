@@ -5,7 +5,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   of a form tag that can provide values to POST-style parameters.
   """
   alias PhoenixIntegration.Form.Tag
-  alias PhoenixIntegration.Form
+  alias PhoenixIntegration.Form.Util
 
   defstruct valid?: :true, tree: %{}, warnings: [], errors: []
 
@@ -13,10 +13,9 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   
   def build_tree(form) do
     creation = form_to_floki_tags(form) |> build_tree_from_floki_tags
-    Form.Messages.emit(creation.warnings, form)
     case creation do
       %{valid?: true} ->
-        {:ok, creation.tree}
+        {:ok, creation}
     end
   end
 
@@ -29,10 +28,12 @@ defmodule PhoenixIntegration.Form.TreeCreation do
 
   def build_tree_from_floki_tags(tags) do
     reducer = fn floki_tag, acc ->
-      case Tag.new(floki_tag) do
-        {:ok, tag} -> 
-          {:ok, new_tree} = add_tag(acc.tree, tag)
-          %{acc | tree: new_tree}
+      with(
+        {:ok, tag} <- Tag.new(floki_tag),
+        {:ok, new_tree} = add_tag(acc.tree, tag)
+      ) do 
+        %{acc | tree: new_tree}
+      else
         {:warning, message_atom, data} ->
           %{acc | warnings: acc.warnings ++ [{message_atom, data}]}
       end
@@ -82,8 +83,8 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     try do
       {:ok, add_tag(tree, tag.path, tag)}
     catch
-      error_code ->
-        {:error, error_code}
+      {code, data} ->
+        {:warning, code, data}
     end
   end
 
@@ -94,14 +95,14 @@ defmodule PhoenixIntegration.Form.TreeCreation do
       %Tag{} ->
         Map.update!(tree, last, &(combine_values &1, tag))
       _ ->
-        throw :lost_value
+        throw {:replace_interior_node, %{old: Util.any_leaf(tree), new: tag}}
     end
   end
 
   defp add_tag(tree, [next | rest], %Tag{} = tag) do
     case Map.get(tree, next) do
-      %Tag{} -> # we've reached a leaf but new Tag has path left
-        throw :lost_value
+      %Tag{} = old -> # we've reached a leaf but new Tag has path left
+        throw {:replace_leaf, %{old: old, new: tag}}
       nil ->
         Map.put(tree, next, add_tag(%{}, rest, tag))
       _ -> 

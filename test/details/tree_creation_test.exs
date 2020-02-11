@@ -76,7 +76,8 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input name="top_level[param]" value="x">
       """
       form = form_for(snippet)
-      assert {:ok, %{top_level: %{param: tag}}} = TreeCreation.build_tree(form)
+      assert {:ok, created} = TreeCreation.build_tree(form)
+      assert %{top_level: %{param: tag}} = created.tree
       assert tag.type == "text"
     end
     
@@ -92,8 +93,8 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       """ |> input_to_tag
 
       
-      actual = build_tree([first, second])
-      assert actual == {:error, :lost_value}
+      {:warning, :replace_leaf, data} = build_tree([first, second])
+      assert_fields(data, old: first, new: second)
     end
 
     test "a path can't introduce a name when there's already a more deeply nested one" do
@@ -107,8 +108,8 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       """ |> input_to_tag
 
       
-      actual = build_tree([first, second])
-      assert actual == {:error, :lost_value}
+      {:warning, :replace_interior_node, data} = build_tree([first, second])
+      assert_fields(data, old: first, new: second)
     end
   end
 
