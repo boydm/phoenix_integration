@@ -7,6 +7,7 @@ defmodule PhoenixIntegration.Form.Messages do
     no_such_name_in_form: "You tried to set the value of a tag that isn't in the form.",
     tag_has_no_name: "A form entry has no name.",
     empty_name: "A tag has an empty name.",
+    form_conflicting_paths: "The form has two conflicting names."
   }
 
   def no_such_name_in_form(self, form, change) do
@@ -34,6 +35,17 @@ defmodule PhoenixIntegration.Form.Messages do
       color(:yellow, Floki.raw_html(floki_tag)) <> "\n" <>
       form_description(:yellow, form)
     )
+  end
+
+  def form_conflicting_paths(self, form, %{old: old, new: new}) do
+    warning(
+      color(:yellow, Map.get(@messages, self)) <> "\n" <>
+      color(:yellow, "Phoenix will ignore the later one.\n") <>
+      key_values(:yellow, [
+        "Earlier name", old.name,
+        "  Later name", new.name,
+      ]) <>
+      form_description(:yellow, form))
   end
 
 

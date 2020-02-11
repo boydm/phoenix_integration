@@ -5,6 +5,23 @@ defmodule PhoenixIntegration.Details.MessagesTest do
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.Messages
 
+  #########################################
+  #
+  # IMPORTANT
+  #
+  # Because assert_substrings traps IO, certain test failures won't
+  # show any debugging output (from IO.inspect). To work on those,
+  # extract the code that does the work out of the `assert_substrings`,
+  # like this:
+  #         build_form_fun(form, %{}).()   # TEMPORARY
+  #
+  #         assert_substrings(fn -> 
+  #           build_form_fun(form, %{}).()
+  #         ...
+
+
+
+
   describe "warnings from the html form itself" do
     test "a tag without a name" do
       html = ~S| <input type="radio"/> |
@@ -30,6 +47,24 @@ defmodule PhoenixIntegration.Details.MessagesTest do
          String.trim(html)
         ])
     end
+
+    test "a less-nested name follows a more deeply nexted name" do
+      # Phoenix retains the earlier (more nested) value.
+      html = """
+        <input type="text" name="top_level[param][subparam]" value="y">
+        <input type="text" name="top_level[param]"           value="x">
+      """
+      form = form_for html
+
+      assert_substrings(fn -> 
+        build_form_fun(form, %{}).()
+      end,
+        [Messages.get(:form_conflicting_paths),
+         "top_level[param][subparam]",
+         "top_level[param]"
+        ])
+    end
+    
   end
 
   describe "errors when applying test override values" do 

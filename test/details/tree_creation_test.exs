@@ -93,7 +93,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       """ |> input_to_tag
 
       
-      {:warning, :replace_leaf, data} = build_tree([first, second])
+      {:warning, :form_conflicting_paths, data} = build_tree([first, second])
       assert_fields(data, old: first, new: second)
     end
 
@@ -108,7 +108,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       """ |> input_to_tag
 
       
-      {:warning, :replace_interior_node, data} = build_tree([first, second])
+      {:warning, :form_conflicting_paths, data} = build_tree([first, second])
       assert_fields(data, old: first, new: second)
     end
   end
@@ -232,7 +232,5 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       %{top_level: %{contact: actual}} = test_tree!(unchecked)
       assert_field(actual, values: [])
     end
-
   end
-
 end
