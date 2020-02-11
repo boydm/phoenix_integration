@@ -55,6 +55,8 @@ defmodule PhoenixIntegration.Form.Tag do
     else
       [] ->
         {:warning, :tag_has_no_name, floki_tag}
+      :empty_name ->
+        {:warning, :empty_name, floki_tag}
     end
   end
 
@@ -145,7 +147,7 @@ defmodule PhoenixIntegration.Form.Tag do
   defp check_phoenix_conventions(name) do
     case separate_name_pieces(name) do
       [] ->
-        {:error, :unknown_format}
+        :empty_name
       _ ->
         :ok
     end

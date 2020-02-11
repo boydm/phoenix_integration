@@ -20,23 +20,38 @@ defmodule PhoenixIntegration.Details.MessagesTest do
 
   describe "warnings from the html form itself" do
     test "a tag without a name" do
-      form = form_for ~S| <input type="radio" checked> |
+      html = ~S| <input type="radio"/> |
+      form = form_for html
 
       assert_substrings(fn -> 
         build_form_fun(form, %{}).()
       end,
-        ["has no name"]
-      )
+        [Messages.get(:tag_has_no_name),
+         "It can't be included in the params sent to the controller",
+         String.trim(html)
+        ])
+    end
+
+    test "a nonsensical name" do
+      html = ~S| <input name="" type="radio"/> |
+      form = form_for html
+
+      assert_substrings(fn -> 
+        build_form_fun(form, %{}).()
+      end,
+        [Messages.get(:empty_name),
+         String.trim(html)
+        ])
     end
   end
 
   describe "errors when applying test override values" do 
     test "build form raises setting missing field" do
       form = form_for """
-        <input id="user_tag_name" name="user[tag][name]" type="text" value="tag">
+        <input id="user_tag_name" name="user[tag]" type="text" value="tag">
         """
       
-      user_data = %{missing: "something"}
+      user_data = %{user: %{i_made_a_typo: "new value"}}
 
       fun = fn ->
         assert_raise(RuntimeError, build_form_fun(form, user_data))
@@ -46,7 +61,7 @@ defmodule PhoenixIntegration.Details.MessagesTest do
         [ Messages.get(:no_such_name_in_form),
           "action:", "/form",
           "id:", "proper_form",
-          "[:missing]", "something"
+          "[:user, :i_made_a_typo]", "new value"
         ])
     end
   end
@@ -59,13 +74,13 @@ defmodule PhoenixIntegration.Details.MessagesTest do
 
   def assert_substrings(fun, substrings) do
     message = capture_io(fun)
-    # IO.puts "======"
-    # IO.puts message # for visual inspection
-    # IO.puts "======"
+    IO.puts "======"
+    IO.puts message # for visual inspection
+    IO.puts "======"
     
     Enum.map(substrings, fn substring -> 
       assert String.contains?(message, substring)
     end)
   end
 end
-p
+
