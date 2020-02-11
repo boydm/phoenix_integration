@@ -5,13 +5,19 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   of a form tag that can provide values to POST-style parameters.
   """
   alias PhoenixIntegration.Form.Tag
+  alias PhoenixIntegration.Form
+
+  defstruct valid?: :true, tree: %{}, warnings: [], errors: []
 
   ### Main interface
   
   def build_tree(form) do
-    form
-    |> form_to_floki_tags
-    |> build_tree_from_floki_tags
+    creation = form_to_floki_tags(form) |> build_tree_from_floki_tags
+    Form.Messages.emit(creation.warnings, form)
+    case creation do
+      %{valid?: true} ->
+        {:ok, creation.tree}
+    end
   end
 
   #### Helpers, some exposed to tests
@@ -22,18 +28,17 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   end
 
   def build_tree_from_floki_tags(tags) do
-    reducer = fn floki_tag, {tree_so_far, warnings} ->
+    reducer = fn floki_tag, acc ->
       case Tag.new(floki_tag) do
         {:ok, tag} -> 
-          {:ok, new_tree} = add_tag(tree_so_far, tag)
-          {new_tree, warnings}
+          {:ok, new_tree} = add_tag(acc.tree, tag)
+          %{acc | tree: new_tree}
         {:warning, message_atom, data} ->
-          {tree_so_far, warnings ++ [{message_atom, data}]}
+          %{acc | warnings: acc.warnings ++ [{message_atom, data}]}
       end
     end
     
-    {tree, warnings} = Enum.reduce(tags, {%{}, []}, reducer)
-    {:ok, tree, warnings}
+    Enum.reduce(tags, %__MODULE__{}, reducer)
   end
   
 
