@@ -68,7 +68,7 @@ defmodule PhoenixIntegration.Details.MessagesTest do
   end
 
   describe "errors when applying test override values" do 
-    test "build form raises setting missing field" do
+    test "setting missing field (as a leaf)" do
       form = form_for """
         <input id="user_tag_name" name="user[tag]" type="text" value="tag">
         """
@@ -81,11 +81,49 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       
       assert_substrings(fun, 
         [ Messages.get(:no_such_name_in_form),
+          "Is this a typo?", ":i_made_a_typo",
           "action:", "/form",
           "id:", "proper_form",
           "[:user, :i_made_a_typo]", "new value"
         ])
     end
+
+    test "setting missing field (wrong interior node)" do
+      form = form_for """
+        <input id="user_tag_name" name="user[tag]" type="text" value="tag">
+        """
+      
+      user_data = %{i_made_a_typo: %{tag: "new value"}}
+
+      fun = fn ->
+        assert_raise(RuntimeError, build_form_fun(form, user_data))
+      end
+      
+      assert_substrings(fun, 
+        [ Messages.get(:no_such_name_in_form),
+          "Is this a typo?", ":i_made_a_typo",
+          "[:i_made_a_typo, :tag]", "new value"
+        ])
+    end
+
+    test "setting a prefix of a field" do
+      form = form_for """
+        <input name="user[tag][name]" type="text" value="tag">
+        """
+      
+      user_data = %{user: %{tag: "new value"}}
+
+      fun = fn ->
+        assert_raise(RuntimeError, build_form_fun(form, user_data))
+      end
+      
+      assert_substrings(fun, 
+        [ Messages.get(:no_such_name_in_form),
+          "You provided only a prefix of all the available names.",
+          "Here is your path", "[:user, :tag]",
+          "Here is an available name", "user[tag][name]"])
+    end
+
   end
 
   def build_form_fun(form, user_data) do

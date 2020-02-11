@@ -1,7 +1,10 @@
 defmodule PhoenixIntegration.Form.Messages do
+  
   @moduledoc """
   The various messages - both warnings and errors - that can be given to the user. 
   """
+  alias PhoenixIntegration.Form.Tag
+  alias PhoenixIntegration.Form.Util
 
   @messages %{
     no_such_name_in_form: "You tried to set the value of a tag that isn't in the form.",
@@ -10,15 +13,28 @@ defmodule PhoenixIntegration.Form.Messages do
     form_conflicting_paths: "The form has two conflicting names."
   }
 
-  def no_such_name_in_form(self, form, change) do
+  def no_such_name_in_form(self, form, context) do
+    IO.inspect context
+    hint =
+      case Map.get(context.tree, context.last_tried) do
+        nil -> 
+          key_values(:red, [
+            "Path tried", inspect(context.change.path),
+            "Is this a typo?", "#{inspect context.last_tried}",
+            "Your value", inspect(context.change.value)])
+        _ ->
+          color(:red, "You provided only a prefix of all the available names.\n") <>
+          key_values(:red, [
+            "Here is your path", inspect(context.change.path),
+            "Here is an available name", Util.any_leaf(context.tree).name])
+      end
+
     error(
       color(:red, get(self)) <> "\n" <>
-      form_description(:red, form) <>
-      key_values(:red, [
-        "Path tried", inspect(change.path),
-        "Your value", inspect(change.value),
-      ]))
+      hint <>
+      form_description(:red, form))
   end
+
 
   def tag_has_no_name(self, form, floki_tag) do
     warning(

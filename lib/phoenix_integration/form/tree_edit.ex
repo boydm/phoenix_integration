@@ -14,7 +14,7 @@ defmodule PhoenixIntegration.Form.TreeEdit do
         {:ok, new_tree} ->
           {new_tree, errors_so_far}
         {:error, error} ->
-          {tree_so_far, [error | errors_so_far]}
+          {tree_so_far, errors_so_far ++ [error]}
       end
     end
 
@@ -26,17 +26,18 @@ defmodule PhoenixIntegration.Form.TreeEdit do
     end
   end
 
-  def apply_change!(tree, %Change{} = tag) do
-    {:ok, new_tree} = apply_change(tree, tag)
+  def apply_change!(tree, %Change{} = change) do
+    {:ok, new_tree} = apply_change(tree, change)
     new_tree
   end
   
-  def apply_change(tree, %Change{} = tag) do
+  def apply_change(tree, %Change{} = change) do
     try do
-      {:ok, apply_change(tree, tag.path, tag)}
+      {:ok, apply_change(tree, change.path, change)}
     catch
-      description ->
-        {:error, {description, tag}}
+      {description, context} ->
+        additional_context = Map.put(context, :change, change)
+        {:error, {description, additional_context}}
     end
   end
 
@@ -45,15 +46,23 @@ defmodule PhoenixIntegration.Form.TreeEdit do
       %Tag{} = tag ->
         Map.put(tree, last, combine(tag, change))
       _ ->
-        throw :no_such_name_in_form
+        throw no_such_name_in_form(tree, last)
     end
   end
 
   defp apply_change(tree, [next | rest], %Change{} = change) do
-    case Map.get(tree, next) do
-      _ -> 
+    case Map.has_key?(tree, next) do
+      true -> 
         Map.update!(tree, next, &(apply_change &1, rest, change))
+      false ->
+        throw no_such_name_in_form(tree, next)
     end
+  end
+
+  defp no_such_name_in_form(tree, key) do
+    {:no_such_name_in_form,
+     %{tree: tree, last_tried: key}
+    }
   end
 
   def combine(%Tag{} = tag, %Change{} = change) do
