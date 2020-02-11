@@ -9,32 +9,43 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   ### Main interface
   
   def build_tree(form) do
-    {tree, warnings} = 
-      ["input", "textarea", "select"]
-      |> Enum.flat_map(fn tag_name -> form_tags(form, tag_name) end)
-      |> Enum.reduce({%{}, []}, fn floki_tag, {acc, warnings} ->
-      case Tag.new(floki_tag) do
-        {:ok, tag} -> 
-          {:ok, new_tree} = add_tag(acc, tag)
-          {new_tree, warnings}
-        {:warning, message_atom, data} ->
-          {acc, warnings ++ [{message_atom, data}]}
-      end
-    end)
-    {:ok, tree, warnings}
+    form
+    |> form_to_floki_tags
+    |> build_tree_from_floki_tags
   end
 
   #### Helpers, some exposed to tests
 
-  def form_tags(form, "input") do
+  defp form_to_floki_tags(form) do
+    ["input", "textarea", "select"]
+    |> Enum.flat_map(fn tag_name -> floki_tags(form, tag_name) end)
+  end
+
+  def build_tree_from_floki_tags(tags) do
+    reducer = fn floki_tag, {tree_so_far, warnings} ->
+      case Tag.new(floki_tag) do
+        {:ok, tag} -> 
+          {:ok, new_tree} = add_tag(tree_so_far, tag)
+          {new_tree, warnings}
+        {:warning, message_atom, data} ->
+          {tree_so_far, warnings ++ [{message_atom, data}]}
+      end
+    end
+    
+    {tree, warnings} = Enum.reduce(tags, {%{}, []}, reducer)
+    {:ok, tree, warnings}
+  end
+  
+
+  def floki_tags(form, "input") do
     form
     |> Floki.find("input")
     |> Enum.map(&force_explicit_type/1)
     |> filter_types(["text", "checkbox", "hidden", "radio"])
   end
 
-  def form_tags(form, "textarea"), do: Floki.find(form, "textarea")
-  def form_tags(form, "select"), do: Floki.find(form, "select")
+  def floki_tags(form, "textarea"), do: Floki.find(form, "textarea")
+  def floki_tags(form, "select"), do: Floki.find(form, "select")
 
   # An omitted type counts as `text`
   defp force_explicit_type(floki_tag) do

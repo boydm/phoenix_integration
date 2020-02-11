@@ -23,7 +23,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       """ |> input_to_tag
 
       
-      actual = build_tree!([first, second])
+      actual = test_tree!([first, second])
       expected = %{top_level:
                    %{param: first,
                      other_param: second}}
@@ -44,7 +44,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       """ |> input_to_tag
 
       
-      actual = build_tree!([first, second, third])
+      actual = test_tree!([first, second, third])
       expected = %{top_level:
                    %{param: first,
                      other_param: %{deeper: second,
@@ -61,7 +61,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input type="text" name="top_level[other_param][]" value="y">
       """ |> input_to_tag
       
-      actual = build_tree!([first, second])
+      actual = test_tree!([first, second])
       expected = %{top_level:
                    %{param: first,
                      other_param: second}}
@@ -122,7 +122,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input type="text" name="top_level[param]" value="x">
       """ |> input_to_tag
 
-      assert build_tree!([first, second]) == %{top_level: %{param: second}}
+      assert test_tree!([first, second]) == %{top_level: %{param: second}}
     end
 
     test "if the name is an list, new values add on" do
@@ -134,7 +134,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input type="text" name="top_level[names][]" value="y">
       """ |> input_to_tag
 
-      %{top_level: %{names: actual}} = build_tree!([first, second])
+      %{top_level: %{names: actual}} = test_tree!([first, second])
 
       assert actual.values == ["x", "y"]
     end
@@ -152,7 +152,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input type="checkbox" name="top_level[grades][]" checked="anything">
       """ |> input_to_tag
 
-      %{top_level: %{grades: actual}} = build_tree!([first, second, third])
+      %{top_level: %{grades: actual}} = test_tree!([first, second, third])
 
       assert actual.values == ["first", "on"]
     end
@@ -168,7 +168,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input type="checkbox" name="top_level[grade]" value="ignored">
       """ |> input_to_tag
 
-      %{top_level: %{grade: actual}} = build_tree!([hidden, ignored])
+      %{top_level: %{grade: actual}} = test_tree!([hidden, ignored])
 
       # It shouldn't matter, but it's probably nicest to keep 
       # the hidden tag, since it's the one that provides the (default)
@@ -188,7 +188,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input type="checkbox" name="top_level[grade]" checked="true" value="replace">
       """ |> input_to_tag
 
-      %{top_level: %{grade: actual}} = build_tree!([hidden, checked])
+      %{top_level: %{grade: actual}} = test_tree!([hidden, checked])
 
       actual
       |> assert_fields(values: ["replace"],
@@ -214,21 +214,21 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
     test "checked radio replaces the unchecked value",
       %{checked: checked, unchecked: unchecked} do
 
-      %{top_level: %{contact: actual}} = build_tree!([unchecked, checked])
+      %{top_level: %{contact: actual}} = test_tree!([unchecked, checked])
       assert_field(actual, values: ["email"])
     end
 
     test "unchecked radio does not replace the checked value",
       %{checked: checked, unchecked: unchecked} do
 
-      %{top_level: %{contact: actual}} = build_tree!([checked, unchecked])
+      %{top_level: %{contact: actual}} = test_tree!([checked, unchecked])
       assert_field(actual, values: ["email"])
     end
 
     test "it's fine for there to be no checked button",
       %{unchecked: unchecked} do
 
-      %{top_level: %{contact: actual}} = build_tree!(unchecked)
+      %{top_level: %{contact: actual}} = test_tree!(unchecked)
       assert_field(actual, values: [])
     end
 

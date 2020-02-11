@@ -12,7 +12,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
         <input type="text" name="top_level[second][deeper]" value="deeper value">
       """ |> input_to_tag
 
-  @original_tree build_tree!([
+  @original_tree test_tree!([
     @shallow,
     @deeper,
     """
@@ -57,7 +57,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
       numeric = 
         """
           <input type="text" name="top_level[lower][0]" value="original">
-        """ |> input_to_tag |> build_tree!
+        """ |> input_to_tag |> test_tree!
 
       [numeric: numeric]
     end

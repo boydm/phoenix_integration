@@ -4,14 +4,20 @@ defmodule PhoenixIntegration.FormSupport do
   def input_to_tag(fragment),
     do: Floki.parse_fragment!(fragment) |> Tag.new!
 
-  def build_tree!(tags) when is_list(tags) do
+
+  # These functions are used when you want to build trees
+  # from Tags (*not* Floki data structures), and you don't
+  # care about errors, etc. 
+  def test_tree!(tags) when is_list(tags) do
     Enum.reduce(tags, %{}, fn tag, acc ->
       TreeCreation.add_tag!(acc, tag)
     end)
   end
 
-  def build_tree!(tag), do: build_tree!([tag])
+  def test_tree!(tag), do: test_tree!([tag])
 
+
+  IO.puts "Delete this when all the error handling tests are done."
   def build_tree(tags) when is_list(tags) do
     Enum.reduce_while(tags, %{}, fn tag, acc ->
       case TreeCreation.add_tag(acc, tag) do
