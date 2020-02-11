@@ -30,7 +30,8 @@ defmodule PhoenixIntegration.Form.Tag do
     path: [],
     # The name of the tag, like `"input"`
     tag: "",
-    # Where relevant, the value of the "type=" attribute of the tag, or nil.
+    # Where relevant, the value of the "type=" attribute of the tag.
+    # Otherwise should be unused.
     type: nil,
     # Whether the particular value is checked (checkboxes, someday multi-selects).
     checked: false,
@@ -63,7 +64,7 @@ defmodule PhoenixIntegration.Form.Tag do
   defp safe_new(floki_tag, name) do
     type =
       case Floki.attribute(floki_tag, "type") do
-        [] -> nil
+        [] -> "`type` irrelevant for `#{name}`"
         [x] -> x
       end
 
