@@ -38,10 +38,6 @@ defmodule PhoenixIntegration.Form.Tag do
     # The original Floki tag, for convenience.
     original: nil
   
-  IO.puts "Should the tree as delivered to the controller be turned into strings?"
-  # Note the case where a form uses integer ids as keys (as in a list of
-  # checkboxes from which a user will select a set of animals).
-
   def new!(floki_tag) do
     {:ok, %__MODULE__{} = tag} = new(floki_tag)
     tag
