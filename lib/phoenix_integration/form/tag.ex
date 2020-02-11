@@ -49,7 +49,7 @@ defmodule PhoenixIntegration.Form.Tag do
   def new(floki_tag) do
     with(
       [name] <- Floki.attribute(floki_tag, "name"),
-      :ok <- check_phoenix_conventions(name)
+      :ok <- check_name(name)
     ) do
       {:ok, safe_new(floki_tag, name)}
     else
@@ -144,7 +144,7 @@ defmodule PhoenixIntegration.Form.Tag do
     |> Enum.map(&(List.first(&1) |> Util.symbolize))
   end
     
-  defp check_phoenix_conventions(name) do
+  defp check_name(name) do
     case separate_name_pieces(name) do
       [] ->
         :empty_name
