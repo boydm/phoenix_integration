@@ -7,34 +7,34 @@ defmodule PhoenixIntegration.Details.TagTest do
   describe "common transformations" do
     test "single-valued names" do
       floki_tag = """
-        <some_tag_name name="top_level[animal]" value="x">
+        <input name="top_level[animal]" value="x">
       """
       |> Floki.parse_fragment!
 
       floki_tag
-      |> Tag.new!("some_tag_name")
+      |> Tag.new!
       |> assert_fields(has_list_value: false,
                        values: ["x"],
                        name: "top_level[animal]",
                        path: [:top_level, :animal],
-                       tag: "some_tag_name",
+                       tag: "input",
                        original: floki_tag)
     end
 
     
     test "multi-valued ([]-ending) names" do
       floki_tag = """
-        <some_tag_name name="top_level[animals][]" value="x">
+        <input name="top_level[animals][]" value="x">
       """
       |> Floki.parse_fragment!
 
       floki_tag
-      |> Tag.new!("some_tag_name")
+      |> Tag.new!
       |> assert_fields(has_list_value: true,
                        values: ["x"],
                        name: "top_level[animals][]",
                        path: [:top_level, :animals],
-                       tag: "some_tag_name",
+                       tag: "input",
                        original: floki_tag)
     end
   end
@@ -44,7 +44,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     <input type="text" name="top_level[name]" value="name">
     """
     |> Floki.parse_fragment!
-    |> Tag.new!("input")
+    |> Tag.new!
     |> assert_field(type: "text")
   end
 
@@ -84,6 +84,129 @@ defmodule PhoenixIntegration.Details.TagTest do
       """, ["on"]
     end
   end
+
+  test "textareas" do
+    """
+    <textarea class="form-control" id="user_story" name="user[story]">Initial user story</textarea>
+    """
+    |> Floki.parse_fragment!
+    |> Tag.new!
+    |> assert_fields(values: ["Initial user story"],
+                     tag: "textarea",
+                     name: "user[story]",
+                     path: [:user, :story])
+  end
+
+  describe "select" do
+    test "a scalar form with one value selected" do
+      """
+      <select class="form-control" id="user_type" name="user[type]">
+        <option value="type_one">One</option>
+        <option selected="selected" value="type_two">Two</option>
+        <option value="type_three">Three</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_fields(values: ["type_two"],
+                       has_list_value: false,
+                       tag: "select",
+                       name: "user[type]",
+                       path: [:user, :type])
+    end
+
+    # "if no value attribute is included, the value defaults to the
+    # text contained inside the element" -
+    # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+    test "a scalar form with no `value` attribute" do
+      """
+      <select class="form-control" id="user_type" name="user[type]">
+        <option>One</option>
+        <option selected="selected">Two</option>
+        <option>Three</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: ["Two"],
+                      has_list_value: false)
+    end
+
+    test "a simple form with no value selected" do
+      """
+      <select class="form-control" id="user_type" name="user[type]">
+        <option value="type_one">One</option>
+        <option value="type_two">Two</option>
+        <option value="type_three">Three</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: [],
+                      has_list_value: false)
+    end
+
+    test "a multiple select" do
+      """
+      <select id="user_roles" name="user[roles][]">
+        <option value="1" selected="selected">Admin</option>
+        <option value="2">Power User</option>
+        <option value="3" selected="selected">Plain User</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_fields(values: ["1", "3"],
+                       name: "user[roles][]",
+                       path: [:user, :roles],
+                       has_list_value: true)
+    end
+  end
+
+  describe "radio buttons" do
+    test "checked" do 
+      """
+      <input name="user[role]" type="radio" value="admin" checked>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_fields(values: ["admin"],
+                       name: "user[role]",
+                       has_list_value: false)
+    end
+
+    test "unchecked" do 
+      """
+      <input name="user[role]" type="radio" value="admin">
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: [])
+    end
+
+    test "checked, but no value" do
+      """
+      <input name="user[role]" type="radio" checked>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: ["on"])
+    end
+  end
+
+  describe "warning cases" do
+    test "no name" do
+      floki_tag = 
+      """
+      <input type="radio" checked>
+      """ |> Floki.parse_fragment!
+
+      assert {:warning, :tag_has_no_name, ^floki_tag} = Tag.new(floki_tag)
+    end
+    
+  end
+
+  
 
   defp assert_input_values(fragment, values) do
     assert input_to_tag(fragment).values == values

@@ -8,27 +8,42 @@ defmodule PhoenixIntegration.Form.TreeCreation do
 
   ### Main interface
   
-  # Just a sketch
   def build_tree(form) do
-    floki_tags = Floki.find(form, "input")
-    floki_tags
-    |> Enum.filter(fn floki_tag ->
-         [type] = Floki.attribute(floki_tag, "type")
-         type in ["text", "checkbox", "hidden"]
-       end)
-    |> Enum.reduce_while(%{}, fn floki_tag, acc ->
-         with(
-           {:ok, tag} <- Tag.new(floki_tag, "input"),
-           {:ok, new_tree} <- add_tag(acc, tag)
-         ) do
-           {:cont, new_tree}
-         else
-           err -> {:halt, err}
-         end
-       end)
+    {tree, warnings} = 
+      ["input", "textarea", "select"]
+      |> Enum.flat_map(fn tag_name -> form_tags(form, tag_name) end)
+
+      |> Enum.reduce({%{}, []}, fn floki_tag, {acc, warnings} ->
+      case Tag.new(floki_tag) do
+        {:ok, tag} -> 
+          {:ok, new_tree} = add_tag(acc, tag)
+          {new_tree, warnings}
+        {:warning, message_atom, data} ->
+          {acc, warnings ++ [{message_atom, data}]}
+      end
+    end)
+    {:ok, tree, warnings}
   end
 
   #### Helpers, some exposed to tests
+
+  def form_tags(form, "input") do
+    form
+    |> Floki.find("input")
+    |> filter_types(["text", "checkbox", "hidden", "radio"])
+  end
+
+  def form_tags(form, "textarea"), do: Floki.find(form, "textarea")
+  def form_tags(form, "select"), do: Floki.find(form, "select")
+
+
+  def filter_types(floki_tags, allowed) do
+    floki_tags
+    |> Enum.filter(fn floki_tag ->
+         [type] = Floki.attribute(floki_tag, "type")
+         type in allowed
+       end)
+  end 
   
   def add_tag!(tree, %Tag{} = tag) do
     {:ok, new_tree} = add_tag(tree, tag)
@@ -70,6 +85,8 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     case {earlier_tag.type, later_tag.type, earlier_tag.has_list_value} do
       {"hidden", "checkbox", _} ->
         implement_hidden_hack(earlier_tag, later_tag)
+      {"radio", "radio", false} ->
+        implement_radio(earlier_tag, later_tag)
       {_, _, false} ->
         later_tag
       {_, _, true} ->
@@ -84,6 +101,10 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     end
   end
 
-  
-  
+  defp implement_radio(earlier_tag, current_tag) do
+    case current_tag.values == [] do
+      true -> earlier_tag
+      false -> current_tag
+    end
+  end
 end  

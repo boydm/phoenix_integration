@@ -1,8 +1,8 @@
 defmodule PhoenixIntegration.Details.TreeFinishTest do
   use ExUnit.Case, async: true
-  import PhoenixIntegration.Assertions.Map
+  # import PhoenixIntegration.Assertions.Map
   import PhoenixIntegration.FormSupport
-  alias PhoenixIntegration.Form.{TreeFinish, Change, Tag}
+  alias PhoenixIntegration.Form.{TreeFinish}
 
   describe "converting the values into a map sent to an action" do
     test "a scalar" do

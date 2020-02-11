@@ -52,6 +52,41 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     end
   end
 
+  describe "key handling" do
+    setup do 
+      numeric = 
+        """
+          <input type="text" name="top_level[lower][0]" value="original">
+        """ |> input_to_tag |> build_tree!
+
+      [numeric: numeric]
+    end
+
+    test "keys can be symbols", %{numeric: numeric} do
+      %{top_level: %{lower: %{"0": actual}}} = 
+        TreeEdit.apply_edits(numeric, %{top_level: %{lower: %{"0": "new"}}})
+        |> require_ok
+
+      assert actual.values == ["new"]
+    end
+
+    test "keys can be strings", %{numeric: numeric} do
+      %{top_level: %{lower: %{"0": actual}}} = 
+        TreeEdit.apply_edits(numeric, %{top_level: %{lower: %{"0" => "new"}}})
+        |> require_ok
+
+      assert actual.values == ["new"]
+    end
+
+    test "keys can be integers", %{numeric: numeric} do
+      %{top_level: %{lower: %{"0": actual}}} = 
+        TreeEdit.apply_edits(numeric, %{top_level: %{lower: %{0 => "new"}}})
+        |> require_ok
+
+      assert actual.values == ["new"]
+    end
+  end
+
   describe "error cases" do
     @tag :skip
     test "path of change is too short"

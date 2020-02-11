@@ -1,4 +1,5 @@
 defmodule PhoenixIntegration.Form.Tag do
+  alias PhoenixIntegration.Form.Util
 
   @moduledoc """
   This is a representation of a value-providing tag in a Phoenix-style
@@ -40,21 +41,24 @@ defmodule PhoenixIntegration.Form.Tag do
   # Note the case where a form uses integer ids as keys (as in a list of
   # checkboxes from which a user will select a set of animals).
 
-  def new!(floki_tag, tag_name) do
-    {:ok, %__MODULE__{} = tag} = new(floki_tag, tag_name)
+  def new!(floki_tag) do
+    {:ok, %__MODULE__{} = tag} = new(floki_tag)
     tag
   end
 
-  def new(floki_tag, tag_name) do
-    [name] = Floki.attribute(floki_tag, "name")
-
-    case check_phoenix_conventions(name) do
-      :ok -> {:ok, safe_new(floki_tag, tag_name, name)}
-      otherwise -> otherwise
+  def new(floki_tag) do
+    with(
+      [name] <- Floki.attribute(floki_tag, "name"),
+      :ok <- check_phoenix_conventions(name)
+    ) do
+      {:ok, safe_new(floki_tag, name)}
+    else
+      [] ->
+        {:warning, :tag_has_no_name, floki_tag}
     end
   end
 
-  defp safe_new(floki_tag, tag_name, name) do
+  defp safe_new(floki_tag, name) do
     type =
       case Floki.attribute(floki_tag, "type") do
         [] -> nil
@@ -63,7 +67,7 @@ defmodule PhoenixIntegration.Form.Tag do
 
     checked = Floki.attribute(floki_tag, "checked") != []
     
-    %__MODULE__{tag: tag_name,
+    %__MODULE__{tag: tag_name(floki_tag),
                 original: floki_tag,
                 type: type,
                 name: name,
@@ -86,26 +90,56 @@ defmodule PhoenixIntegration.Form.Tag do
        has_list_value: has_list_value}
   end
 
-  defp add_values(so_far) do
+  defp add_values(%{tag: "textarea"} = so_far) do
+    raw_value = Floki.FlatText.get(so_far.original)
+    %{so_far | values: [raw_value]}
+  end    
+    
+  defp add_values(%{tag: "select"} = so_far) do
+    case Floki.find(so_far.original, "option[selected]") do
+      [] ->
+        %{so_far | values: []}
+      selected_option -> 
+        case Floki.attribute(selected_option, "value") do
+          [] ->
+            # "if no value attribute is included, the value defaults to the
+            # text contained inside the element" -
+            # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+            %{so_far | values: [Floki.FlatText.get(selected_option)]}
+          values  -> 
+            %{so_far | values: values}
+        end
+    end
+  end    
+    
+  defp add_values(%{tag: "input"} = so_far) do
     raw_values = Floki.attribute(so_far.original, "value")
-    %{so_far | values: calculate_values(so_far, raw_values)}
+    %{so_far | values: apply_input_special_cases(so_far, raw_values)}
   end
 
   # Special cases as described in
   # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/checkbox
-  defp calculate_values(%{type: "checkbox"} = so_far, raw_values) do
+  # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio  
+  defp apply_input_special_cases(%{type: "checkbox"} = so_far, raw_values),
+    do: tags_with_checked_attribute(so_far, raw_values)
+
+  defp apply_input_special_cases(%{type: "radio"} = so_far, raw_values),
+    do: tags_with_checked_attribute(so_far, raw_values)
+
+  defp apply_input_special_cases(_so_far, raw_values), do: raw_values
+
+  defp tags_with_checked_attribute(so_far, raw_values) do
     case {so_far.checked, raw_values} do 
       {true,[]} -> ["on"]
       {true,values} -> values
       {false,_} -> []
     end
   end
-  defp calculate_values(_so_far, raw_values), do: raw_values
 
   defp path_to(name) do
     name
     |> separate_name_pieces
-    |> Enum.map(&(List.first(&1) |> symbolize))
+    |> Enum.map(&(List.first(&1) |> Util.symbolize))
   end
     
   defp check_phoenix_conventions(name) do
@@ -119,6 +153,7 @@ defmodule PhoenixIntegration.Form.Tag do
 
   defp separate_name_pieces(name), do: Regex.scan(~r/\w+/, name)
 
-  defp symbolize(anything), do: to_string(anything) |> String.to_atom
-  
+  # Floki allows tags to come in two forms
+  defp tag_name([floki_tag]), do: tag_name(floki_tag)
+  defp tag_name({name, _, _}), do: name
 end
