@@ -2,21 +2,8 @@ defmodule PhoenixIntegration.Details.MessagesTest do
   use ExUnit.Case
   use Phoenix.ConnTest
   import ExUnit.CaptureIO
+  import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.Messages
-
-  def form_for(html_snippet) do
-    html =
-      """
-      <form accept-charset="UTF-8" action="/form" method="post" id="proper_form">
-        #{html_snippet}
-      </form>
-      """
-
-    {:ok, _action, _method, form}  =   
-      PhoenixIntegration.Requests.test_find_html_form(
-        html, "#proper_form", nil, "form")
-    form
-  end
 
   describe "warnings from the html form itself" do
     test "a tag without a name" do
@@ -74,9 +61,9 @@ defmodule PhoenixIntegration.Details.MessagesTest do
 
   def assert_substrings(fun, substrings) do
     message = capture_io(fun)
-    IO.puts "======"
-    IO.puts message # for visual inspection
-    IO.puts "======"
+    # IO.puts "======"
+    # IO.puts message # for visual inspection
+    # IO.puts "======"
     
     Enum.map(substrings, fn substring -> 
       assert String.contains?(message, substring)

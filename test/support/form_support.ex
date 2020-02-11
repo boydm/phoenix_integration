@@ -20,5 +20,18 @@ defmodule PhoenixIntegration.FormSupport do
       end
     end)
   end
-  
+
+  def form_for(html_snippet) do
+    html =
+      """
+      <form accept-charset="UTF-8" action="/form" method="post" id="proper_form">
+        #{html_snippet}
+      </form>
+      """
+
+    {:ok, _action, _method, form}  =   
+      PhoenixIntegration.Requests.test_find_html_form(
+        html, "#proper_form", nil, "form")
+    form
+  end
 end

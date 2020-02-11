@@ -4,7 +4,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.TreeCreation
 
-  describe "adding tags that have no collisions" do
+  describe "adding tags that have no collisions (and type=text)" do
     test "into an empty tree" do
       tag = """
         <input type="text" name="top_level[param]" value="x">
@@ -52,7 +52,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert actual == expected
     end
 
-    test "merging an list value" do
+    test "merging a list value" do
       first = """
         <input type="text" name="top_level[param]" value="x">
       """ |> input_to_tag
@@ -68,6 +68,18 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert actual == expected
     end
 
+
+    # Because the correction of the type is done at a top
+    # level, we can't use the simpler test-support functions.
+    test "a missing type is of type input" do
+      snippet = """
+        <input name="top_level[param]" value="x">
+      """
+      form = form_for(snippet)
+      assert {:ok, %{top_level: %{param: tag}}, _} = TreeCreation.build_tree(form)
+      assert tag.type == "text"
+    end
+    
     test "a path can't have both a value and a nested value" do
       # Phoenix does accept this, possibly by accident.
       # The original value is lost. We complain.
