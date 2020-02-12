@@ -4,25 +4,25 @@ defmodule PhoenixIntegration.Form.TreeEdit do
   within it can be overridden by leaves of a different tree provided by
   a test.
   """
-  alias PhoenixIntegration.Form.{Change, Tag}
+  alias PhoenixIntegration.Form.{Change, Tag, Util}
+
+  defstruct valid?: :true, tree: %{}, errors: []
 
   def apply_edits(tree, edit_tree) do
     changes = Change.changes(edit_tree)
     
-    reducer = fn change, {tree_so_far, errors_so_far} ->
-      case apply_change(tree_so_far, change) do
+    reducer = fn change, acc ->
+      case apply_change(acc.tree, change) do
         {:ok, new_tree} ->
-          {new_tree, errors_so_far}
-        {:error, message_atom, data} ->
-          {tree_so_far, errors_so_far ++ [{message_atom, data}]}
+          Util.put_tree(acc, new_tree)
+        {:error, message_atom, message_context} ->
+          Util.put_error(acc, message_atom, message_context)
       end
     end
 
-    case Enum.reduce(changes, {tree, []}, reducer) do
-      {new_tree, []} -> 
-        {:ok, new_tree}
-      {_, errors} ->
-        {:error, errors}
+    case Enum.reduce(changes, %__MODULE__{tree: tree}, reducer) do
+      %{valid?: true, tree: tree} -> {:ok, tree}
+      %{errors: errors} -> {:error, errors}
     end
   end
 

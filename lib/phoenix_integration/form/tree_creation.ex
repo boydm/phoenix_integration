@@ -16,6 +16,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     case creation do
       %{valid?: true} ->
         {:ok, creation}
+      # Currently no errors, only warnings.
     end
   end
 
@@ -32,10 +33,10 @@ defmodule PhoenixIntegration.Form.TreeCreation do
         {:ok, tag} <- Tag.new(floki_tag),
         {:ok, new_tree} <- add_tag(acc.tree, tag)
       ) do 
-        %{acc | tree: new_tree}
+        Util.put_tree(acc, new_tree)
       else
-        {:warning, message_atom, data} ->
-          %{acc | warnings: acc.warnings ++ [{message_atom, data}]}
+        {:warning, message_atom, message_context} ->
+          Util.put_warning(acc, message_atom, message_context)
       end
     end
     
@@ -83,8 +84,8 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     try do
       {:ok, add_tag(tree, tag.path, tag)}
     catch
-      {code, data} ->
-        {:warning, code, data}
+      {message_code, message_context} ->
+        {:warning, message_code, message_context}
     end
   end
 
