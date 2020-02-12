@@ -1,5 +1,5 @@
 defmodule PhoenixIntegration.Form.Change do
-  alias PhoenixIntegration.Form.Util
+  alias PhoenixIntegration.Form.Common
   @moduledoc """
   The test asks that a form value be changed. This struct contains 
   the information required to make the change.
@@ -16,7 +16,7 @@ defmodule PhoenixIntegration.Form.Change do
 
   def changes(tree, path_prefix) when is_map(tree) do
     Enum.flat_map(tree, fn {key, value} ->
-      changes(value, [Util.symbolize(key) | path_prefix])
+      changes(value, [Common.symbolize(key) | path_prefix])
     end)
   end
 

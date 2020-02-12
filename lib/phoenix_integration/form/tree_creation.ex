@@ -5,7 +5,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   of a form tag that can provide values to POST-style parameters.
   """
   alias PhoenixIntegration.Form.Tag
-  alias PhoenixIntegration.Form.Util
+  alias PhoenixIntegration.Form.Common
 
   defstruct valid?: :true, tree: %{}, warnings: [], errors: []
 
@@ -33,10 +33,10 @@ defmodule PhoenixIntegration.Form.TreeCreation do
         {:ok, tag} <- Tag.new(floki_tag),
         {:ok, new_tree} <- add_tag(acc.tree, tag)
       ) do 
-        Util.put_tree(acc, new_tree)
+        Common.put_tree(acc, new_tree)
       else
         {:warning, message_atom, message_context} ->
-          Util.put_warning(acc, message_atom, message_context)
+          Common.put_warning(acc, message_atom, message_context)
       end
     end
     
@@ -96,7 +96,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
       %Tag{} ->
         Map.update!(tree, last, &(combine_values &1, tag))
       _ ->
-        throw {:form_conflicting_paths, %{old: Util.any_leaf(tree), new: tag}}
+        throw {:form_conflicting_paths, %{old: Common.any_leaf(tree), new: tag}}
     end
   end
 

@@ -1,5 +1,5 @@
 defmodule PhoenixIntegration.Form.Tag do
-  alias PhoenixIntegration.Form.Util
+  alias PhoenixIntegration.Form.Common
 
   @moduledoc """
   This is a representation of a value-providing tag in a Phoenix-style
@@ -138,7 +138,7 @@ defmodule PhoenixIntegration.Form.Tag do
   defp path_to(name) do
     name
     |> separate_name_pieces
-    |> Enum.map(&(List.first(&1) |> Util.symbolize))
+    |> Enum.map(&(List.first(&1) |> Common.symbolize))
   end
     
   defp check_name(name) do

@@ -3,8 +3,7 @@ defmodule PhoenixIntegration.Form.Messages do
   @moduledoc """
   The various messages - both warnings and errors - that can be given to the user. 
   """
-  alias PhoenixIntegration.Form.Tag
-  alias PhoenixIntegration.Form.Util
+  alias PhoenixIntegration.Form.Common
 
   @messages %{
     no_such_name_in_form: "You tried to set the value of a tag that isn't in the form.",
@@ -25,7 +24,7 @@ defmodule PhoenixIntegration.Form.Messages do
               color(:red, "You provided only a prefix of all the available names.\n") <>
               key_values(:red, [
                 "Here is your path", inspect(context.change.path),
-                "Here is an available name", Util.any_leaf(context.tree).name])
+                "Here is an available name", Common.any_leaf(context.tree).name])
         :possible_typo -> 
           key_values(:red, [
                 "Path tried", inspect(context.change.path),

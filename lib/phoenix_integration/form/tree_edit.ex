@@ -4,7 +4,7 @@ defmodule PhoenixIntegration.Form.TreeEdit do
   within it can be overridden by leaves of a different tree provided by
   a test.
   """
-  alias PhoenixIntegration.Form.{Change, Tag, Util}
+  alias PhoenixIntegration.Form.{Change, Tag, Common}
 
   defstruct valid?: :true, tree: %{}, errors: []
 
@@ -14,9 +14,9 @@ defmodule PhoenixIntegration.Form.TreeEdit do
     reducer = fn change, acc ->
       case apply_change(acc.tree, change) do
         {:ok, new_tree} ->
-          Util.put_tree(acc, new_tree)
+          Common.put_tree(acc, new_tree)
         {:error, message_atom, message_context} ->
-          Util.put_error(acc, message_atom, message_context)
+          Common.put_error(acc, message_atom, message_context)
       end
     end
 
