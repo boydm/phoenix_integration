@@ -142,6 +142,24 @@ defmodule PhoenixIntegration.Details.MessagesTest do
           "Here is an available name", "user[tag]"])
     end
 
+    test "a too-long path will not be fooled by a key in a Tag" do
+      form = form_for """
+        <input name="user[tag]" type="text" value="tag">
+        """
+      
+      user_data = %{user: %{tag: %{name: %{lower: "new value"}}}}
+
+      fun = fn ->
+        assert_raise(RuntimeError, build_form_fun(form, user_data))
+      end
+      
+      assert_substrings(fun, 
+        [ Messages.get(:no_such_name_in_form),
+          "Your path is longer than the names it should match",
+          "Here is your path", "[:user, :tag, :name, :lower]",
+          "Here is an available name", "user[tag]"])
+    end
+
   end
 
   def build_form_fun(form, user_data) do
