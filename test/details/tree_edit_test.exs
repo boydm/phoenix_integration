@@ -29,7 +29,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     test "update a scalar" do 
       change = Change.to(@shallow.path, "different value")
       
-      TreeEdit.apply_change(change, @original_tree)
+      TreeEdit.apply_change(@original_tree, change)
       |> require_ok
       |> refute_changed([@deeper, @list])
       |> assert_changed(@shallow, values: ["different value"])
@@ -38,7 +38,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     test "update a deeper one, just for fun" do 
       change = Change.to(@deeper.path, "different value")
       
-      TreeEdit.apply_change(change, @original_tree)
+      TreeEdit.apply_change(@original_tree, change)
       |> require_ok
       |> assert_changed(@deeper, values: ["different value"])
     end
@@ -46,7 +46,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     test "update a list" do 
       change = Change.to(@list.path, ["different", "values"])
       
-      TreeEdit.apply_change(change, @original_tree)
+      TreeEdit.apply_change(@original_tree, change)
       |> require_ok
       |> assert_changed(@list, values: ["different", "values"])
     end

@@ -12,7 +12,7 @@ defmodule PhoenixIntegration.Form.TreeEdit do
     changes = Change.changes(edit_tree)
     
     reducer = fn change, acc ->
-      case apply_change(change, acc.tree) do
+      case apply_change(acc.tree, change) do
         {:ok, new_tree} ->
           Common.put_tree(acc, new_tree)
         {:error, message_atom, message_context} ->
@@ -26,21 +26,21 @@ defmodule PhoenixIntegration.Form.TreeEdit do
     end
   end
 
-  def apply_change!(%Change{} = change, tree) do
-    {:ok, new_tree} = apply_change(change, tree)
+  def apply_change!(tree, %Change{} = change) do
+    {:ok, new_tree} = apply_change(tree, change)
     new_tree
   end
   
-  def apply_change(%Change{} = change, tree) do
+  def apply_change(tree, %Change{} = change) do
     try do
-      {:ok, apply_change(change.path, change, tree)}
+      {:ok, apply_change(tree, change.path, change)}
     catch
       {description, context} ->
         {:error, description, context}
     end
   end
 
-  defp apply_change([last], %Change{} = change, tree) do
+  defp apply_change(tree, [last], %Change{} = change) do
     case Map.get(tree, last) do
       %Tag{} = tag ->
         Map.put(tree, last, combine(tag, change))
@@ -51,14 +51,14 @@ defmodule PhoenixIntegration.Form.TreeEdit do
     end
   end
 
-  defp apply_change([next | rest], %Change{} = change, tree) do
+  defp apply_change(tree, [next | rest], %Change{} = change) do
     case Map.get(tree, next) do
       %Tag{} -> 
         throw no_such_name_in_form(:path_too_long, tree, next, change)
       nil -> 
         throw no_such_name_in_form(:possible_typo, tree, next, change)
       _ ->
-        Map.update!(tree, next, &(apply_change rest, change, &1))
+        Map.update!(tree, next, &(apply_change &1, rest, change))
     end
   end
 
