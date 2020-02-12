@@ -14,19 +14,26 @@ defmodule PhoenixIntegration.Form.Messages do
   }
 
   def no_such_name_in_form(self, form, context) do
-    IO.inspect context
     hint =
-      case Map.get(context.tree, context.last_tried) do
-        nil -> 
-          key_values(:red, [
-            "Path tried", inspect(context.change.path),
-            "Is this a typo?", "#{inspect context.last_tried}",
-            "Your value", inspect(context.change.value)])
-        _ ->
-          color(:red, "You provided only a prefix of all the available names.\n") <>
-          key_values(:red, [
-            "Here is your path", inspect(context.change.path),
-            "Here is an available name", Util.any_leaf(context.tree).name])
+      case context.tree do
+        %Tag{} -> 
+          color(:red, "Your path is longer than the names it should match.\n") <>
+            key_values(:red, [
+              "Here is your path", inspect(context.change.path),
+              "Here is an available name", context.tree.name])
+          _ -> 
+          case Map.has_key?(context.tree, context.last_tried) do
+            false -> 
+              key_values(:red, [
+                "Path tried", inspect(context.change.path),
+                "Is this a typo?", "#{inspect context.last_tried}",
+                "Your value", inspect(context.change.value)])
+            true -> 
+              color(:red, "You provided only a prefix of all the available names.\n") <>
+              key_values(:red, [
+                "Here is your path", inspect(context.change.path),
+                "Here is an available name", Util.any_leaf(context.tree).name])
+          end
       end
 
     error(
