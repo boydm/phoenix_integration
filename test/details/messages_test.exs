@@ -160,6 +160,66 @@ defmodule PhoenixIntegration.Details.MessagesTest do
           "Here is an available name", "user[tag]"])
     end
 
+    test "setting a list tag to a scalar" do
+      form = form_for """
+        <input name="user[tag][]" type="text" value="tag">
+        """
+      
+      user_data = %{user: %{tag: "skittish"}}
+
+      fun = fn ->
+        assert_raise(RuntimeError, build_form_fun(form, user_data))
+      end
+      
+      assert_substrings(fun, 
+        [ Messages.get(:arity_clash),
+          "the name of the tag you're setting ends in `[]`", "user[tag][]",
+          "should be a list", "skittish"])
+    end
+
+    test "setting a scalar tag to a list" do
+      form = form_for """
+        <input name="user[tag]" type="text" value="tag">
+        """
+      
+      user_data = %{user: %{tag: ["skittish"]}}
+
+      fun = fn ->
+        assert_raise(RuntimeError, build_form_fun(form, user_data))
+      end
+      
+      assert_substrings(fun, 
+        [ Messages.get(:arity_clash),
+          "value you want", ~s|["skittish"]|,
+          "doesn't end in `[]`", "user[tag]"])
+    end
+
+
+    test "you get more than one error" do
+      form = form_for """
+        <input id="user_tag_name" name="user[tag]" type="text" value="tag">
+        <input name="user[keys][]" type="checkbox" value="true">
+        <input name="user[keys][]" type="checkbox" value="true">
+        """
+      
+      user_data = %{user: %{i_made_a_typo: "new value",
+                            keys: "false"}}
+
+      fun = fn ->
+        assert_raise(RuntimeError, build_form_fun(form, user_data))
+      end
+      
+      assert_substrings(fun, 
+        [ Messages.get(:no_such_name_in_form),
+          "Is this a typo?", ":i_made_a_typo",
+          "action:", "/form",
+          "id:", "proper_form",
+          "[:user, :i_made_a_typo]", "new value",
+
+          Messages.get(:arity_clash),
+          "the name of the tag you're setting ends in `[]`", "user[keys][]",
+          "should be a list", "false"])
+    end
   end
 
   def build_form_fun(form, user_data) do

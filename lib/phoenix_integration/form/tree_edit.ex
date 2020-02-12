@@ -74,6 +74,8 @@ defmodule PhoenixIntegration.Form.TreeEdit do
         %Tag{ tag | values: change.value}
       {false, false} ->
         %Tag{ tag | values: [change.value]}
+      _ ->
+        throw {:arity_clash, %{existing: tag, change: change}}
     end
   end
 end

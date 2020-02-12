@@ -7,6 +7,7 @@ defmodule PhoenixIntegration.Form.Messages do
 
   @messages %{
     no_such_name_in_form: "You tried to set the value of a tag that isn't in the form.",
+    arity_clash: "You are combining list and scalar values.",
     tag_has_no_name: "A form entry has no name.",
     empty_name: "A tag has an empty name.",
     form_conflicting_paths: "The form has two conflicting names."
@@ -35,6 +36,27 @@ defmodule PhoenixIntegration.Form.Messages do
     error(
       color(:red, get(self)) <> "\n" <>
       hint <>
+      form_description(:red, form))
+  end
+
+  def arity_clash(self, form, %{existing: existing, change: change}) do
+    hint =
+      case existing.has_list_value do
+        true ->
+          color(:red, "Note that the name of the tag you're setting ends in `[]`:\n") <>
+          color(:red, "    " <> inspect existing.name) <>
+          color(:red, "\nSo your value should be a list, rather than this:\n") <>
+          color(:red, "    " <> inspect change.value)
+        false ->
+          color(:red, "The value you want to use is a list:\n") <>
+          color(:red, "    " <> inspect change.value) <>
+          color(:red, "\nBut the name of the tag doesn't end in `[]`:\n") <>
+          color(:red, "    " <> inspect existing.name)
+      end
+
+    error(
+      color(:red, get(self)) <> "\n" <>
+      hint <> "\n" <>
       form_description(:red, form))
   end
 
