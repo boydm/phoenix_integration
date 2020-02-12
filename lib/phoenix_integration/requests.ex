@@ -473,7 +473,7 @@ defmodule PhoenixIntegration.Requests do
       find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
 
     # build the data to send to the action pointed to by the form
-    form_data = build_form_data__2(form, form_action, fields)
+    form_data = build_form_data__2(form, fields)
 
     # use ConnCase to call the form's handler. return the new conn
     request_path(conn, form_action, form_method, form_data)
@@ -682,14 +682,6 @@ defmodule PhoenixIntegration.Requests do
 
     def test_find_html_form(html, identifier, method, form_finder) do
       find_html_form(html, identifier, method, form_finder)
-    end
-
-    def test_build_form_data(form, form_action, fields) do
-      build_form_data(form, form_action, fields)
-    end
-
-    def test_build_form_data__2(form, form_action, fields) do
-      build_form_data__2(form, form_action, fields)
     end
 
     def test_build_form_data__2(form, fields) do
@@ -1076,10 +1068,6 @@ defmodule PhoenixIntegration.Requests do
     merge_grouped_fields(form_data, form_action, fields)
   end
 
-  IO.puts "Remove this version of build_form_data__2"
-  defp build_form_data__2(form, _form_action, user_tree),
-    do: build_form_data__2(form, user_tree)
-  
   defp build_form_data__2(form, user_tree) do
     with(
       {:ok, created} <- TreeCreation.build_tree(form),
