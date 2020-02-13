@@ -76,7 +76,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
         <input name="top_level[param]" value="x">
       """
       form = form_for(snippet)
-      assert {:ok, created} = TreeCreation.build_tree(form)
+      created = TreeCreation.build_tree(form)
       assert %{top_level: %{param: tag}} = created.tree
       assert tag.type == "text"
     end

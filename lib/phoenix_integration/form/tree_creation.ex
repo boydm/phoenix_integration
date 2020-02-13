@@ -10,14 +10,10 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   defstruct valid?: :true, tree: %{}, warnings: [], errors: []
 
   ### Main interface
-  
+
   def build_tree(form) do
-    creation = form_to_floki_tags(form) |> build_tree_from_floki_tags 
-    case creation do
-      %{valid?: true} ->
-        {:ok, creation}
-      # Currently no errors, only warnings.
-    end
+    # Currently no errors, only warnings.
+    %{valid?: true} = form_to_floki_tags(form) |> build_tree_from_floki_tags 
   end
 
   #### Helpers, some exposed to tests
