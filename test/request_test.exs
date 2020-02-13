@@ -264,7 +264,7 @@ defmodule PhoenixIntegration.RequestTest do
       get(conn, "/sample")
       |> fetch_form(%{identifier: "#proper_form"})
 
-    %{
+    assert %{
       action: "/form",
       id: "proper_form",
       inputs: %{
@@ -278,7 +278,8 @@ defmodule PhoenixIntegration.RequestTest do
           story: "Initial user story",
           tag: %{name: "tag"},
           type: "type_two",
-          friends: %{"0": %{address: %{city: %{zip: "12345"}}}}
+          friends: %{"0": %{address: %{city: %{zip: "12345"}}}},
+          grades: %{a: "true", b: "true", c: "true"}
         }
       },
       method: "put"
