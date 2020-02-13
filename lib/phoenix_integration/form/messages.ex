@@ -128,7 +128,10 @@ defmodule PhoenixIntegration.Form.Messages do
   end
   
   defp error(msg), do: puts(:red, "Error", msg)
-  defp warning(msg), do: puts(:yellow, "Warning", msg)
+  defp warning(msg) do
+    if Application.get_env(:phoenix_integration, :warnings, true),
+      do: puts(:yellow, "Warning", msg)
+  end
   
 
   defp puts(severity, tag, msg),
