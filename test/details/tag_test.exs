@@ -133,12 +133,23 @@ defmodule PhoenixIntegration.Details.TagTest do
                       has_list_value: false)
     end
 
-    test "a simple form with no value selected" do
+    test "the first value is selected by default" do
       """
       <select class="form-control" id="user_type" name="user[type]">
-        <option value="type_one">One</option>
-        <option value="type_two">Two</option>
-        <option value="type_three">Three</option>
+        <option>One</option>
+        <option>Two</option>
+        <option>Three</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: ["One"],
+                      has_list_value: false)
+    end
+
+    test "a silly case: no options" do
+      """
+      <select class="form-control" id="user_type" name="user[type]">
       </select>
       """
       |> Floki.parse_fragment!
@@ -146,6 +157,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> assert_field(values: [],
                       has_list_value: false)
     end
+    
 
     test "a multiple select" do
       """

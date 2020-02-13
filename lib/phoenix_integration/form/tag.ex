@@ -95,21 +95,37 @@ defmodule PhoenixIntegration.Form.Tag do
   end    
     
   defp add_values(%{tag: "select"} = so_far) do
+    selected_values = fn selected_option ->
+      case Floki.attribute(selected_option, "value") do
+        [] ->
+          # "if no value attribute is included, the value defaults to the
+          # text contained inside the element" -
+          # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+          [Floki.FlatText.get(selected_option)]
+        values -> 
+          values
+      end
+    end
+
+    unselected_special_case = fn select ->
+      case Floki.find(select, "option") do
+        [first|_rest] ->
+          # I don't see it explicitly stated, but the value of
+          # a `select` with no selected option is the value of
+          # the first option.
+          %{so_far | values: selected_values.(first)}
+        [] -> # A `select` with no options is pretty silly. Nevertheless.
+          %{so_far | values: []}
+      end
+    end
+
     case Floki.find(so_far.original, "option[selected]") do
       [] ->
-        %{so_far | values: []}
-      selected_option -> 
-        case Floki.attribute(selected_option, "value") do
-          [] ->
-            # "if no value attribute is included, the value defaults to the
-            # text contained inside the element" -
-            # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
-            %{so_far | values: [Floki.FlatText.get(selected_option)]}
-          values  -> 
-            %{so_far | values: values}
-        end
+        unselected_special_case.(so_far.original)
+      selected_option ->
+        %{so_far | values: selected_values.(selected_option)}
     end
-  end    
+  end
     
   defp add_values(%{tag: "input"} = so_far) do
     raw_values = Floki.attribute(so_far.original, "value")

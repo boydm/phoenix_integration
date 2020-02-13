@@ -272,7 +272,12 @@ defmodule PhoenixIntegration.RequestTest do
         _method: "put",
         _utf8: "✓",
         user: %{
-          joined_at: %{day: nil, hour: nil, minute: nil, month: nil, year: nil},
+          joined_at: %{
+            day: "1",
+            hour: "0",
+            minute: "0",
+            month: "1",
+            year: "2012"},
           name: "Initial Name",
           species: "human",
           story: "Initial user story",
