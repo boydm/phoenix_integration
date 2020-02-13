@@ -4,6 +4,8 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.TreeCreation
 
+  ## Note: error cases are tested elsewhere (currently `messages_test.exs`)
+
   describe "adding tags that have no collisions (and type=text)" do
     test "into an empty tree" do
       tag = """
@@ -79,37 +81,6 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       created = TreeCreation.build_tree(form)
       assert %{top_level: %{param: tag}} = created.tree
       assert tag.type == "text"
-    end
-    
-    test "a path can't have both a value and a nested value" do
-      # Phoenix does accept this, possibly by accident.
-      # The original value is lost. We complain.
-      first = """
-        <input type="text" name="top_level[param]" value="x">
-      """ |> input_to_tag
-
-      second = """
-        <input type="text" name="top_level[param][subparam]" value="y">
-      """ |> input_to_tag
-
-      
-      {:warning, :form_conflicting_paths, data} = build_tree([first, second])
-      assert_fields(data, old: first, new: second)
-    end
-
-    test "a path can't introduce a name when there's already a more deeply nested one" do
-      # Phoenix retains the earlier (more nested) value.
-      first = """
-        <input type="text" name="top_level[param][subparam]" value="y">
-      """ |> input_to_tag
-
-      second = """
-        <input type="text" name="top_level[param]" value="x">
-      """ |> input_to_tag
-
-      
-      {:warning, :form_conflicting_paths, data} = build_tree([first, second])
-      assert_fields(data, old: first, new: second)
     end
   end
 

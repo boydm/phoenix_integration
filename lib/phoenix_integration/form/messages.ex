@@ -81,7 +81,7 @@ defmodule PhoenixIntegration.Form.Messages do
   def form_conflicting_paths(self, form, %{old: old, new: new}) do
     warning(
       color(:yellow, Map.get(@messages, self)) <> "\n" <>
-      color(:yellow, "Phoenix will ignore the later one.\n") <>
+      color(:yellow, "Phoenix will ignore one of them.\n") <>
       key_values(:yellow, [
         "Earlier name", old.name,
         "  Later name", new.name,

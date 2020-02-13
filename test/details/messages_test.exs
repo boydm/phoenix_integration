@@ -49,7 +49,7 @@ defmodule PhoenixIntegration.Details.MessagesTest do
     end
 
     test "a less-nested name follows a more deeply nexted name" do
-      # Phoenix retains the earlier (more nested) value.
+      # Phoenix (currently) retains the earlier (more nested) value.
       html = """
         <input type="text" name="top_level[param][subparam]" value="y">
         <input type="text" name="top_level[param]"           value="x">
@@ -64,7 +64,23 @@ defmodule PhoenixIntegration.Details.MessagesTest do
          "top_level[param]"
         ])
     end
-    
+
+    test "a more-nested name follows a shallower one" do
+      # Phoenix (currently) loses the original value.
+      html = """
+        <input type="text" name="top_level[param]"           value="x">
+        <input type="text" name="top_level[param][subparam]" value="y">
+      """
+      form = form_for html
+
+      assert_substrings(fn -> 
+        build_form_fun(form, %{}).()
+      end,
+        [Messages.get(:form_conflicting_paths),
+         "top_level[param]",
+         "top_level[param][subparam]"
+        ])
+    end
   end
 
   describe "errors when applying test override values" do 
