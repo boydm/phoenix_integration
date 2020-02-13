@@ -11,7 +11,7 @@ defmodule PhoenixIntegration.Details.TreeFinishTest do
           <input type="text" name="top_level[first]" value="first value">
         """
         |> input_to_tag
-        |> build_tree!
+        |> test_tree!
         |> TreeFinish.to_action_params
 
       assert actual == %{top_level: %{first: "first value"}}
@@ -27,7 +27,7 @@ defmodule PhoenixIntegration.Details.TreeFinishTest do
           <input type="text" name="top_level[list][]" value="list 2"">
         """ |> input_to_tag
     ]
-    |> build_tree!
+    |> test_tree!
     |> TreeFinish.to_action_params
 
     
@@ -45,7 +45,7 @@ defmodule PhoenixIntegration.Details.TreeFinishTest do
           <input type="text" name="top_level[first]" value="first value">
         """ |> input_to_tag,
     ]
-    |> build_tree!
+    |> test_tree!
     |> TreeFinish.to_action_params
 
     assert %{top_level: %{first: "first value"}} == actual

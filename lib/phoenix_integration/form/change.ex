@@ -1,26 +1,41 @@
 defmodule PhoenixIntegration.Form.Change do
-  alias PhoenixIntegration.Form.Util
+  alias PhoenixIntegration.Form.Common
   @moduledoc """
   The test asks that a form value be changed. This struct contains 
   the information required to make the change.
   """
 
-  defstruct path: [], value: nil
+  defstruct path: [], value: nil, ignore_if_missing_from_form: false
 
+  def changes(tree), do: changes(tree, %__MODULE__{})
 
-  def to(path, new_value) when is_list(path) do
-    %__MODULE__{path: path, value: new_value}
+  defp changes(tree, %__MODULE__{} = state) when is_map(tree) do
+    if do_is_struct(tree) do
+      changes(Map.from_struct(tree), note_struct(state))
+    else
+      Enum.flat_map(tree, fn {key, value} ->
+        changes(value, note_longer_path(state, key))
+      end)
+    end 
   end
 
-  def changes(tree), do: changes(tree, [])
-
-  def changes(tree, path_prefix) when is_map(tree) do
-    Enum.flat_map(tree, fn {key, value} ->
-      changes(value, [Util.symbolize(key) | path_prefix])
-    end)
+  defp changes(value, state) do
+    [%{state |
+       path: Enum.reverse(state.path),
+       value: value
+      }]
   end
 
-  def changes(value, path_prefix) do
-    [to(Enum.reverse(path_prefix), value)]
+  # This is in the latest version of Elixir, but let's have
+  # some backward compatibility.
+  defp do_is_struct(v) do
+    v |> Map.has_key?(:__struct__)
   end
+
+  defp note_struct(%__MODULE__{} = state),
+    do: %{state | ignore_if_missing_from_form: true}
+
+  defp note_longer_path(%__MODULE__{} = state, key),
+    do: %{state | path: [Common.symbolize(key) | state.path] }
+  
 end

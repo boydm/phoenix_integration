@@ -4,56 +4,75 @@ defmodule PhoenixIntegration.Form.TreeEdit do
   within it can be overridden by leaves of a different tree provided by
   a test.
   """
-  alias PhoenixIntegration.Form.{Change, Tag}
+  alias PhoenixIntegration.Form.{Change, Tag, Common}
+
+  defstruct valid?: :true, tree: %{}, errors: []
 
   def apply_edits(tree, edit_tree) do
     changes = Change.changes(edit_tree)
     
-    reducer = fn change, {tree_so_far, errors_so_far} ->
-      case apply_change(tree_so_far, change) do
+    reducer = fn change, acc ->
+      case apply_change(acc.tree, change) do
         {:ok, new_tree} ->
-          {new_tree, errors_so_far}
-        {:error, error} ->
-          {tree_so_far, [error | errors_so_far]}
+          Common.put_tree(acc, new_tree)
+        {:error, message_atom, message_context} ->
+          Common.put_error(acc, message_atom, message_context)
       end
     end
 
-    case Enum.reduce(changes, {tree, []}, reducer) do
-      {new_tree, []} -> 
-        {:ok, new_tree}
-      {_, errors} ->
-        {:error, errors}
+    case Enum.reduce(changes, %__MODULE__{tree: tree}, reducer) do
+      %{valid?: true, tree: tree} -> {:ok, tree}
+      %{errors: errors} -> {:error, errors}
     end
   end
 
-  def apply_change!(tree, %Change{} = tag) do
-    {:ok, new_tree} = apply_change(tree, tag)
+  def apply_change!(tree, %Change{} = change) do
+    {:ok, new_tree} = apply_change(tree, change)
     new_tree
   end
   
-  def apply_change(tree, %Change{} = tag) do
+  def apply_change(tree, %Change{} = change) do
     try do
-      {:ok, apply_change(tree, tag.path, tag)}
+      {:ok, apply_change(tree, change.path, change)}
     catch
-      description ->
-        {:error, {description, tag}}
+      {description, context} ->
+        handle_oddity(description, context, tree, change)
     end
   end
+
+  def handle_oddity(:no_such_name_in_form, %{why: :possible_typo}, tree,
+    %{ignore_if_missing_from_form: true}),
+    do: {:ok, tree}
+
+  def handle_oddity(description, context, _tree, _change),
+    do: {:error, description, context}
 
   defp apply_change(tree, [last], %Change{} = change) do
     case Map.get(tree, last) do
       %Tag{} = tag ->
         Map.put(tree, last, combine(tag, change))
+      nil ->
+        throw no_such_name_in_form(:possible_typo, tree, last, change)
       _ ->
-        throw :no_such_name_in_form
+        throw no_such_name_in_form(:path_too_short, tree, last, change)
     end
   end
 
   defp apply_change(tree, [next | rest], %Change{} = change) do
     case Map.get(tree, next) do
-      _ -> 
+      %Tag{} -> 
+        throw no_such_name_in_form(:path_too_long, tree, next, change)
+      nil -> 
+        throw no_such_name_in_form(:possible_typo, tree, next, change)
+      _ ->
         Map.update!(tree, next, &(apply_change &1, rest, change))
     end
+  end
+
+  defp no_such_name_in_form(why, tree, key, change) do
+    {:no_such_name_in_form,
+     %{why: why, tree: tree, last_tried: key, change: change}
+    }
   end
 
   def combine(%Tag{} = tag, %Change{} = change) do
@@ -62,6 +81,8 @@ defmodule PhoenixIntegration.Form.TreeEdit do
         %Tag{ tag | values: change.value}
       {false, false} ->
         %Tag{ tag | values: [change.value]}
+      _ ->
+        throw {:arity_clash, %{existing: tag, change: change}}
     end
   end
 end

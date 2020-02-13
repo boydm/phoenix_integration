@@ -77,8 +77,7 @@ defmodule PhoenixIntegration.FormsTest do
   # build form data to send
 
   test "build form data works", %{form: form} do
-    form_action = "/form"
-    data = PhoenixIntegration.Requests.test_build_form_data__2(form, form_action, @user_data)
+    data = PhoenixIntegration.Requests.test_build_form_data(form, @user_data)
     %{user: user_params} = data
     assert user_params.name == @user_data.user.name
     assert user_params.type == @user_data.user.type
@@ -87,9 +86,8 @@ defmodule PhoenixIntegration.FormsTest do
   end
 
   test "build form data sets just text field", %{form: form} do
-    form_action = "/form"
     user_data = %{user: %{name: "Just Name"}}
-    data = PhoenixIntegration.Requests.test_build_form_data__2(form, form_action, user_data)
+    data = PhoenixIntegration.Requests.test_build_form_data(form, user_data)
     %{user: user_params} = data
     assert user_params.name == "Just Name"
     assert user_params.type == "type_two"
@@ -98,9 +96,8 @@ defmodule PhoenixIntegration.FormsTest do
   end
 
   test "build form data sets just select field", %{form: form} do
-    form_action = "/form"
     user_data = %{user: %{type: "type_three"}}
-    data = PhoenixIntegration.Requests.test_build_form_data__2(form, form_action, user_data)
+    data = PhoenixIntegration.Requests.test_build_form_data(form, user_data)
     %{user: user_params} = data
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_three"
@@ -109,9 +106,8 @@ defmodule PhoenixIntegration.FormsTest do
   end
 
   test "build form data sets just text area", %{form: form} do
-    form_action = "/form"
     user_data = %{user: %{story: "Just story."}}
-    data = PhoenixIntegration.Requests.test_build_form_data__2(form, form_action, user_data)
+    data = PhoenixIntegration.Requests.test_build_form_data(form, user_data)
     %{user: user_params} = data
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_two"
@@ -120,9 +116,8 @@ defmodule PhoenixIntegration.FormsTest do
   end
 
   test "build form data sets just radio", %{form: form} do
-    form_action = "/form"
     user_data = %{user: %{species: "narn"}}
-    data = PhoenixIntegration.Requests.test_build_form_data__2(form, form_action, user_data)
+    data = PhoenixIntegration.Requests.test_build_form_data(form, user_data)
     %{user: user_params} = data
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_two"
@@ -131,8 +126,6 @@ defmodule PhoenixIntegration.FormsTest do
   end
 
   test "build form data sets nested forms", %{form: form} do
-    form_action = "/form"
-
     user_data = %{
       user: %{
         tag: %{name: "new tag"},
@@ -140,7 +133,7 @@ defmodule PhoenixIntegration.FormsTest do
       }
     }
 
-    data = PhoenixIntegration.Requests.test_build_form_data__2(form, form_action, user_data)
+    data = PhoenixIntegration.Requests.test_build_form_data(form, user_data)
     %{user: user_params} = data
     assert user_params.name == "Initial Name"
     assert user_params.type == "type_two"

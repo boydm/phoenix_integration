@@ -4,6 +4,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.{TreeEdit, Change, Tag}
 
+  
   @shallow """
         <input type="text" name="top_level[first]" value="first value">
       """ |> input_to_tag
@@ -12,7 +13,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
         <input type="text" name="top_level[second][deeper]" value="deeper value">
       """ |> input_to_tag
 
-  @original_tree build_tree!([
+  @original_tree test_tree!([
     @shallow,
     @deeper,
     """
@@ -27,7 +28,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
 
   describe "successful updates" do
     test "update a scalar" do 
-      change = Change.to(@shallow.path, "different value")
+      change = change(@shallow.path, "different value")
       
       TreeEdit.apply_change(@original_tree, change)
       |> require_ok
@@ -36,7 +37,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     end
     
     test "update a deeper one, just for fun" do 
-      change = Change.to(@deeper.path, "different value")
+      change = change(@deeper.path, "different value")
       
       TreeEdit.apply_change(@original_tree, change)
       |> require_ok
@@ -44,7 +45,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     end
 
     test "update a list" do 
-      change = Change.to(@list.path, ["different", "values"])
+      change = change(@list.path, ["different", "values"])
       
       TreeEdit.apply_change(@original_tree, change)
       |> require_ok
@@ -57,7 +58,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
       numeric = 
         """
           <input type="text" name="top_level[lower][0]" value="original">
-        """ |> input_to_tag |> build_tree!
+        """ |> input_to_tag |> test_tree!
 
       [numeric: numeric]
     end
@@ -87,17 +88,6 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     end
   end
 
-  describe "error cases" do
-    @tag :skip
-    test "path of change is too short"
-    @tag :skip
-    test "path of change is too long"
-    @tag :skip
-    test "updating a scalar with an array"
-    @tag :skip
-    test "updating a list with a scalar"
-  end
-
   test "applying user edits" do
     edits = %{top_level:
               %{second: %{deeper: "new deeper value"},
@@ -109,6 +99,40 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     |> assert_changed(@deeper, values: ["new deeper value"])
     |> assert_changed(@list, values: ["shorter list"])
     |> refute_changed(@shallow)
+  end
+
+  defstruct day: nil, hour: nil
+
+  describe "handling of structures" do
+    test "a value can be set from structure keys" do
+      day =
+        """
+        <input type="text" name="top_level[day]" value="">
+        """ |> input_to_tag
+
+      hour = 
+        """
+        <input type="text" name="top_level[hour]" value="">
+        """ |> input_to_tag
+      tree = test_tree!([day, hour])
+
+      TreeEdit.apply_edits(tree, %{top_level: %__MODULE__{day: "Fri", hour: "12"}})
+      |> require_ok
+      |> assert_changed(day, values: ["Fri"])
+      |> assert_changed(hour, values: ["12"])
+    end
+
+    test "unused keys are ignored" do
+      day =
+        """
+        <input type="text" name="top_level[day]">
+        """ |> input_to_tag
+      tree = test_tree!([day])
+
+      TreeEdit.apply_edits(tree, %{top_level: %__MODULE__{day: "Fri", hour: "12"}})
+      |> require_ok
+      |> assert_changed(day, values: ["Fri"])
+    end
   end
     
 
@@ -128,4 +152,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
   def refute_changed(new_tree, %Tag{} = old_leaf) do
     assert get_in(new_tree, old_leaf.path) == old_leaf
   end
+
+  defp change(path, value), do: %Change{path: path, value: value}
+
 end

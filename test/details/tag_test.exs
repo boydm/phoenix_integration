@@ -48,6 +48,15 @@ defmodule PhoenixIntegration.Details.TagTest do
     |> assert_field(type: "text")
   end
 
+  describe "text special cases" do
+    # Can't find definitive word on this in the documentation,
+    # but this is the behavior
+    test "a text field without a value is the empty string" do
+      assert_input_values """
+        <input type="text" name="top_level[grades][a]">
+      """, [""]
+    end
+  end
 
   describe "checkbox special cases" do
     # Special cases for checkboxes as described in
@@ -132,12 +141,23 @@ defmodule PhoenixIntegration.Details.TagTest do
                       has_list_value: false)
     end
 
-    test "a simple form with no value selected" do
+    test "the first value is selected by default" do
       """
       <select class="form-control" id="user_type" name="user[type]">
-        <option value="type_one">One</option>
-        <option value="type_two">Two</option>
-        <option value="type_three">Three</option>
+        <option>One</option>
+        <option>Two</option>
+        <option>Three</option>
+      </select>
+      """
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_field(values: ["One"],
+                      has_list_value: false)
+    end
+
+    test "a silly case: no options" do
+      """
+      <select class="form-control" id="user_type" name="user[type]">
       </select>
       """
       |> Floki.parse_fragment!
@@ -145,6 +165,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> assert_field(values: [],
                       has_list_value: false)
     end
+    
 
     test "a multiple select" do
       """
@@ -204,6 +225,14 @@ defmodule PhoenixIntegration.Details.TagTest do
       assert {:warning, :tag_has_no_name, ^floki_tag} = Tag.new(floki_tag)
     end
     
+    test "name doesn't parse" do
+      floki_tag = 
+      """
+      <input name="" type="radio" checked>
+      """ |> Floki.parse_fragment!
+
+      assert {:warning, :empty_name, ^floki_tag} = Tag.new(floki_tag)
+    end
   end
 
   

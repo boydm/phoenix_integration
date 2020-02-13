@@ -443,37 +443,7 @@ defmodule PhoenixIntegration.Requests do
       find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
 
     # build the data to send to the action pointed to by the form
-    form_data = build_form_data(form, form_action, fields)
-
-    # use ConnCase to call the form's handler. return the new conn
-    request_path(conn, form_action, form_method, form_data)
-  end
-
-
-
-  def submit_form__2(conn, fields, opts \\ %{})
-
-  def submit_form__2(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
-    submit_form__2(conn, fields, Enum.into(opts, %{}))
-  end
-
-  def submit_form__2(conn = %Plug.Conn{}, fields, opts) do
-    opts =
-      Map.merge(
-        %{
-          identifier: nil,
-          method: nil,
-          finder: "form"
-        },
-        opts
-      )
-
-    # find the form
-    {:ok, form_action, form_method, form} =
-      find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
-
-    # build the data to send to the action pointed to by the form
-    form_data = build_form_data__2(form, form_action, fields)
+    form_data = build_form_data(form, fields)
 
     # use ConnCase to call the form's handler. return the new conn
     request_path(conn, form_action, form_method, form_data)
@@ -528,19 +498,6 @@ defmodule PhoenixIntegration.Requests do
     opts = Map.merge(%{max_redirects: 5}, opts)
 
     submit_form(conn, fields, opts)
-    |> follow_redirect(opts.max_redirects)
-  end
-
-  def follow_form__2(conn, fields, opts \\ %{})
-
-  def follow_form__2(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
-    follow_form__2(conn, fields, Enum.into(opts, %{}))
-  end
-
-  def follow_form__2(conn = %Plug.Conn{}, fields, opts) do
-    opts = Map.merge(%{max_redirects: 5}, opts)
-
-    submit_form__2(conn, fields, opts)
     |> follow_redirect(opts.max_redirects)
   end
 
@@ -617,7 +574,7 @@ defmodule PhoenixIntegration.Requests do
     # fetch the main form attributes
     form = %{
       method: form_method(raw_form),
-      inputs: get_form_data(raw_form)
+      inputs: tree_with_emitted_warnings(raw_form) |> TreeFinish.to_action_params
     }
 
     form =
@@ -684,16 +641,8 @@ defmodule PhoenixIntegration.Requests do
       find_html_form(html, identifier, method, form_finder)
     end
 
-    def test_build_form_data(form, form_action, fields) do
-      build_form_data(form, form_action, fields)
-    end
-
-    def test_build_form_data__2(form, form_action, fields) do
-      build_form_data__2(form, form_action, fields)
-    end
-
-    def test_build_form_data__2(form, fields) do
-      build_form_data__2(form, fields)
+    def test_build_form_data(form, fields) do
+      build_form_data(form, fields)
     end
   end
 
@@ -1070,193 +1019,20 @@ defmodule PhoenixIntegration.Requests do
   # support for building form data
 
   # ----------------------------------------------------------------------------
-  defp build_form_data(form, form_action, fields) do
-    form_data = get_form_data(form)
-    # merge the data from the form and that provided by the test
-    merge_grouped_fields(form_data, form_action, fields)
-  end
-
-  IO.puts "Remove this version of build_form_data__2"
-  defp build_form_data__2(form, _form_action, user_tree),
-    do: build_form_data__2(form, user_tree)
-  
-  defp build_form_data__2(form, user_tree) do
-    with(
-      {:ok, form_tree, warnings} <- TreeCreation.build_tree(form)
-    ) do
-      Form.Messages.emit(warnings, form)
-      case TreeEdit.apply_edits(form_tree, user_tree) do 
-        {:ok, edited_tree} ->
-          TreeFinish.to_action_params(edited_tree)
-        {:error, errors} ->
-          Form.Messages.emit(errors, form)
-          raise "Stopping"
-      end
-    end
-  end
-  
-  # defp build_form_data__3(form, user_tree) do
-  #   with(
-  #     {:ok, initial_tree, warnings} <- Tree.build_tree(form),
-  #     {:ok, result} <- Tree.merge_user_tree(initial_tree, user_tree)
-  #   ) do
-  #     log_form_warnings(warnings, form)
-  #     result
-  #   else
-  #     {:error, errors} ->
-  #       log_form_errors(errors, form)
-  #       raise "Stopping."
-  #   end
-  # end
-
-  # ----------------------------------------------------------------------------
-  defp get_form_data(form) do
-    %{}
-    |> build_form_by_type(form, "input")
-    |> build_form_by_type(form, "textarea")
-    |> build_form_by_type(form, "select")
-  end
-
-  # ----------------------------------------------------------------------------
-  defp build_form_by_type(acc, form, input_type) do
-    Enum.reduce(Floki.find(form, input_type), acc, fn input, acc ->
-      case input_to_key_value(input, input_type) do
-        {:ok, input_map} ->
-          merge_input(acc, input_map)
-
-        {:error, _} ->
-          # do nothing
-          acc
-      end
-    end)
-  end
-
-  defp merge_input(acc, input_map) do
-    Enum.reduce(input_map, acc, fn {k, v}, acc ->
-      case v do
-        nil ->
-          case acc[k] do
-            nil ->
-              Map.put(acc, k, nil)
-
-            _ ->
-              acc
-          end
-
-        # nested input
-        %{} = input_child ->
-          case acc[k] do
-            nil ->
-              Map.put(acc, k, v)
-
-            %{} = acc_child ->
-              Map.put(acc, k, merge_input(acc_child, input_child))
-          end
-
-        # simple non-map value
-        _ ->
-          Map.put(acc, k, v)
-      end
-    end)
-  end
-
-  # ----------------------------------------------------------------------------
-  defp input_to_key_value(input, input_type) do
-    case Floki.attribute(input, "name") do
-      [] -> {:error, :no_name}
-      [name] -> interpret_named_value(name, get_input_value(input, input_type))
-      _ -> {:error, :unknown_format}
+  defp build_form_data(form, user_tree) do
+    tree = tree_with_emitted_warnings(form)
+    case TreeEdit.apply_edits(tree, user_tree) do
+      {:ok, edited} ->
+        TreeFinish.to_action_params(edited)
+      {:error, errors} ->
+        Form.Messages.emit(errors, form)
+        raise "Stopping"
     end
   end
 
-  # ----------------------------------------------------------------------------
-  defp merge_grouped_fields(map, form_action, fields) do
-    Enum.reduce(fields, map, fn {k, v}, acc ->
-      cond do
-        is_map(v) && !do_is_struct(v) ->
-          sub_map = merge_grouped_fields(acc[k] || %{}, form_action, v)
-          put_if_available!(acc, k, sub_map, form_action)
-
-        true ->
-          put_if_available!(acc, k, v, form_action)
-      end
-    end)
-  end
-
-  # ----------------------------------------------------------------------------
-  defp put_if_available!(map, key, value, form_action) do
-    case Map.has_key?(map, key) do
-      true ->
-        Map.put(map, key, value)
-
-      false ->
-        msg =
-          "#{IO.ANSI.red()}Attempted to set missing input in form\n" <>
-            "#{IO.ANSI.green()}Form action: #{IO.ANSI.red()}#{form_action}\n" <>
-            "#{IO.ANSI.green()}Setting key: #{IO.ANSI.red()}#{key}\n" <>
-            "#{IO.ANSI.green()}And value: #{IO.ANSI.red()}#{value}\n" <>
-            "#{IO.ANSI.green()}Into fields: #{IO.ANSI.yellow()}" <> inspect(map)
-
-        raise msg
-    end
-  end
-
-  # ----------------------------------------------------------------------------
-  defp get_input_value(input, "input") do
-    # if the input is a radio input, then see if it is checked. If it isn't, the value is nil
-    case Floki.attribute(input, "type") do
-      ["radio"] ->
-        case Floki.attribute(input, "checked") do
-          ["checked"] ->
-            Floki.attribute(input, "value")
-
-          # not checked. value is nil
-          _ ->
-            [nil]
-        end
-
-      _ ->
-        # not a radio. simply get the value
-        Floki.attribute(input, "value")
-    end
-  end
-
-  defp get_input_value(input, "textarea"), do: [Floki.FlatText.get(input)]
-
-  defp get_input_value(input, "select") do
-    Floki.find(input, "option[selected]")
-    |> Floki.attribute("value")
-  end
-
-  # ----------------------------------------------------------------------------'
-  defp interpret_named_value(name, value) do
-    case value do
-      [] -> build_named_value(name, nil)
-      [value] -> build_named_value(name, value)
-      _ -> {:error, :unknown_format}
-    end
-  end
-
-  # ----------------------------------------------------------------------------'
-  defp build_named_value(name, value) do
-    case Regex.scan(~r/\w+/, name) do
-      [] ->
-        {:error, :unknown_format}
-
-      keys ->
-        {:ok, nested_value(keys, value)}
-    end
-  end
-
-  defp nested_value([[key] | keys], value) do
-    %{String.to_atom(key) => nested_value(keys, value)}
-  end
-
-  defp nested_value([], value) do
-    value
-  end
-
-  defp do_is_struct(v) do
-    v |> Map.has_key?(:__struct__)
+  defp tree_with_emitted_warnings(form) do
+    created = TreeCreation.build_tree(form)
+    Form.Messages.emit(created.warnings, form)
+    created.tree
   end
 end

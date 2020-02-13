@@ -1,5 +1,5 @@
 defmodule PhoenixIntegration.Form.Tag do
-  alias PhoenixIntegration.Form.Util
+  alias PhoenixIntegration.Form.Common
 
   @moduledoc """
   This is a representation of a value-providing tag in a Phoenix-style
@@ -30,17 +30,14 @@ defmodule PhoenixIntegration.Form.Tag do
     path: [],
     # The name of the tag, like `"input"`
     tag: "",
-    # Where relevant, the value of the "type=" attribute of the tag, or nil.
+    # Where relevant, the value of the "type=" attribute of the tag.
+    # Otherwise should be unused.
     type: nil,
     # Whether the particular value is checked (checkboxes, someday multi-selects).
     checked: false,
     # The original Floki tag, for convenience.
     original: nil
   
-  IO.puts "Should the tree as delivered to the controller be turned into strings?"
-  # Note the case where a form uses integer ids as keys (as in a list of
-  # checkboxes from which a user will select a set of animals).
-
   def new!(floki_tag) do
     {:ok, %__MODULE__{} = tag} = new(floki_tag)
     tag
@@ -49,19 +46,21 @@ defmodule PhoenixIntegration.Form.Tag do
   def new(floki_tag) do
     with(
       [name] <- Floki.attribute(floki_tag, "name"),
-      :ok <- check_phoenix_conventions(name)
+      :ok <- check_name(name)
     ) do
       {:ok, safe_new(floki_tag, name)}
     else
       [] ->
         {:warning, :tag_has_no_name, floki_tag}
+      :empty_name ->
+        {:warning, :empty_name, floki_tag}
     end
   end
 
   defp safe_new(floki_tag, name) do
     type =
       case Floki.attribute(floki_tag, "type") do
-        [] -> nil
+        [] -> "`type` irrelevant for `#{name}`"
         [x] -> x
       end
 
@@ -96,21 +95,37 @@ defmodule PhoenixIntegration.Form.Tag do
   end    
     
   defp add_values(%{tag: "select"} = so_far) do
+    selected_values = fn selected_option ->
+      case Floki.attribute(selected_option, "value") do
+        [] ->
+          # "if no value attribute is included, the value defaults to the
+          # text contained inside the element" -
+          # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
+          [Floki.FlatText.get(selected_option)]
+        values -> 
+          values
+      end
+    end
+
+    unselected_special_case = fn select ->
+      case Floki.find(select, "option") do
+        [first|_rest] ->
+          # I don't see it explicitly stated, but the value of
+          # a `select` with no selected option is the value of
+          # the first option.
+          %{so_far | values: selected_values.(first)}
+        [] -> # A `select` with no options is pretty silly. Nevertheless.
+          %{so_far | values: []}
+      end
+    end
+
     case Floki.find(so_far.original, "option[selected]") do
       [] ->
-        %{so_far | values: []}
-      selected_option -> 
-        case Floki.attribute(selected_option, "value") do
-          [] ->
-            # "if no value attribute is included, the value defaults to the
-            # text contained inside the element" -
-            # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
-            %{so_far | values: [Floki.FlatText.get(selected_option)]}
-          values  -> 
-            %{so_far | values: values}
-        end
+        unselected_special_case.(so_far.original)
+      selected_option ->
+        %{so_far | values: selected_values.(selected_option)}
     end
-  end    
+  end
     
   defp add_values(%{tag: "input"} = so_far) do
     raw_values = Floki.attribute(so_far.original, "value")
@@ -126,6 +141,9 @@ defmodule PhoenixIntegration.Form.Tag do
   defp apply_input_special_cases(%{type: "radio"} = so_far, raw_values),
     do: tags_with_checked_attribute(so_far, raw_values)
 
+  defp apply_input_special_cases(%{type: "text"}, []),
+    do: [""]
+
   defp apply_input_special_cases(_so_far, raw_values), do: raw_values
 
   defp tags_with_checked_attribute(so_far, raw_values) do
@@ -139,13 +157,13 @@ defmodule PhoenixIntegration.Form.Tag do
   defp path_to(name) do
     name
     |> separate_name_pieces
-    |> Enum.map(&(List.first(&1) |> Util.symbolize))
+    |> Enum.map(&(List.first(&1) |> Common.symbolize))
   end
     
-  defp check_phoenix_conventions(name) do
+  defp check_name(name) do
     case separate_name_pieces(name) do
       [] ->
-        {:error, :unknown_format}
+        :empty_name
       _ ->
         :ok
     end
