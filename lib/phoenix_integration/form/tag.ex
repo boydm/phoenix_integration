@@ -141,6 +141,9 @@ defmodule PhoenixIntegration.Form.Tag do
   defp apply_input_special_cases(%{type: "radio"} = so_far, raw_values),
     do: tags_with_checked_attribute(so_far, raw_values)
 
+  defp apply_input_special_cases(%{type: "text"}, []),
+    do: [""]
+
   defp apply_input_special_cases(_so_far, raw_values), do: raw_values
 
   defp tags_with_checked_attribute(so_far, raw_values) do

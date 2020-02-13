@@ -48,7 +48,15 @@ defmodule PhoenixIntegration.Details.TagTest do
     |> assert_field(type: "text")
   end
 
-  IO.puts "Should text fields without values be defined as empty string?"
+  describe "text special cases" do
+    # Can't find definitive word on this in the documentation,
+    # but this is the behavior
+    test "a text field without a value is the empty string" do
+      assert_input_values """
+        <input type="text" name="top_level[grades][a]">
+      """, [""]
+    end
+  end
 
   describe "checkbox special cases" do
     # Special cases for checkboxes as described in
