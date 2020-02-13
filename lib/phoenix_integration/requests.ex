@@ -443,37 +443,7 @@ defmodule PhoenixIntegration.Requests do
       find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
 
     # build the data to send to the action pointed to by the form
-    form_data = build_form_data__2(form, fields)
-
-    # use ConnCase to call the form's handler. return the new conn
-    request_path(conn, form_action, form_method, form_data)
-  end
-
-
-
-  def submit_form__2(conn, fields, opts \\ %{})
-
-  def submit_form__2(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
-    submit_form__2(conn, fields, Enum.into(opts, %{}))
-  end
-
-  def submit_form__2(conn = %Plug.Conn{}, fields, opts) do
-    opts =
-      Map.merge(
-        %{
-          identifier: nil,
-          method: nil,
-          finder: "form"
-        },
-        opts
-      )
-
-    # find the form
-    {:ok, form_action, form_method, form} =
-      find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
-
-    # build the data to send to the action pointed to by the form
-    form_data = build_form_data__2(form, fields)
+    form_data = build_form_data(form, fields)
 
     # use ConnCase to call the form's handler. return the new conn
     request_path(conn, form_action, form_method, form_data)
@@ -518,16 +488,16 @@ defmodule PhoenixIntegration.Requests do
           }})
         |> assert_response( status: 200, path: thing_path(conn, :show, thing) )
   """
-  def follow_form__2(conn, fields, opts \\ %{})
+  def follow_form(conn, fields, opts \\ %{})
 
-  def follow_form__2(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
-    follow_form__2(conn, fields, Enum.into(opts, %{}))
+  def follow_form(conn = %Plug.Conn{}, fields, opts) when is_list(opts) do
+    follow_form(conn, fields, Enum.into(opts, %{}))
   end
 
-  def follow_form__2(conn = %Plug.Conn{}, fields, opts) do
+  def follow_form(conn = %Plug.Conn{}, fields, opts) do
     opts = Map.merge(%{max_redirects: 5}, opts)
 
-    submit_form__2(conn, fields, opts)
+    submit_form(conn, fields, opts)
     |> follow_redirect(opts.max_redirects)
   end
 
@@ -671,8 +641,8 @@ defmodule PhoenixIntegration.Requests do
       find_html_form(html, identifier, method, form_finder)
     end
 
-    def test_build_form_data__2(form, fields) do
-      build_form_data__2(form, fields)
+    def test_build_form_data(form, fields) do
+      build_form_data(form, fields)
     end
   end
 
@@ -1049,7 +1019,7 @@ defmodule PhoenixIntegration.Requests do
   # support for building form data
 
   # ----------------------------------------------------------------------------
-  defp build_form_data__2(form, user_tree) do
+  defp build_form_data(form, user_tree) do
     tree = tree_with_emitted_warnings(form)
     case TreeEdit.apply_edits(tree, user_tree) do
       {:ok, edited} ->

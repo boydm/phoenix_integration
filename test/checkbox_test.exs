@@ -1,7 +1,7 @@
 defmodule PhoenixIntegration.CheckboxTest do
   use ExUnit.Case, async: true
   use Phoenix.ConnTest
-  import PhoenixIntegration.Requests, only: [test_build_form_data__2: 2]
+  import PhoenixIntegration.Requests, only: [test_build_form_data: 2]
   @endpoint PhoenixIntegration.TestEndpoint
 
   setup do
@@ -44,7 +44,7 @@ defmodule PhoenixIntegration.CheckboxTest do
       %{form_with_hidden: form} do
       
       %{animals: %{chosen: checked}} =
-        test_build_form_data__2(form, %{})
+        test_build_form_data(form, %{})
       assert checked == %{"1": "false", "2": "false"}
     end
 
@@ -52,7 +52,7 @@ defmodule PhoenixIntegration.CheckboxTest do
       %{form_with_hidden: form} do
 
       %{animals: %{chosen: checked}} =
-        test_build_form_data__2(form, %{animals: %{chosen: 
+        test_build_form_data(form, %{animals: %{chosen: 
           %{:"2" => "true"}}})
 
       assert checked == %{"1": "false", "2": "true"}
@@ -60,7 +60,7 @@ defmodule PhoenixIntegration.CheckboxTest do
 
     test "setting all the values", %{form_with_hidden: form} do
       %{animals: %{chosen: checked}} =
-        test_build_form_data__2(form, %{animals: %{chosen: 
+        test_build_form_data(form, %{animals: %{chosen: 
           %{:"1" => "false", :"2" => "true"}}})
 
       assert checked == %{"1": "false", "2": "true"}
@@ -90,14 +90,14 @@ defmodule PhoenixIntegration.CheckboxTest do
       #
       #  %{animals: %{chosen: %{}}}
       assert %{animals: %{}} =
-        test_build_form_data__2(form, %{})
+        test_build_form_data(form, %{})
     end
 
     test "if one value is checked in the test, only that value is sent",
       %{form_without_hidden: form} do
 
       %{animals: %{chosen: checked}} =
-        test_build_form_data__2(form, %{animals: %{chosen: 
+        test_build_form_data(form, %{animals: %{chosen: 
           %{:"1" => "true"}}})
 
       assert checked == %{:"1" => "true"}
@@ -107,7 +107,7 @@ defmodule PhoenixIntegration.CheckboxTest do
       %{form_without_hidden: form} do
 
       %{animals: %{chosen: checked}} =
-        test_build_form_data__2(form, %{animals: %{chosen: 
+        test_build_form_data(form, %{animals: %{chosen: 
           %{:"1" => "true", :"2" => "true"}}})
 
       assert checked == %{:"1" => "true", :"2" => "true"}
@@ -128,14 +128,12 @@ defmodule PhoenixIntegration.CheckboxTest do
       %{form_without_hidden: form} do
 
       %{animals: %{chosen: checked}} =
-        test_build_form_data__2(form, %{animals: %{chosen: 
+        test_build_form_data(form, %{animals: %{chosen: 
           %{:"1" => "true", :"2" => "false"}}})
 
       assert checked == %{:"1" => "true"}
     end
   end
-
-
 
   def find_form(id) do 
     html = get(build_conn(:get, "/"), "/checkbox").resp_body

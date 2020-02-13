@@ -240,7 +240,7 @@ defmodule PhoenixIntegration.Details.MessagesTest do
 
   def build_form_fun(form, user_data) do
     fn ->
-      PhoenixIntegration.Requests.test_build_form_data__2(form, user_data)
+      PhoenixIntegration.Requests.test_build_form_data(form, user_data)
     end
   end
 
