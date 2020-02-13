@@ -36,9 +36,16 @@ defmodule PhoenixIntegration.Form.TreeEdit do
       {:ok, apply_change(tree, change.path, change)}
     catch
       {description, context} ->
-        {:error, description, context}
+        handle_oddity(description, context, tree, change)
     end
   end
+
+  def handle_oddity(:no_such_name_in_form, %{why: :possible_typo}, tree,
+    %{ignore_if_missing_from_form: true}),
+    do: {:ok, tree}
+
+  def handle_oddity(description, context, _tree, _change),
+    do: {:error, description, context}
 
   defp apply_change(tree, [last], %Change{} = change) do
     case Map.get(tree, last) do

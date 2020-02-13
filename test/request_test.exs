@@ -213,7 +213,6 @@ defmodule PhoenixIntegration.RequestTest do
     |> assert_response(status: 200, path: "/second")
   end
 
-  @tag :skip
   test "follow_form__2 works on upload", %{conn: conn} do
     upload = %Plug.Upload{content_type: "text", path: "mix.exs", filename: "mix.exs"}
 
@@ -222,7 +221,6 @@ defmodule PhoenixIntegration.RequestTest do
     |> assert_response(status: 200, path: "/second")
   end
 
-  @tag :skip
   test "follow_form__2 works on dates", %{conn: conn} do
     get(conn, "/sample")
     |> follow_form__2(

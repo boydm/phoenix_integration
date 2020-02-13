@@ -48,6 +48,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     |> assert_field(type: "text")
   end
 
+  IO.puts "Should text fields without values be defined as empty string?"
 
   describe "checkbox special cases" do
     # Special cases for checkboxes as described in

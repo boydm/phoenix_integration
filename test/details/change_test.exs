@@ -1,17 +1,9 @@
 defmodule PhoenixIntegration.Details.ChangeTest do
   use ExUnit.Case, async: true
   import PhoenixIntegration.Assertions.Map
-  import PhoenixIntegration.FormSupport
+  # import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.Change
 
-  test "to" do
-    tag = """
-      <input name="top_level[animal]" value="x">
-    """
-    |> input_to_tag
-
-    assert Change.to(tag.path, "not x") == %Change{path: tag.path, value: "not x"}
-  end
 
   describe "changes" do 
     test "typical case" do
@@ -47,6 +39,47 @@ defmodule PhoenixIntegration.Details.ChangeTest do
     end
   end
 
-  defp sort_by_value(changes),
-    do: Enum.sort_by(changes, &(to_string &1.value))
+  defstruct shallow: nil, deep: %{}
+
+  describe "structs produce optional paths" do
+    test "a simple case" do
+      input = %{top_level:
+                %{struct: %__MODULE__{shallow: "shallow"}}}
+
+      [only] = Change.changes(input)
+
+      assert_fields(only,
+        path: [:top_level, :struct, :shallow],
+        value: "shallow",
+        ignore_if_missing_from_form: true)
+    end
+
+    test "a nested case" do
+      input = %{top_level:
+                %{struct: %__MODULE__{
+                     shallow: "shallow",
+                     deep: %__MODULE__{shallow: "deeper shallow"}},
+                  non_struct: "simple"}}
+
+      [deeper, shallow, simple] = Change.changes(input) |> sort_by_value
+
+      assert_fields(deeper,
+        path: [:top_level, :struct, :deep, :shallow],
+        value: "deeper shallow",
+        ignore_if_missing_from_form: true)
+      assert_fields(shallow,
+        path: [:top_level, :struct, :shallow],
+        value: "shallow",
+        ignore_if_missing_from_form: true)
+      assert_fields(simple,
+        path: [:top_level, :non_struct],
+        value: "simple",
+        ignore_if_missing_from_form: false)
+    end
+
+  end
+
+  defp sort_by_value(changes) do
+    Enum.sort_by(changes, &(to_string &1.value))
+  end
 end
