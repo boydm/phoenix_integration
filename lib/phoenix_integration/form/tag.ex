@@ -65,7 +65,7 @@ defmodule PhoenixIntegration.Form.Tag do
       end
 
     checked = Floki.attribute(floki_tag, "checked") != []
-    
+
     %__MODULE__{tag: tag_name(floki_tag),
                 original: floki_tag,
                 type: type,
@@ -108,13 +108,15 @@ defmodule PhoenixIntegration.Form.Tag do
     end
 
     unselected_special_case = fn select ->
-      case Floki.find(select, "option") do
-        [first|_rest] ->
-          # I don't see it explicitly stated, but the value of
-          # a `select` with no selected option is the value of
-          # the first option.
+      case {Floki.find(select, "option"), Floki.attribute(select, "multiple")} do
+        {[first|_rest], []} ->
+          # I don't see it explicitly stated, but the value of a
+          # non-multiple `select` with no selected option is the value
+          # of the first option.
           %{so_far | values: selected_values.(first)}
-        [] -> # A `select` with no options is pretty silly. Nevertheless.
+        {[_first|_rest], _} ->
+          %{so_far | values: []}
+        {[], _} -> # A `select` with no options is pretty silly. Nevertheless.
           %{so_far | values: []}
       end
     end
