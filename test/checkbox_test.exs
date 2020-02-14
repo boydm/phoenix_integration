@@ -53,7 +53,7 @@ defmodule PhoenixIntegration.CheckboxTest do
 
       %{animals: %{chosen: checked}} =
         test_build_form_data(form, %{animals: %{chosen: 
-          %{:"2" => "true"}}})
+          %{"2" => "true"}}})
 
       assert checked == %{"1": "false", "2": "true"}
     end
@@ -83,14 +83,10 @@ defmodule PhoenixIntegration.CheckboxTest do
 
     test "if nothing is 'checked' in the test, no values are sent",
       %{form_without_hidden: form} do
-
-      # I think there's no way, given HTTP, to avoid having no
-      # `chosen` field when nothing has been checked. That is, we
-      # can't match on this:
-      #
-      #  %{animals: %{chosen: %{}}}
-      assert %{animals: %{}} =
-        test_build_form_data(form, %{})
+      # It would be unusual for a form to *only* have non-values, but - 
+      # if it does - not even the top level key will be available to the
+      # controller action.
+      assert %{} == test_build_form_data(form, %{})
     end
 
     test "if one value is checked in the test, only that value is sent",

@@ -7,6 +7,8 @@ defmodule PhoenixIntegration.Form.TreeFinish do
 
   def to_action_params(tree) when is_map(tree) do
     Enum.reduce(tree, %{}, &to_action_params/2)
+    |> Enum.reject(fn {_key, val} -> val == %{} end)
+    |> Map.new
   end
 
   defp to_action_params({key, %Tag{} = tag}, acc) do 

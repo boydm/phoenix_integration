@@ -47,7 +47,6 @@ defmodule PhoenixIntegration.Details.TreeFinishTest do
     assert %{animals: %{name: ""}} == actual
   end
 
-  @tag :skip
   test "pruning of the tree when a branch has no values" do
     actual = [
       ~s| <input name="animals[name]" type="text" value="Bossie"/> |,
@@ -91,6 +90,7 @@ defmodule PhoenixIntegration.Details.TreeFinishTest do
     |> test_tree!
     |> TreeFinish.to_action_params
 
-    assert %{animals: %{}} == actual
+    # Since there's nothing else in the form, nothing is actually sent.
+    assert %{} == actual
   end    
 end
