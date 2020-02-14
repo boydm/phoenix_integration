@@ -392,7 +392,7 @@ defmodule PhoenixIntegration.Requests do
   ### Parameters
     * `conn` should be a conn returned from a previous request that rendered some html. The
       functions are designed to pass the conn from one call into the next via pipes.
-    * `fields` a map of fields and data to be written into the form before submitting it's action.
+    * `fields` a map of fields and data to be written into the form before submitting its action.
     * `opts` A map of additional options
       * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
         in the following forms:
@@ -461,7 +461,11 @@ defmodule PhoenixIntegration.Requests do
   ### Parameters
     * `conn` should be a conn returned from a previous request that rendered some html. The
       functions are designed to pass the conn from one call into the next via pipes.
-    * `fields` a map of fields and data to be written into the form before submitting it's action.
+    * `fields` a map of fields and data to be written into the form before submitting its action. The data can take one of three forms:
+      * Most frequently, it's a string.
+      * It can be a list of strings. That's used when a set of tags in the form have names ending with `[]` to tell Phoenix to create a list value. See the example below.
+      * It can be an Elixir struct like `DateTime` or [`%Plug.Upload`](https://hexdocs.pm/plug/Plug.Upload.html).
+        In that case, the fields within the struct are used to find matching tags (by name) in the form. Fields that don't match are ignored. See the example below.
     * `opts` A map of additional options
       * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
         in the following forms:
@@ -480,13 +484,30 @@ defmodule PhoenixIntegration.Requests do
   If no appropriate form is found, `follow_form` raises an error.
 
   ### Example:
+        upload = %Plug.Upload{
+          content_type: "image/jpg",
+          path: "/var/mytests/photo.jpg",
+          filename: "photo.jpg"}
+  
         # fill out a form and submit it
         get( conn, thing_path(conn, :edit, thing) )
         |> follow_form( %{ thing: %{
             name: "Updated Name",
-            some_count: 42
+            some_count: 42,
+            comments: ["first", "second"],
+            photo: upload
           }})
         |> assert_response( status: 200, path: thing_path(conn, :show, thing) )
+
+  In this example, the form would contain list-creating HTML like this:
+
+       <input id="comment1" type="text" name="thing[comments][]" value="">
+       <input id="comment2" type="text" name="thing[comments][]" value="">
+
+  The photo part of the form would probably have been created like this:
+
+       <%= file_input f, :photo %>  
+        
   """
   def follow_form(conn, fields, opts \\ %{})
 

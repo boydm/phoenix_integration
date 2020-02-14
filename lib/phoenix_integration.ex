@@ -18,6 +18,9 @@ defmodule PhoenixIntegration do
 
   Do this up before compiling phoenix_integration as part of step 2. If you change the endpoint in the config file, you will need to recompile the phoenix_integration dependency.
 
+  Phoenix_integration will produce warnings if your HTML likely doesn't do what you meant. (For example, it will warn you if two text fields have the same name.) You can turn those off by adding `warnings: false` to the config.
+
+
 
   ### Step 2
 
