@@ -61,7 +61,7 @@ defmodule PhoenixIntegration.CheckboxTest do
     test "setting all the values", %{form_with_hidden: form} do
       %{animals: %{chosen: checked}} =
         test_build_form_data(form, %{animals: %{chosen: 
-          %{:"1" => "false", :"2" => "true"}}})
+          %{"1" => "false", "2" => "true"}}})
 
       assert checked == %{"1": "false", "2": "true"}
     end
@@ -98,7 +98,7 @@ defmodule PhoenixIntegration.CheckboxTest do
 
       %{animals: %{chosen: checked}} =
         test_build_form_data(form, %{animals: %{chosen: 
-          %{:"1" => "true"}}})
+          %{"1" => "true"}}})
 
       assert checked == %{:"1" => "true"}
     end
@@ -108,7 +108,7 @@ defmodule PhoenixIntegration.CheckboxTest do
 
       %{animals: %{chosen: checked}} =
         test_build_form_data(form, %{animals: %{chosen: 
-          %{:"1" => "true", :"2" => "true"}}})
+          %{"1" => "true", "2" => "true"}}})
 
       assert checked == %{:"1" => "true", :"2" => "true"}
     end
