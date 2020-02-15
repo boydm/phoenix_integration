@@ -595,7 +595,7 @@ defmodule PhoenixIntegration.Requests do
     # fetch the main form attributes
     form = %{
       method: form_method(raw_form),
-      inputs: tree_with_emitted_warnings(raw_form) |> TreeFinish.to_action_params
+      inputs: tree_after_emitted_warnings(raw_form) |> TreeFinish.to_action_params
     }
 
     form =
@@ -1041,7 +1041,7 @@ defmodule PhoenixIntegration.Requests do
 
   # ----------------------------------------------------------------------------
   defp build_form_data(form, user_tree) do
-    tree = tree_with_emitted_warnings(form)
+    tree = tree_after_emitted_warnings(form)
     case TreeEdit.apply_edits(tree, user_tree) do
       {:ok, edited} ->
         TreeFinish.to_action_params(edited)
@@ -1051,7 +1051,7 @@ defmodule PhoenixIntegration.Requests do
     end
   end
 
-  defp tree_with_emitted_warnings(form) do
+  defp tree_after_emitted_warnings(form) do
     created = TreeCreation.build_tree(form)
     Form.Messages.emit(created.warnings, form)
     created.tree

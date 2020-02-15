@@ -2,16 +2,10 @@ defmodule PhoenixIntegration.Form.Tag do
   alias PhoenixIntegration.Form.Common
 
   @moduledoc """
-  This is a representation of a value-providing tag in a Phoenix-style
-  HTML form. It converts Floki tag structures into a more convenient form,
-  and transforms data.
-
-  It is used to construct trees like the params delivered to
-  a Phoenix controller, except that all the keys are symbols rather
-  than strings (for the user's convenience).
-
-  In an intermediate step, each leaf is a `Form.Tag` which is later converted
-  into a normal (string) HTTP value.
+  A `Tag` is a representation of a value-providing HTML tag within a
+  Phoenix-style HTML form. Tags live on the leaves of a tree (nested
+  `Map`) representing the whole form. See [DESIGN.md](./DESIGN.md) for
+  more.
   """
 
   # There are two types of tags.
@@ -28,14 +22,14 @@ defmodule PhoenixIntegration.Form.Tag do
     # The path is the name split up into a list of symbols representing
     # the tree structure implied by the[bracketed[name]].
     path: [],
-    # The name of the tag, like `"input"`
+    # The tag itself, like `"input"` or "textarea".
     tag: "",
     # Where relevant, the value of the "type=" attribute of the tag.
     # Otherwise should be unused.
     type: nil,
-    # Whether the particular value is checked (checkboxes, someday multi-selects).
+    # Whether the particular value is checked (checkboxes, selects).
     checked: false,
-    # The original Floki tag, for convenience.
+    # The original Floki tag.
     original: nil
   
   def new!(floki_tag) do
@@ -76,86 +70,93 @@ defmodule PhoenixIntegration.Form.Tag do
     |> add_values
   end
 
-  defp add_fields_that_depend_on_name(so_far) do
-    has_list_value = String.ends_with?(so_far.name, "[]")
+  # ----------------------------------------------------------------------------
+  defp add_fields_that_depend_on_name(incomplete_tag) do
+    has_list_value = String.ends_with?(incomplete_tag.name, "[]")
     path =
       case has_list_value do
-        false -> path_to(so_far.name)
-        true -> path_to(String.trim_trailing(so_far.name, "[]"))
+        false -> path_to(incomplete_tag.name)
+        true -> path_to(String.trim_trailing(incomplete_tag.name, "[]"))
       end
 
-    %{ so_far |
+    %{ incomplete_tag |
        path: path,
        has_list_value: has_list_value}
   end
 
-  defp add_values(%{tag: "textarea"} = so_far) do
-    raw_value = Floki.FlatText.get(so_far.original)
-    %{so_far | values: [raw_value]}
+  # ----------------------------------------------------------------------------
+  defp add_values(%{tag: "textarea"} = incomplete_tag) do
+    raw_value = Floki.FlatText.get(incomplete_tag.original)
+    %{incomplete_tag | values: [raw_value]}
   end    
     
-  defp add_values(%{tag: "select"} = so_far) do
-    selected_values = fn selected_option ->
-      case Floki.attribute(selected_option, "value") do
+  defp add_values(%{tag: "select"} = incomplete_tag) do
+    selected_values = fn selected_options ->
+      case Floki.attribute(selected_options, "value") do
         [] ->
           # "if no value attribute is included, the value defaults to the
           # text contained inside the element" -
           # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
-          [Floki.FlatText.get(selected_option)]
+          [Floki.FlatText.get(selected_options)]
         values -> 
           values
       end
     end
 
-    unselected_special_case = fn select ->
-      case {Floki.find(select, "option"), Floki.attribute(select, "multiple")} do
-        {[first|_rest], []} ->
-          # I don't see it explicitly stated, but the value of a
-          # non-multiple `select` with no selected option is the value
-          # of the first option.
-          %{so_far | values: selected_values.(first)}
-        {[_first|_rest], _} ->
-          %{so_far | values: []}
-        {[], _} -> # A `select` with no options is pretty silly. Nevertheless.
-          %{so_far | values: []}
+    value_when_no_option_is_selected = fn select ->
+      multiple? = Floki.attribute(select, "multiple") != []
+      options = Floki.find(select, "option")
+      case {multiple?, options} do
+        # I don't see it explicitly stated, but the value of a
+        # non-multiple `select` with no selected option is the value
+        # of the first option.
+        {false, [first|_rest]} -> selected_values.(first)
+        {true, _}              -> []
+        # A `select` with no options is pretty silly. Nevertheless.        
+        {_, []}                -> []
       end
     end
 
-    case Floki.find(so_far.original, "option[selected]") do
-      [] ->
-        unselected_special_case.(so_far.original)
-      selected_option ->
-        %{so_far | values: selected_values.(selected_option)}
-    end
+    values = 
+      case Floki.find(incomplete_tag.original, "option[selected]") do
+        [] ->
+          value_when_no_option_is_selected.(incomplete_tag.original)
+        selected_options ->
+          selected_values.(selected_options)
+      end
+    %{incomplete_tag | values: values}
   end
     
-  defp add_values(%{tag: "input"} = so_far) do
-    raw_values = Floki.attribute(so_far.original, "value")
-    %{so_far | values: apply_input_special_cases(so_far, raw_values)}
+  defp add_values(%{tag: "input"} = incomplete_tag) do
+    raw_values = Floki.attribute(incomplete_tag.original, "value")
+    %{incomplete_tag | values: apply_input_special_cases(incomplete_tag, raw_values)}
   end
 
-  # Special cases as described in
+  # ----------------------------------------------------------------------------
+  # Special cases for `input` tags as described in
   # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/checkbox
   # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio  
-  defp apply_input_special_cases(%{type: "checkbox"} = so_far, raw_values),
-    do: tags_with_checked_attribute(so_far, raw_values)
+  defp apply_input_special_cases(%{type: "checkbox"} = incomplete_tag, values),
+    do: tags_with_checked_attribute(incomplete_tag, values)
 
-  defp apply_input_special_cases(%{type: "radio"} = so_far, raw_values),
-    do: tags_with_checked_attribute(so_far, raw_values)
+  defp apply_input_special_cases(%{type: "radio"} = incomplete_tag, values),
+    do: tags_with_checked_attribute(incomplete_tag, values)
 
   defp apply_input_special_cases(%{type: "text"}, []),
     do: [""]
 
-  defp apply_input_special_cases(_so_far, raw_values), do: raw_values
+  defp apply_input_special_cases(_incomplete_tag, values), do: values
 
-  defp tags_with_checked_attribute(so_far, raw_values) do
-    case {so_far.checked, raw_values} do 
+  # ----------------------------------------------------------------------------
+  defp tags_with_checked_attribute(incomplete_tag, values) do
+    case {incomplete_tag.checked, values} do 
       {true,[]} -> ["on"]
       {true,values} -> values
       {false,_} -> []
     end
   end
 
+  # ----------------------------------------------------------------------------
   defp path_to(name) do
     name
     |> separate_name_pieces
