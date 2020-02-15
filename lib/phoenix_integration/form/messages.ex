@@ -20,18 +20,28 @@ defmodule PhoenixIntegration.Form.Messages do
   # Entry point
 
   def emit(message_tuples, form) do
-    message_tuples
-    |> Enum.map(fn {message_atom, data} ->
-         to_iodata(message_atom, form, data)
-       end)
+    Enum.map(message_tuples, fn {message_atom, data} ->
+      emit_one(message_atom, form, data)
+    end)
   end
 
-  defp to_iodata(message_atom, form, context) when is_list(context) do
-    apply(__MODULE__, message_atom, [get(message_atom), form] ++ context)    
+  defp emit_one(message_atom, form, context) when is_list(context) do
+    {severity, iodata} =
+      apply(__MODULE__, message_atom, [get(message_atom), form] ++ context)
+    warnings? = Application.get_env(:phoenix_integration, :warnings, true)
+    
+    case {severity, warnings?} do
+      {:error, _} ->
+        put_iodata(:red, "Error", iodata)
+      {:warning, true}  ->
+        put_iodata(:yellow, "Warning", iodata)
+      {:warning, false} ->
+        :ignore
+    end
   end
 
-  defp to_iodata(message_atom, form, context) do
-    to_iodata(message_atom, form, [context])
+  defp emit_one(message_atom, form, context) do
+    emit_one(message_atom, form, [context])
   end
 
   # ----------------------------------------------------------------------------
@@ -59,7 +69,7 @@ defmodule PhoenixIntegration.Form.Messages do
            "Your value", inspect(context.change.value)])
       end
 
-    error([headline, hint, form_description(:red, form)])
+    {:error, [headline, hint, form_description(:red, form)]}
   end
 
   def arity_clash(headline, form, %{existing: existing, change: change}) do
@@ -79,49 +89,41 @@ defmodule PhoenixIntegration.Form.Messages do
         ]
       end
 
-    error([headline, hint, form_description(:red, form)])
+    {:error, [headline, hint, form_description(:red, form)]}
   end
-
+  
   def tag_has_no_name(headline, form, floki_tag) do
-    warning([
-      headline,
-      color(:yellow, Floki.raw_html(floki_tag)),
-      color(:yellow, "It can't be included in the params sent to the controller."),
-      form_description(:yellow, form),
-    ])
+    {:warning, [
+        headline,
+        color(:yellow, Floki.raw_html(floki_tag)),
+        color(:yellow, "It can't be included in the params sent to the controller."),
+        form_description(:yellow, form),
+      ]}
   end
 
   def empty_name(headline, form, floki_tag) do
-    warning([
-      headline, 
-      color(:yellow, Floki.raw_html(floki_tag)),
-      form_description(:yellow, form),
-    ])
+    {:warning, [
+        headline, 
+        color(:yellow, Floki.raw_html(floki_tag)),
+        form_description(:yellow, form),
+      ]}
   end
 
   def form_conflicting_paths(headline, form, %{old: old, new: new}) do
-    warning([
-      headline,
-      color(:yellow, "Phoenix will ignore one of them."),
-      key_values(:yellow, [
-        "Earlier name", old.name,
-        "  Later name", new.name,
-      ]),
-      form_description(:yellow, form),
-    ])
+    {:warning, [
+        headline,
+        color(:yellow, "Phoenix will ignore one of them."),
+        key_values(:yellow, [
+              "Earlier name", old.name,
+              "  Later name", new.name,
+            ]),
+        form_description(:yellow, form),
+    ]}
   end
 
   # ----------------------------------------------------------------------------
   # This processes an iodata tree, but unlike IO.puts, it adds a newline at
   # the end of each element.
-
-  defp error(iodata),
-    do: put_iodata(:red, "Error", iodata)
-
-  defp warning(iodata) do
-    if Application.get_env(:phoenix_integration, :warnings, true),
-      do: put_iodata(:yellow, "Warning", iodata)
-  end
 
   defp put_iodata(severity, word, [headline | rest]) do
     IO.puts color(severity, "#{word}: #{headline}")
