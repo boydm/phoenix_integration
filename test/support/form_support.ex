@@ -17,17 +17,25 @@ defmodule PhoenixIntegration.FormSupport do
   defp create_one(tag, acc), 
     do: TreeCreation.add_tag!(acc, tag)
 
-  def form_for(html_snippet) do
-    html =
-      """
-      <form accept-charset="UTF-8" action="/form" method="post" id="proper_form">
-        #{html_snippet}
-      </form>
-      """
+    def form_for(html_snippet, opts \\ []) do 
+      case Keyword.get(opts, :id, true) do
+        true -> 
+          form_for(html_snippet, ~s|id="proper_form"|, "#proper_form")
+        false ->
+          form_for(html_snippet, "", nil)
+      end
+    end
 
-    {:ok, _action, _method, form}  =   
-      PhoenixIntegration.Requests.test_find_html_form(
-        html, "#proper_form", nil, "form")
-    form
-  end
+    def form_for(html_snippet, id_attr, identifier) do
+      html =
+        """
+        <form accept-charset="UTF-8" action="/form" method="post" #{id_attr}>
+        #{html_snippet}
+        </form>
+        """
+      {:ok, _action, _method, form}  =   
+        PhoenixIntegration.Requests.test_find_html_form(
+          html, identifier, nil, "form")
+      form
+    end
 end

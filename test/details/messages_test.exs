@@ -236,6 +236,23 @@ defmodule PhoenixIntegration.Details.MessagesTest do
           "the name of the tag you're setting ends in `[]`", "user[keys][]",
           "should be a list", "false"])
     end
+
+    test "it's ok if a tag doesn't have an id" do
+      form = form_for """
+        <form accept-charset="UTF-8" action="/form" method="post">
+          <input_name" name="user[tag]" type="text" value="tag">
+        </form>
+      """, id: false
+
+      user_data = %{user: %{i_made_a_typo: "new value"}}
+
+      message = capture_io(fn ->
+        assert_raise(RuntimeError, build_form_fun(form, user_data))
+      end)
+
+      refute String.contains?(message, "id:")
+      assert String.contains?(message, ":i_made_a_typo")
+    end
   end
 
   def build_form_fun(form, user_data) do
