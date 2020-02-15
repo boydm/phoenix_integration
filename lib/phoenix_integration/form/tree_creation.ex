@@ -3,6 +3,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
   The code in this module converts a Floki representation of an HTML
   form into a tree structure whose leaves are Tags: that is, descriptions
   of a form tag that can provide values to POST-style parameters.
+  See [DESIGN.md](./DESIGN.md) for more.
   """
   alias PhoenixIntegration.Form.Tag
   alias PhoenixIntegration.Form.Common
@@ -16,14 +17,45 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     %{valid?: true} = form_to_floki_tags(form) |> build_tree_from_floki_tags 
   end
 
-  #### Helpers, some exposed to tests
-
+  # ----------------------------------------------------------------------------
   defp form_to_floki_tags(form) do
     ["input", "textarea", "select"]
     |> Enum.flat_map(fn tag_name -> floki_tags(form, tag_name) end)
   end
 
-  def build_tree_from_floki_tags(tags) do
+  defp floki_tags(form, "input") do
+    form
+    |> Floki.find("input")
+    |> Enum.map(&force_explicit_type/1)
+    |> filter_types(["text", "checkbox", "hidden", "radio"])
+  end
+
+  defp floki_tags(form, "textarea"), do: Floki.find(form, "textarea")
+  defp floki_tags(form, "select"), do: Floki.find(form, "select")
+
+  # An omitted type counts as `text`
+  defp force_explicit_type(floki_tag) do
+    adjuster = fn {name, attributes, children} -> 
+      {name, [{"type", "text"} | attributes], children}
+    end
+
+    case Floki.attribute(floki_tag, "type") do
+      [] -> Floki.traverse_and_update(floki_tag, adjuster)
+      [_] -> floki_tag
+    end
+  end
+
+  defp filter_types(floki_tags, allowed) do
+    filter_one = fn floki_tag ->
+      [type] = Floki.attribute(floki_tag, "type")
+      type in allowed
+    end
+    
+    Enum.filter(floki_tags, filter_one)
+  end 
+
+  # ----------------------------------------------------------------------------
+  defp build_tree_from_floki_tags(tags) do
     reducer = fn floki_tag, acc ->
       with(
         {:ok, tag} <- Tag.new(floki_tag),
@@ -38,40 +70,9 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     
     Enum.reduce(tags, %__MODULE__{}, reducer)
   end
-  
 
-  def floki_tags(form, "input") do
-    form
-    |> Floki.find("input")
-    |> Enum.map(&force_explicit_type/1)
-    |> filter_types(["text", "checkbox", "hidden", "radio"])
-  end
-
-  def floki_tags(form, "textarea"), do: Floki.find(form, "textarea")
-  def floki_tags(form, "select"), do: Floki.find(form, "select")
-
-  # An omitted type counts as `text`
-  defp force_explicit_type(floki_tag) do
-    adjuster = fn {name, attributes, children} -> 
-      {name, [{"type", "text"} | attributes], children}
-    end
-
-    case Floki.attribute(floki_tag, "type") do
-      [] -> Floki.traverse_and_update(floki_tag, adjuster)
-      [_] -> floki_tag
-    end
-  end
-
-  def filter_types(floki_tags, allowed) do
-    filter_one = fn floki_tag ->
-      [type] = Floki.attribute(floki_tag, "type")
-      type in allowed
-    end
-    
-    Enum.filter(floki_tags, filter_one)
-  end 
-  
-  def add_tag!(tree, %Tag{} = tag) do
+  # ----------------------------------------------------------------------------
+  def add_tag!(tree, %Tag{} = tag) do     # Used in tests
     {:ok, new_tree} = add_tag(tree, tag)
     new_tree
   end
@@ -107,6 +108,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     end
   end
 
+  # ----------------------------------------------------------------------------
   defp combine_values(earlier_tag, later_tag) do
     case {earlier_tag.type, later_tag.type, earlier_tag.has_list_value} do
       {"hidden", "checkbox", _} ->
