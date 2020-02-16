@@ -151,8 +151,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       """
       |> Floki.parse_fragment!
       |> Tag.new!
-      |> assert_field(values: ["One"],
-                      has_list_value: false)
+      |> assert_fields(values: ["One"], has_list_value: false)
     end
 
     test "a silly case: no options" do
@@ -169,7 +168,7 @@ defmodule PhoenixIntegration.Details.TagTest do
 
     test "a multiple select" do
       """
-      <select id="user_roles" name="user[roles][]">
+      <select id="user_roles" name="user[roles][]" multiple="">
         <option value="1" selected="selected">Admin</option>
         <option value="2">Power User</option>
         <option value="3" selected="selected">Plain User</option>
@@ -182,6 +181,20 @@ defmodule PhoenixIntegration.Details.TagTest do
                        path: [:user, :roles],
                        has_list_value: true)
     end
+
+    test "A *multiple* select does NOT default-select the first value" do
+      """
+      <select id="animals_roles" multiple="" name="animals[roles][]">
+        <option value="1">Admin</option>
+        <option value="2">Power User</option>
+      </select>
+      """ 
+      |> Floki.parse_fragment!
+      |> Tag.new!
+      |> assert_fields(values: [], has_list_value: true)
+    end
+
+    
   end
 
   describe "radio buttons" do

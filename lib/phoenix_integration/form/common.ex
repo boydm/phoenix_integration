@@ -7,6 +7,7 @@ defmodule PhoenixIntegration.Form.Common do
   def symbolize(anything), do: to_string(anything) |> String.to_atom
 
 
+  # ----------------------------------------------------------------------------
   @doc "In trees whose leaves are tags, find some arbitrary leaf."
   def any_leaf(%Tag{} = tag), do: tag
   def any_leaf(tree) do
@@ -14,6 +15,7 @@ defmodule PhoenixIntegration.Form.Common do
     any_leaf(subtree)
   end
 
+  # ----------------------------------------------------------------------------
   # Tree creation and editing follow the same basic code structure and
   # use struct definitions with a common "shape". These utilities work
   # with that. (Low-rent behaviours.) 
