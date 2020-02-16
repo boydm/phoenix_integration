@@ -19,17 +19,12 @@ defmodule PhoenixIntegration.Details.MessagesTest do
   #           build_form_fun(form, %{}).()
   #         ...
 
-
-
-
-  describe "warnings from the html form itself" do
+  describe "warnings when turning a form into a tree" do
     test "a tag without a name" do
       html = ~S| <input type="radio"/> |
       form = form_for html
 
-      assert_substrings(fn -> 
-        build_form_fun(form, %{}).()
-      end,
+      assert_substrings(will_fail_to_create_tree(form),
         [Messages.get(:tag_has_no_name),
          "It can't be included in the params sent to the controller",
          String.trim(html)
@@ -40,9 +35,7 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       html = ~S| <input name="" type="radio"/> |
       form = form_for html
 
-      assert_substrings(fn -> 
-        build_form_fun(form, %{}).()
-      end,
+      assert_substrings(will_fail_to_create_tree(form),
         [Messages.get(:empty_name),
          String.trim(html)
         ])
@@ -56,9 +49,7 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       """
       form = form_for html
 
-      assert_substrings(fn -> 
-        build_form_fun(form, %{}).()
-      end,
+      assert_substrings(will_fail_to_create_tree(form),
         [Messages.get(:form_conflicting_paths),
          "top_level[param][subparam]",
          "top_level[param]"
@@ -73,9 +64,7 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       """
       form = form_for html
 
-      assert_substrings(fn -> 
-        build_form_fun(form, %{}).()
-      end,
+      assert_substrings(will_fail_to_create_tree(form),
         [Messages.get(:form_conflicting_paths),
          "top_level[param]",
          "top_level[param][subparam]"
@@ -83,19 +72,15 @@ defmodule PhoenixIntegration.Details.MessagesTest do
     end
   end
 
+  # ----------------------------------------------------------------------------
   describe "errors when applying test override values" do 
     test "setting missing field (as a leaf)" do
       form = form_for """
         <input id="user_tag_name" name="user[tag]" type="text" value="tag">
         """
-      
-      user_data = %{user: %{i_made_a_typo: "new value"}}
+      edit_tree = %{user: %{i_made_a_typo: "new value"}}
 
-      fun = fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end
-      
-      assert_substrings(fun, 
+      assert_substrings(will_fail_to_edit_tree(form, edit_tree), 
         [ Messages.get(:no_such_name_in_form),
           "Is this a typo?", ":i_made_a_typo",
           "action:", "/form",
@@ -108,14 +93,9 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       form = form_for """
         <input id="user_tag_name" name="user[tag]" type="text" value="tag">
         """
-      
-      user_data = %{i_made_a_typo: %{tag: "new value"}}
+      edit_tree = %{i_made_a_typo: %{tag: "new value"}}
 
-      fun = fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end
-      
-      assert_substrings(fun, 
+      assert_substrings(will_fail_to_edit_tree(form, edit_tree), 
         [ Messages.get(:no_such_name_in_form),
           "Is this a typo?", ":i_made_a_typo",
           "[:i_made_a_typo, :tag]", "new value"
@@ -126,14 +106,9 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       form = form_for """
         <input name="user[tag][name]" type="text" value="tag">
         """
-      
-      user_data = %{user: %{tag: "new value"}}
+      edit_tree = %{user: %{tag: "new value"}}
 
-      fun = fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end
-      
-      assert_substrings(fun, 
+      assert_substrings(will_fail_to_edit_tree(form, edit_tree), 
         [ Messages.get(:no_such_name_in_form),
           "You provided only a prefix of all the available names.",
           "Here is your path", "[:user, :tag]",
@@ -144,14 +119,9 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       form = form_for """
         <input name="user[tag]" type="text" value="tag">
         """
-      
-      user_data = %{user: %{tag: %{name: "new value"}}}
+      edit_tree = %{user: %{tag: %{name: "new value"}}}
 
-      fun = fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end
-      
-      assert_substrings(fun, 
+      assert_substrings(will_fail_to_edit_tree(form, edit_tree), 
         [ Messages.get(:no_such_name_in_form),
           "Your path is longer than the names it should match",
           "Here is your path", "[:user, :tag, :name]",
@@ -162,14 +132,9 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       form = form_for """
         <input name="user[tag]" type="text" value="tag">
         """
-      
-      user_data = %{user: %{tag: %{name: %{lower: "new value"}}}}
+      edit_tree = %{user: %{tag: %{name: %{lower: "new value"}}}}
 
-      fun = fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end
-      
-      assert_substrings(fun, 
+      assert_substrings(will_fail_to_edit_tree(form, edit_tree), 
         [ Messages.get(:no_such_name_in_form),
           "Your path is longer than the names it should match",
           "Here is your path", "[:user, :tag, :name, :lower]",
@@ -180,14 +145,9 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       form = form_for """
         <input name="user[tag][]" type="text" value="tag">
         """
-      
-      user_data = %{user: %{tag: "skittish"}}
+      edit_tree = %{user: %{tag: "skittish"}}
 
-      fun = fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end
-      
-      assert_substrings(fun, 
+      assert_substrings(will_fail_to_edit_tree(form, edit_tree), 
         [ Messages.get(:arity_clash),
           "the name of the tag you're setting ends in `[]`", "user[tag][]",
           "should be a list", "skittish"])
@@ -197,35 +157,24 @@ defmodule PhoenixIntegration.Details.MessagesTest do
       form = form_for """
         <input name="user[tag]" type="text" value="tag">
         """
-      
-      user_data = %{user: %{tag: ["skittish"]}}
+      edit_tree = %{user: %{tag: ["skittish"]}}
 
-      fun = fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end
-      
-      assert_substrings(fun, 
+      assert_substrings(will_fail_to_edit_tree(form, edit_tree), 
         [ Messages.get(:arity_clash),
           "value you want", ~s|["skittish"]|,
           "doesn't end in `[]`", "user[tag]"])
     end
 
-
-    test "you get more than one error" do
+    test "you can get more than one error" do
       form = form_for """
         <input id="user_tag_name" name="user[tag]" type="text" value="tag">
         <input name="user[keys][]" type="checkbox" value="true">
         <input name="user[keys][]" type="checkbox" value="true">
         """
-      
-      user_data = %{user: %{i_made_a_typo: "new value",
+      edit_tree = %{user: %{i_made_a_typo: "new value",
                             keys: "false"}}
 
-      fun = fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end
-      
-      assert_substrings(fun, 
+      assert_substrings(will_fail_to_edit_tree(form, edit_tree), 
         [ Messages.get(:no_such_name_in_form),
           "Is this a typo?", ":i_made_a_typo",
           "action:", "/form",
@@ -243,21 +192,26 @@ defmodule PhoenixIntegration.Details.MessagesTest do
           <input_name" name="user[tag]" type="text" value="tag">
         </form>
       """, id: false
+      edit_tree = %{user: %{i_made_a_typo: "new value"}}
 
-      user_data = %{user: %{i_made_a_typo: "new value"}}
-
-      message = capture_io(fn ->
-        assert_raise(RuntimeError, build_form_fun(form, user_data))
-      end)
-
+      message = capture_io(will_fail_to_edit_tree(form, edit_tree))
       refute String.contains?(message, "id:")
       assert String.contains?(message, ":i_made_a_typo")
     end
   end
 
-  def build_form_fun(form, user_data) do
+  # ----------------------------------------------------------------------------
+  def will_fail_to_create_tree(form) do
     fn ->
-      PhoenixIntegration.Requests.test_build_form_data(form, user_data)
+      PhoenixIntegration.Requests.test_build_form_data(form, %{})
+    end
+  end
+
+  def will_fail_to_edit_tree(form, edit_tree) do
+    fn -> 
+      assert_raise(RuntimeError, fn ->
+        PhoenixIntegration.Requests.test_build_form_data(form, edit_tree)
+      end)
     end
   end
 
