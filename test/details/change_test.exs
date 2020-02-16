@@ -1,11 +1,9 @@
 defmodule PhoenixIntegration.Details.ChangeTest do
   use ExUnit.Case, async: true
   import PhoenixIntegration.Assertions.Map
-  # import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.Change
 
-
-  describe "changes" do 
+  describe "changes created from simple maps" do 
     test "typical case" do
       input = %{top_level:
                 %{lower: "lower",
@@ -32,13 +30,14 @@ defmodule PhoenixIntegration.Details.ChangeTest do
                   continue: %{}
                 }}
 
-      [lower] = Change.changes(input)
+      [lower] = Change.changes(input) # empty map ignored
       assert_fields(lower,
         path: [:top_level, :lower],
         value: "lower")
     end
   end
 
+  # ----------------------------------------------------------------------------
   defstruct shallow: nil, deep: %{}
 
   describe "structs produce optional paths" do
@@ -76,9 +75,9 @@ defmodule PhoenixIntegration.Details.ChangeTest do
         value: "simple",
         ignore_if_missing_from_form: false)
     end
-
   end
 
+  # ----------------------------------------------------------------------------
   defp sort_by_value(changes) do
     Enum.sort_by(changes, &(to_string &1.value))
   end
