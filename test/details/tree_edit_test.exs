@@ -26,6 +26,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     
   @list get_in(@original_tree, [:top_level, :list])
 
+  # ----------------------------------------------------------------------------
   describe "successful updates" do
     test "update a scalar" do 
       change = change(@shallow.path, "different value")
@@ -36,7 +37,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
       |> assert_changed(@shallow, values: ["different value"])
     end
     
-    test "update a deeper one, just for fun" do 
+    test "update a deeper scalar, just for fun" do 
       change = change(@deeper.path, "different value")
       
       TreeEdit.apply_change(@original_tree, change)
@@ -44,7 +45,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
       |> assert_changed(@deeper, values: ["different value"])
     end
 
-    test "update a list" do 
+    test "update a list-valued tag" do 
       change = change(@list.path, ["different", "values"])
       
       TreeEdit.apply_change(@original_tree, change)
@@ -53,10 +54,12 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     end
   end
 
-  describe "key handling" do
+  # ----------------------------------------------------------------------------
+  describe "the types of values accepted as keys" do
+    # Note that the resulting tree always has symbol keys, even if the
+    # original is a string or integer.
     setup do 
-      numeric = 
-        """
+      numeric = """
           <input type="text" name="top_level[lower][0]" value="original">
         """ |> input_to_tag |> test_tree!
 
@@ -88,7 +91,8 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     end
   end
 
-  test "applying user edits" do
+  # ----------------------------------------------------------------------------
+  test "a bit more complicated example: more than one edited value" do
     edits = %{top_level:
               %{second: %{deeper: "new deeper value"},
                 list: ["shorter list"]}
@@ -101,6 +105,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     |> refute_changed(@shallow)
   end
 
+  # ----------------------------------------------------------------------------
   defstruct day: nil, hour: nil
 
   describe "handling of structures" do
@@ -134,25 +139,24 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
       |> assert_changed(day, values: ["Fri"])
     end
   end
+  # ----------------------------------------------------------------------------
     
-
   defp require_ok({:ok, val}), do: val
 
-  def assert_changed(new_tree, old_leaf, changes) do
+  defp assert_changed(new_tree, old_leaf, changes) do
     get_in(new_tree, old_leaf.path)
     |> assert_copy(old_leaf, except: changes)
     new_tree
   end
 
-  def refute_changed(new_tree, list) when is_list(list) do
+  defp refute_changed(new_tree, list) when is_list(list) do
     for old_leaf <- list, do: refute_changed(new_tree, old_leaf)
     new_tree
   end
   
-  def refute_changed(new_tree, %Tag{} = old_leaf) do
+  defp refute_changed(new_tree, %Tag{} = old_leaf) do
     assert get_in(new_tree, old_leaf.path) == old_leaf
   end
 
   defp change(path, value), do: %Change{path: path, value: value}
-
 end
