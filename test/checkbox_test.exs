@@ -109,6 +109,7 @@ defmodule PhoenixIntegration.CheckboxTest do
 
       assert checked == %{:"1" => "true", :"2" => "true"}
     end
+  end
 
   # ----------------------------------------------------------------------------
   def find_form(id) do 
