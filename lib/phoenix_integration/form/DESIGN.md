@@ -67,7 +67,7 @@ The tree is first converted into a sequence of `Change`
 the `values` field of a `Tag` with the same path.
 
 Note that this approach has worse "big-O" performance than a single
-pass that descends both trees at once[[fn1]](#bigo), but it means this
+pass that descends both trees at once[[fn1]](#fn1), but it means this
 module works the same way as the previous one, it makes error
 reporting more convenient, and it's not like we're talking about big
 trees here.
@@ -104,7 +104,7 @@ or non-list values, as appropriate. *Except*...
   Were the real form to be submitted, it would contain nothing about
   the name `"user[role]"`. Therefore, it would be incorrect for the
   tree given to `ConnTest.post` to produce a HTTP post string like
-  `"...&user[role]=&...`. Deleting empty `values` prevents that. 
+  `"...&user[role]=&..."`. Deleting empty `values` prevents that. 
 
 * List leaves with an empty (`[]`) value are also deleted. That's the
   behavior HTML has with, for example, a `select` tag where nothing is
@@ -131,11 +131,15 @@ pairs are pruned, leaving this:
 
 
 -------------------
-[[fn1]](#fn1) `O(width-of-tree * depth-of-tree)` vs. something like `O(width-of-tree + depth-of-tree)`, though I haven't thought about it much.
+##### [[fn1]](#fn1)
 
-[[fn2]](#fn2) Tree-creation warnings will throw away the information
-from conflicting nodes. What would get sent to ConnTest from such a
-tree might not match what the real form would send to Phoenix. For
-example, if a form has both a `name="animal[traits]"` and a
-`name="animal[traits][]"`, Phoenix might give the second one
-precedence while this code gives the first.
+`O(width-of-tree * depth-of-tree)` vs. something like `O(width-of-tree + depth-of-tree)`, though I haven't thought about it much.
+
+##### [[fn2]](#fn2)
+
+Tree-creation warnings will throw away information
+from conflicting nodes. That might not be the same information Phoenix
+would lose if the original form were submitted. For example, if a form
+has both a `name="animal[traits]"` and a `name="animal[traits][]"`,
+Phoenix might give the second one precedence while this code gives the
+first.
