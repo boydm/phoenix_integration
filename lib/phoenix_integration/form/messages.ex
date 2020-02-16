@@ -13,7 +13,7 @@ defmodule PhoenixIntegration.Form.Messages do
     form_conflicting_paths: "The form has two conflicting names."
   }
 
-  # This is used for testing.
+  # This is used for testing as well as within this module.
   def get(key), do: @headlines[key]
   
   # ----------------------------------------------------------------------------
@@ -51,84 +51,87 @@ defmodule PhoenixIntegration.Form.Messages do
     hint =
       case context.why do
         :path_too_long -> [
-          color(:red, "Your path is longer than the names it should match."),
-          key_values(:red, [
+          "Your path is longer than the names it should match.",
+          key_values([
            "Here is your path", inspect(context.change.path),
            "Here is an available name", context.tree[context.last_tried].name])
         ]
         :path_too_short -> [
-          color(:red, "You provided only a prefix of all the available names."),
-          key_values(:red, [
+          "You provided only a prefix of all the available names.",
+          key_values([
             "Here is your path", inspect(context.change.path),
             "Here is an available name", Common.any_leaf(context.tree).name])
         ]
         :possible_typo -> 
-          key_values(:red, [
+          key_values([
            "Path tried", inspect(context.change.path),
            "Is this a typo?", "#{inspect context.last_tried}",
            "Your value", inspect(context.change.value)])
       end
 
-    {:error, [headline, hint, form_description(:red, form)]}
+    {:error, [headline, hint, form_description(form)]}
   end
 
   def arity_clash(headline, form, %{existing: existing, change: change}) do
     hint =
       case existing.has_list_value do
         true -> [
-          color(:red, "Note that the name of the tag you're setting ends in `[]`:"),
-          color(:red, "    " <> inspect existing.name),
-          color(:red, "So your value should be a list, rather than this:"),
-          color(:red, "    " <> inspect change.value),
+          "Note that the name of the tag you're setting ends in `[]`:",
+          "    #{inspect existing.name}",
+          "So your value should be a list, rather than this:",
+          "    #{inspect change.value}",
         ]
         false -> [
-          color(:red, "The value you want to use is a list:"),
-          color(:red, "    " <> inspect change.value),
-          color(:red, "But the name of the tag doesn't end in `[]`:"),
-          color(:red, "    " <> inspect existing.name),
+          "The value you want to use is a list:",
+          "    #{inspect change.value}",
+          "But the name of the tag doesn't end in `[]`:",
+          "    #{inspect existing.name}"
         ]
       end
 
-    {:error, [headline, hint, form_description(:red, form)]}
+    {:error, [headline, hint, form_description(form)]}
   end
   
   def tag_has_no_name(headline, form, floki_tag) do
     {:warning, [
         headline,
-        color(:yellow, Floki.raw_html(floki_tag)),
-        color(:yellow, "It can't be included in the params sent to the controller."),
-        form_description(:yellow, form),
+        Floki.raw_html(floki_tag),
+        "It can't be included in the params sent to the controller.",
+        form_description(form),
       ]}
   end
 
   def empty_name(headline, form, floki_tag) do
     {:warning, [
         headline, 
-        color(:yellow, Floki.raw_html(floki_tag)),
-        form_description(:yellow, form),
+        Floki.raw_html(floki_tag),
+        form_description(form),
       ]}
   end
 
   def form_conflicting_paths(headline, form, %{old: old, new: new}) do
     {:warning, [
         headline,
-        color(:yellow, "Phoenix will ignore one of them."),
-        key_values(:yellow, [
+        "Phoenix will ignore one of them.",
+        key_values([
               "Earlier name", old.name,
               "  Later name", new.name,
             ]),
-        form_description(:yellow, form),
+        form_description(form),
     ]}
   end
 
   # ----------------------------------------------------------------------------
-  # This processes an iodata tree, but unlike IO.puts, it adds a newline at
-  # the end of each element.
+  # This prints (to stdio) an iodata tree, but unlike IO.puts, it adds
+  # a newline at the end of each element.
 
-  defp put_iodata(severity, word, [headline | rest]) do
-    IO.puts color(severity, "#{word}: #{headline}")
+  defp put_iodata(color, word, [headline | rest]) do
+    prefix = apply(IO.ANSI, color, [])
+    suffix = apply(IO.ANSI, :default_color, [])
+    
+    IO.puts "#{prefix}#{word}: #{headline}"
     for iodata <- rest, do: put_iodata(iodata)
-    IO.puts color(:default_color)
+    IO.puts suffix
   end
 
   defp put_iodata(iodata) when is_list(iodata) do
@@ -137,28 +140,26 @@ defmodule PhoenixIntegration.Form.Messages do
     
   defp put_iodata(string) when is_binary(string), do: IO.puts string
 
-  defp color(key), do: apply(IO.ANSI, key, [])
-  defp color(key, msg), do: color(key) <> msg
-
   # ----------------------------------------------------------------------------
   
-  defp form_description(severity, form) do
+  defp form_description(form) do
     [action] = Floki.attribute(form, "action")
     
-    [key_value(severity, "Form action", inspect action), 
-     case Floki.attribute(form, "id") do
-       [] -> []
-       [id] -> key_value(severity, "Form id", inspect id)
-     end]
+    [ key_value("Form action", inspect action), 
+      case Floki.attribute(form, "id") do
+        [] -> []
+        [id] -> key_value("Form id", inspect id)
+      end
+    ]
   end
 
-  defp key_values(severity, list) do
+  defp key_values(list) do
     list
     |> Enum.chunk_every(2)
-    |> Enum.map(fn [key, value] -> key_value(severity, key, value) end)
+    |> Enum.map(fn [key, value] -> key_value(key, value) end)
   end
   
-  defp key_value(severity, key, value) do
-    "#{color(:green)}#{key}: #{color(severity)}#{value}"
+  defp key_value(key, value) do
+    "#{key}: #{value}"
   end
 end
