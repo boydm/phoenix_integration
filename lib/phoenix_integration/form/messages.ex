@@ -123,15 +123,14 @@ defmodule PhoenixIntegration.Form.Messages do
 
   # ----------------------------------------------------------------------------
   # This prints (to stdio) an iodata tree, but unlike IO.puts, it adds
-  # a newline at the end of each element.
+  # a newline at the end of each element. It also handles color.
 
   defp put_iodata(color, word, [headline | rest]) do
     prefix = apply(IO.ANSI, color, [])
-    suffix = apply(IO.ANSI, :default_color, [])
     
     IO.puts "#{prefix}#{word}: #{headline}"
     for iodata <- rest, do: put_iodata(iodata)
-    IO.puts suffix
+    IO.puts "#{IO.ANSI.reset}"
   end
 
   defp put_iodata(iodata) when is_list(iodata) do
