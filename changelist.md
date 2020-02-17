@@ -1,5 +1,10 @@
 ## phoenix_integration Changelist
 
+### 0.8.0
+  * Fairly large update to handle forms with hidden fields. This update treats forms as parsed
+    trees and has more informative output, and is generally more flexible. This entire update
+    is brought to you by the hard work of Brian Marick (@marick on GitHub). Thank you!
+
 ### 0.7.0
   * __Marking this as 0.7.0 because it is requires a minor version update to Floki. Otherwise
     the actual changes in phoenix_markdown are more patch-like...__
