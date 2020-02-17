@@ -67,6 +67,7 @@ defmodule PhoenixIntegration.CheckboxTest do
     end
   end
 
+  # ----------------------------------------------------------------------------
   describe "without the hidden input" do 
     test "what a checkbox looks like",
       %{form_without_hidden: form} do
@@ -108,29 +109,9 @@ defmodule PhoenixIntegration.CheckboxTest do
 
       assert checked == %{:"1" => "true", :"2" => "true"}
     end
-
-    @tag :skip  ## This fails
-    test "values that are explicitly set false still should not be sent",
-      # I argue that someone NOT using the hidden hack would never expect
-      # to get a false value. I didn't in the application that started all this.
-      # We could say "well, just don't ever set a value to false then" but
-      # someone might do that to better mimic what a bunch of checkboxes would
-      # look like on the screen. Nicer not to surprise them.
-
-      # Later: it's not actually possible to tell what's an actual false
-      # value. We'd have to add something like this:
-      #
-      # %{:"1" => :checked, :"2" => :unchecked}}})
-      %{form_without_hidden: form} do
-
-      %{animals: %{chosen: checked}} =
-        test_build_form_data(form, %{animals: %{chosen: 
-          %{:"1" => "true", :"2" => "false"}}})
-
-      assert checked == %{:"1" => "true"}
-    end
   end
 
+  # ----------------------------------------------------------------------------
   def find_form(id) do 
     html = get(build_conn(:get, "/"), "/checkbox").resp_body
 

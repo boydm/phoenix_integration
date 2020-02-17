@@ -1,4 +1,4 @@
-This code is about the inner workings of this code:
+This code is about the inner workings of this:
 
         submit_form(form, %{ animal: %{
             name: "Bossie",
@@ -7,7 +7,7 @@ This code is about the inner workings of this code:
 
 It converts a form produced by
 [Floki](https://hexdocs.pm/floki/Floki.html) into a map from atoms to
-values.  that can be submitted to a Phoenix controller via the usual
+values, one that can be submitted to a Phoenix controller via the usual
 ConnTest methods (like `post`):
 
         post(conn, Route.some_path, %{animal: %{name: "Bossie"}...})
@@ -67,7 +67,7 @@ The tree is first converted into a sequence of `Change`
 the `values` field of a `Tag` with the same path.
 
 Note that this approach has worse "big-O" performance than a single
-pass that descends both trees at once[[1]](#bigo), but it means this
+pass that descends both trees at once[[fn1]](#fn1), but it means this
 module works the same way as the previous one, it makes error
 reporting more convenient, and it's not like we're talking about big
 trees here.
@@ -75,18 +75,20 @@ trees here.
 Speaking of error handling, various errors are reported. Most common
 will be trying to `Change` a value with no corresponding `Tag`. The
 reporting is done by the `Messages` module
-([/messages.ex](./messages.ex), which also handles warnings produced
+([messages.ex](./messages.ex)), which also handles warnings produced
 in the tree-creation step. The warnings are for HTML that almost
 certainly doesn't do what its author wanted, such as having two
 `"text"` inputs with the same `name` that does *not* end in `[]`. (In
 normal Phoenix use, the controller action will never see the first
-input's value.)
+input's value.)[[fn2]](#fn2)
 
 When the tree contains a struct like `Date` or `Plug.Upload`, the
 `Change`-creation step descends into the struct just like it would a
 regular map. However, the resulting `Change` values are marked so that
 no error is reported if they don't correspond to a `path` in the `Tag`
-tree.
+tree. That is, it's fine if a form has only a
+`name="top_level[date][day]"` tag and doesn't use the other fields of
+a `Date` that supplies its value.
 
 #### Finishing the tree ([tree_finish.ex](./tree_finish.ex))
 
@@ -99,12 +101,11 @@ or non-list values, as appropriate. *Except*...
         <input name="user[role]" type="radio" value="admin">
         <input name="user[role]" type="radio" value="user">
         
-  This form would be processed and yield a single `Tag` with value
-  `[]`. Were the real form to be submitted, it would contain nothing
-  about the name `"user[role]"`, as would a call to `ConnTest.post`
-  that didn't contain a value for `%{user: %{role: ...}}`.  So our
-  synthesized tree should have the same behavior.
-  
+  Were the real form to be submitted, it would contain nothing about
+  the name `"user[role]"`. Therefore, it would be incorrect for the
+  tree given to `ConnTest.post` to produce a HTTP post string like
+  `"...&user[role]=&..."`. Deleting empty `values` prevents that. 
+
 * List leaves with an empty (`[]`) value are also deleted. That's the
   behavior HTML has with, for example, a `select` tag where nothing is
   checked. Like this:
@@ -122,7 +123,23 @@ looks like this:
           subtree: %{}}}
 
 There's no form that could deliver values that would result in an
-empty map. So such key-value pairs are pruned, leaving this:
+empty map being given to the controller action. So such key-value
+pairs are pruned, leaving this:
 
      %{animals:
         %{name: "Bossie"}}
+
+
+-------------------
+##### [[fn1]](#fn1)
+
+`O(width-of-tree * depth-of-tree)` vs. something like `O(width-of-tree + depth-of-tree)`, though I haven't thought about it much.
+
+##### [[fn2]](#fn2)
+
+Tree-creation warnings will throw away information
+from conflicting nodes. That might not be the same information Phoenix
+would lose if the original form were submitted. For example, if a form
+has both a `name="animal[traits]"` and a `name="animal[traits][]"`,
+Phoenix might give the second one precedence while this code gives the
+first.

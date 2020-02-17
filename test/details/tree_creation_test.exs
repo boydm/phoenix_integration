@@ -6,6 +6,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
 
   ## Note: error cases are tested elsewhere (currently `messages_test.exs`)
 
+  # ----------------------------------------------------------------------------
   describe "adding tags that have no collisions (and type=text)" do
     test "into an empty tree" do
       tag = """
@@ -15,7 +16,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert TreeCreation.add_tag!(%{}, tag) == %{top_level: %{param: tag}}
     end
 
-    test "value at the same level" do
+    test "add tag at the same level as a previous tag" do
       first = """
         <input type="text" name="top_level[param]" value="x">
       """ |> input_to_tag
@@ -23,7 +24,6 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       second = """
         <input type="text" name="top_level[other_param]" value="y">
       """ |> input_to_tag
-
       
       actual = test_tree!([first, second])
       expected = %{top_level:
@@ -32,7 +32,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert actual == expected
     end
 
-    test "values at different levels" do
+    test "add tag at a deeper level" do
       first = """
         <input type="text" name="top_level[param]" value="x">
       """ |> input_to_tag
@@ -54,7 +54,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert actual == expected
     end
 
-    test "merging a list value" do
+    test "adding a tag that represents a list" do
       first = """
         <input type="text" name="top_level[param]" value="x">
       """ |> input_to_tag
@@ -70,10 +70,9 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert actual == expected
     end
 
-
-    # Because the correction of the type is done at a top
-    # level, we can't use the simpler test-support functions.
     test "a missing type is of type input" do
+      # Because the defaulting of the missing type is done at a top
+      # level, we can't use the simpler test-support functions.
       snippet = """
         <input name="top_level[param]" value="x">
       """
@@ -84,7 +83,9 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
     end
   end
 
+  # ----------------------------------------------------------------------------
   describe "simpler cases where a new tag collides with one already in the tree" do
+    # Note: warnings are tested elsewhere
     test "with single values, the second replaces the first" do
       first = """
         <input type="hidden" name="top_level[param]" value="y">
@@ -97,7 +98,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert test_tree!([first, second]) == %{top_level: %{param: second}}
     end
 
-    test "if the name is an list, new values add on" do
+    test "if the name is a list, new values add on" do
       first = """
         <input type="text" name="top_level[names][]" value="x">
       """ |> input_to_tag
@@ -111,7 +112,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert actual.values == ["x", "y"]
     end
 
-    test "the same behavior holds for checkbox lists" do
+    test "the same behavior adding-on behavior holds for checked checkboxes" do
       first =  """
         <input type="checkbox" name="top_level[grades][]" checked="x" value="first">
       """ |> input_to_tag
@@ -130,6 +131,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
     end
   end
 
+  # ----------------------------------------------------------------------------
   describe "the checkbox hack: a `type=hidden` provides the unchecked value" do 
     test "unchecked checkbox has no effect" do
       hidden =  """
@@ -142,14 +144,14 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
 
       %{top_level: %{grade: actual}} = test_tree!([hidden, ignored])
 
-      # It shouldn't matter, but it's probably nicest to keep 
-      # the hidden tag, since it's the one that provides the (default)
+      # It shouldn't matter, but it's probably nicest to keep the
+      # hidden tag, rather than replacing it with the "checkbox",
+      # since the hidden tag is the one that provides the (default)
       # value for the current form.
       actual
       |> assert_fields(values: ["hidden value"],
                        type: "hidden")
     end
-
 
     test "checked checkbox replaces the hidden value" do
       hidden =  """
@@ -168,20 +170,18 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
     end
   end
 
+  # ----------------------------------------------------------------------------
   describe "radio buttons" do
     setup do
-      checked =
-        """
+      checked = """
          <input type="radio" name="top_level[contact]" value="email" checked>
         """ |> input_to_tag
-      unchecked =
-        """
+      unchecked = """
          <input type="radio" name="top_level[contact]" value="phone">
         """ |> input_to_tag
 
       [checked: checked, unchecked: unchecked]
     end
-    
 
     test "checked radio replaces the unchecked value",
       %{checked: checked, unchecked: unchecked} do
@@ -197,7 +197,7 @@ defmodule PhoenixIntegration.Details.TreeCreationTest do
       assert_field(actual, values: ["email"])
     end
 
-    test "it's fine for there to be no checked button",
+    test "no checked button results in no value",
       %{unchecked: unchecked} do
 
       %{top_level: %{contact: actual}} = test_tree!(unchecked)

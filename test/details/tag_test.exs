@@ -39,6 +39,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     end
   end
 
+  # ----------------------------------------------------------------------------
   test "fields with types record them" do
     """
     <input type="text" name="top_level[name]" value="name">
@@ -48,6 +49,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     |> assert_field(type: "text")
   end
 
+  # ----------------------------------------------------------------------------
   describe "text special cases" do
     # Can't find definitive word on this in the documentation,
     # but this is the behavior
@@ -58,43 +60,51 @@ defmodule PhoenixIntegration.Details.TagTest do
     end
   end
 
+  # ----------------------------------------------------------------------------
   describe "checkbox special cases" do
     # Special cases for checkboxes as described in
     # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/checkbox
     test "a checkbox that's omitted `checked`" do
       assert_input_values """
         <input type="checkbox" name="top_level[grades][a]" value="x">
-      """, []
+      """,
+        []
     end
 
     test "a checkbox that has any value for `checked`" do
       assert_input_values """
         <input type="checkbox" name="top_level[grades][a]" checked="true" value="x">
-      """, ["x"]
+      """,
+        ["x"]
     end
 
     test "a checkbox that is checked but has no explicit value" do
       assert_input_values """
         <input type="checkbox" name="top_level[grades][a]" checked="true">
-      """, ["on"]
+      """,
+        ["on"]
     end
 
-    test "a checkbox that's part of an list has the same effect" do
+    test "a checkbox that's part of a list has the same effect" do
       assert_input_values """
         <input type="checkbox" name="top_level[grades][]" value="x">
-      """, []
+      """,
+        []
 
       assert_input_values """
         <input type="checkbox" name="top_level[grades][]" checked="true" value="x">
-      """, ["x"]
+      """,
+        ["x"]
 
       assert_input_values """
         <input type="checkbox" name="top_level[grades][]" checked="anything">
-      """, ["on"]
+      """,
+        ["on"]
     end
   end
 
-  test "textareas" do
+  # ----------------------------------------------------------------------------
+  test "textareas tag their value from enclosed text" do
     """
     <textarea class="form-control" id="user_story" name="user[story]">Initial user story</textarea>
     """
@@ -106,8 +116,9 @@ defmodule PhoenixIntegration.Details.TagTest do
                      path: [:user, :story])
   end
 
+  # ----------------------------------------------------------------------------
   describe "select" do
-    test "a scalar form with one value selected" do
+    test "a scalar version, one value selected" do
       """
       <select class="form-control" id="user_type" name="user[type]">
         <option value="type_one">One</option>
@@ -124,7 +135,7 @@ defmodule PhoenixIntegration.Details.TagTest do
                        path: [:user, :type])
     end
 
-    # "if no value attribute is included, the value defaults to the
+    # "if no value attribute is included, the [option] value defaults to the
     # text contained inside the element" -
     # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
     test "a scalar form with no `value` attribute" do
@@ -141,7 +152,7 @@ defmodule PhoenixIntegration.Details.TagTest do
                       has_list_value: false)
     end
 
-    test "the first value is selected by default" do
+    test "no selection means the first value is selected" do
       """
       <select class="form-control" id="user_type" name="user[type]">
         <option>One</option>
@@ -165,7 +176,8 @@ defmodule PhoenixIntegration.Details.TagTest do
                       has_list_value: false)
     end
     
-
+    # Note: the code doesn't actually check whether the `name` and `multiple`
+    # attributes are consistent with each other.
     test "a multiple select" do
       """
       <select id="user_roles" name="user[roles][]" multiple="">
@@ -193,10 +205,9 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> Tag.new!
       |> assert_fields(values: [], has_list_value: true)
     end
-
-    
   end
 
+  # ----------------------------------------------------------------------------
   describe "radio buttons" do
     test "checked" do 
       """
@@ -209,7 +220,7 @@ defmodule PhoenixIntegration.Details.TagTest do
                        has_list_value: false)
     end
 
-    test "unchecked" do 
+    test "unchecked means no value" do 
       """
       <input name="user[role]" type="radio" value="admin">
       """
@@ -218,7 +229,7 @@ defmodule PhoenixIntegration.Details.TagTest do
       |> assert_field(values: [])
     end
 
-    test "checked, but no value" do
+    test "checked, but no value, means the value is 'on'" do
       """
       <input name="user[role]" type="radio" checked>
       """
@@ -228,6 +239,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     end
   end
 
+  # ----------------------------------------------------------------------------
   describe "warning cases" do
     test "no name" do
       floki_tag = 
@@ -248,8 +260,7 @@ defmodule PhoenixIntegration.Details.TagTest do
     end
   end
 
-  
-
+  # ----------------------------------------------------------------------------
   defp assert_input_values(fragment, values) do
     assert input_to_tag(fragment).values == values
   end
