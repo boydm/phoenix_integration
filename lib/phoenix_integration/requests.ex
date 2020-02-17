@@ -1,5 +1,7 @@
 defmodule PhoenixIntegration.Requests do
   use Phoenix.ConnTest
+  alias PhoenixIntegration.Form.{TreeCreation, TreeEdit, TreeFinish}
+  alias PhoenixIntegration.Form
 
   @moduledoc """
   A set of functions intended to compliment the regular Phoenix.ConnTest utilities
@@ -390,7 +392,7 @@ defmodule PhoenixIntegration.Requests do
   ### Parameters
     * `conn` should be a conn returned from a previous request that rendered some html. The
       functions are designed to pass the conn from one call into the next via pipes.
-    * `fields` a map of fields and data to be written into the form before submitting it's action.
+    * `fields` a map of fields and data to be written into the form before submitting its action.
     * `opts` A map of additional options
       * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
         in the following forms:
@@ -441,11 +443,13 @@ defmodule PhoenixIntegration.Requests do
       find_html_form(conn.resp_body, opts.identifier, opts.method, opts.finder)
 
     # build the data to send to the action pointed to by the form
-    form_data = build_form_data(form, form_action, fields)
+    form_data = build_form_data(form, fields)
 
     # use ConnCase to call the form's handler. return the new conn
     request_path(conn, form_action, form_method, form_data)
   end
+
+
 
   # ----------------------------------------------------------------------------
   @doc """
@@ -457,7 +461,11 @@ defmodule PhoenixIntegration.Requests do
   ### Parameters
     * `conn` should be a conn returned from a previous request that rendered some html. The
       functions are designed to pass the conn from one call into the next via pipes.
-    * `fields` a map of fields and data to be written into the form before submitting it's action.
+    * `fields` a map of fields and data to be written into the form before submitting its action. The data can take one of three forms:
+      * Most frequently, it's a string.
+      * It can be a list of strings. That's used when a set of tags in the form have names ending with `[]` to tell Phoenix to create a list value. See the example below.
+      * It can be an Elixir struct like `DateTime` or [`%Plug.Upload`](https://hexdocs.pm/plug/Plug.Upload.html).
+        In that case, the fields within the struct are used to find matching tags (by name) in the form. Fields that don't match are ignored. See the example below.
     * `opts` A map of additional options
       * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
         in the following forms:
@@ -476,13 +484,30 @@ defmodule PhoenixIntegration.Requests do
   If no appropriate form is found, `follow_form` raises an error.
 
   ### Example:
+        upload = %Plug.Upload{
+          content_type: "image/jpg",
+          path: "/var/mytests/photo.jpg",
+          filename: "photo.jpg"}
+  
         # fill out a form and submit it
         get( conn, thing_path(conn, :edit, thing) )
         |> follow_form( %{ thing: %{
             name: "Updated Name",
-            some_count: 42
+            some_count: 42,
+            comments: ["first", "second"],
+            photo: upload
           }})
         |> assert_response( status: 200, path: thing_path(conn, :show, thing) )
+
+  In this example, the form would contain list-creating HTML like this:
+
+       <input id="comment1" type="text" name="thing[comments][]" value="">
+       <input id="comment2" type="text" name="thing[comments][]" value="">
+
+  The photo part of the form would probably have been created like this:
+
+       <%= file_input f, :photo %>  
+        
   """
   def follow_form(conn, fields, opts \\ %{})
 
@@ -570,7 +595,7 @@ defmodule PhoenixIntegration.Requests do
     # fetch the main form attributes
     form = %{
       method: form_method(raw_form),
-      inputs: get_form_data(raw_form)
+      inputs: tree_after_emitted_warnings(raw_form) |> TreeFinish.to_action_params
     }
 
     form =
@@ -637,8 +662,8 @@ defmodule PhoenixIntegration.Requests do
       find_html_form(html, identifier, method, form_finder)
     end
 
-    def test_build_form_data(form, form_action, fields) do
-      build_form_data(form, form_action, fields)
+    def test_build_form_data(form, fields) do
+      build_form_data(form, fields)
     end
   end
 
@@ -1015,160 +1040,20 @@ defmodule PhoenixIntegration.Requests do
   # support for building form data
 
   # ----------------------------------------------------------------------------
-  defp build_form_data(form, form_action, fields) do
-    form_data = get_form_data(form)
-    # merge the data from the form and that provided by the test
-    merge_grouped_fields(form_data, form_action, fields)
-  end
-
-  # ----------------------------------------------------------------------------
-  defp get_form_data(form) do
-    %{}
-    |> build_form_by_type(form, "input")
-    |> build_form_by_type(form, "textarea")
-    |> build_form_by_type(form, "select")
-  end
-
-  # ----------------------------------------------------------------------------
-  defp build_form_by_type(acc, form, input_type) do
-    Enum.reduce(Floki.find(form, input_type), acc, fn input, acc ->
-      case input_to_key_value(input, input_type) do
-        {:ok, input_map} ->
-          merge_input(acc, input_map)
-
-        {:error, _} ->
-          # do nothing
-          acc
-      end
-    end)
-  end
-
-  defp merge_input(acc, input_map) do
-    Enum.reduce(input_map, acc, fn {k, v}, acc ->
-      case v do
-        nil ->
-          case acc[k] do
-            nil ->
-              Map.put(acc, k, nil)
-
-            _ ->
-              acc
-          end
-
-        # nested input
-        %{} = input_child ->
-          case acc[k] do
-            nil ->
-              Map.put(acc, k, v)
-
-            %{} = acc_child ->
-              Map.put(acc, k, merge_input(acc_child, input_child))
-          end
-
-        # simple non-map value
-        _ ->
-          Map.put(acc, k, v)
-      end
-    end)
-  end
-
-  # ----------------------------------------------------------------------------
-  defp input_to_key_value(input, input_type) do
-    case Floki.attribute(input, "name") do
-      [] -> {:error, :no_name}
-      [name] -> interpret_named_value(name, get_input_value(input, input_type))
-      _ -> {:error, :unknown_format}
+  defp build_form_data(form, user_tree) do
+    tree = tree_after_emitted_warnings(form)
+    case TreeEdit.apply_edits(tree, user_tree) do
+      {:ok, edited} ->
+        TreeFinish.to_action_params(edited)
+      {:error, errors} ->
+        Form.Messages.emit(errors, form)
+        raise "Stopping"
     end
   end
 
-  # ----------------------------------------------------------------------------
-  defp merge_grouped_fields(map, form_action, fields) do
-    Enum.reduce(fields, map, fn {k, v}, acc ->
-      cond do
-        is_map(v) && !do_is_struct(v) ->
-          sub_map = merge_grouped_fields(acc[k] || %{}, form_action, v)
-          put_if_available!(acc, k, sub_map, form_action)
-
-        true ->
-          put_if_available!(acc, k, v, form_action)
-      end
-    end)
-  end
-
-  # ----------------------------------------------------------------------------
-  defp put_if_available!(map, key, value, form_action) do
-    case Map.has_key?(map, key) do
-      true ->
-        Map.put(map, key, value)
-
-      false ->
-        msg =
-          "#{IO.ANSI.red()}Attempted to set missing input in form\n" <>
-            "#{IO.ANSI.green()}Form action: #{IO.ANSI.red()}#{form_action}\n" <>
-            "#{IO.ANSI.green()}Setting key: #{IO.ANSI.red()}#{key}\n" <>
-            "#{IO.ANSI.green()}And value: #{IO.ANSI.red()}#{value}\n" <>
-            "#{IO.ANSI.green()}Into fields: #{IO.ANSI.yellow()}" <> inspect(map)
-
-        raise msg
-    end
-  end
-
-  # ----------------------------------------------------------------------------
-  defp get_input_value(input, "input") do
-    # if the input is a radio input, then see if it is checked. If it isn't, the value is nil
-    case Floki.attribute(input, "type") do
-      ["radio"] ->
-        case Floki.attribute(input, "checked") do
-          ["checked"] ->
-            Floki.attribute(input, "value")
-
-          # not checked. value is nil
-          _ ->
-            [nil]
-        end
-
-      _ ->
-        # not a radio. simply get the value
-        Floki.attribute(input, "value")
-    end
-  end
-
-  defp get_input_value(input, "textarea"), do: [Floki.FlatText.get(input)]
-
-  defp get_input_value(input, "select") do
-    Floki.find(input, "option[selected]")
-    |> Floki.attribute("value")
-  end
-
-  # ----------------------------------------------------------------------------'
-  defp interpret_named_value(name, value) do
-    case value do
-      [] -> build_named_value(name, nil)
-      [value] -> build_named_value(name, value)
-      _ -> {:error, :unknown_format}
-    end
-  end
-
-  # ----------------------------------------------------------------------------'
-  defp build_named_value(name, value) do
-    case Regex.scan(~r/\w+/, name) do
-      [] ->
-        {:error, :unknown_format}
-
-      keys ->
-        {:ok, nested_value(keys, value)}
-    end
-  end
-
-  defp nested_value([[key] | keys], value) do
-    %{String.to_atom(key) => nested_value(keys, value)}
-  end
-
-  defp nested_value([], value) do
-    value
-  end
-
-  defp do_is_struct(v) do
-    v |> Map.has_key?(:__struct__)
+  defp tree_after_emitted_warnings(form) do
+    created = TreeCreation.build_tree(form)
+    Form.Messages.emit(created.warnings, form)
+    created.tree
   end
 end

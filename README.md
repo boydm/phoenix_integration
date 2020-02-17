@@ -41,6 +41,8 @@ Where MyApp is the name of your application.
 
 Do this up before compiling phoenix_integration as part of step 2. If you change the endpoint in the config file, you will need to recompile the phoenix_integration dependency.
 
+Phoenix_integration will produce warnings if your HTML likely doesn't do what you meant. (For example, it will warn you if two text fields have the same name.) You can turn those off by adding `warnings: false` to the config.
+
 
 ### Step 2
 
@@ -102,7 +104,7 @@ defmodule MyApp.AboutIntegrationTest do
 end
 ```
 
-Each function in phoenix_integration accepts a conn and some other data, and returns a conn. This conn is intended to be passed into the next function via a pipe. to build up a clear, readable chain of events in your test.
+Each function in phoenix_integration accepts a conn and some other data, and returns a conn. This conn is intended to be passed into the next function via a pipe to build up a clear, readable chain of events in your test.
 
 
 ## Making Requests
