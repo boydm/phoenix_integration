@@ -1,12 +1,11 @@
 defmodule PhoenixIntegration.Form.Tag do
   alias PhoenixIntegration.Form.Common
 
-  @moduledoc """
-  A `Tag` is a representation of a value-providing HTML tag within a
-  Phoenix-style HTML form. Tags live on the leaves of a tree (nested
-  `Map`) representing the whole form. See [DESIGN.md](./DESIGN.md) for
-  more.
-  """
+  @moduledoc false
+  # A `Tag` is a representation of a value-providing HTML tag within a
+  # Phoenix-style HTML form. Tags live on the leaves of a tree (nested
+  # `Map`) representing the whole form. See [DESIGN.md](./DESIGN.md) for
+  # more.
 
   # There are two types of tags.
   #   - some tags are associated with an list of values. Those tags

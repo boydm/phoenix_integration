@@ -1,9 +1,8 @@
 defmodule PhoenixIntegration.Form.TreeEdit do
-  @moduledoc """
-  Once a tree of `Tag` structures has been created, the values contained
-  within it can be overridden by leaves of a different tree provided by
-  a test.
-  """
+  @moduledoc false
+  # Once a tree of `Tag` structures has been created, the values contained
+  # within it can be overridden by leaves of a different tree provided by
+  # test.
   alias PhoenixIntegration.Form.{Change, Tag, Common}
 
   defstruct valid?: :true, tree: %{}, errors: []

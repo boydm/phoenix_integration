@@ -1,9 +1,9 @@
 defmodule PhoenixIntegration.Form.Change do
   alias PhoenixIntegration.Form.Common
-  @moduledoc """
-  The test asks that a form value be changed. This struct contains 
-  the information required to make the change.
-  """
+  @moduledoc false
+  
+  # A test asks that a form value be changed. This struct contains 
+  # the information required to make the change.
 
   defstruct path: [], value: nil, ignore_if_missing_from_form: false
 

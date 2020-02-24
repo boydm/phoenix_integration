@@ -1,10 +1,11 @@
 defmodule PhoenixIntegration.Form.TreeCreation do
-  @moduledoc """
-  The code in this module converts a Floki representation of an HTML
-  form into a tree structure whose leaves are Tags: that is, descriptions
-  of a form tag that can provide values to POST-style parameters.
-  See [DESIGN.md](./DESIGN.md) for more.
-  """
+  @moduledoc false
+
+  # The code in this module converts a Floki representation of an HTML
+  # form into a tree structure whose leaves are Tags: that is, descriptions
+  # of a form tag that can provide values to POST-style parameters.
+  # See [DESIGN.md](./DESIGN.md) for more.
+
   alias PhoenixIntegration.Form.Tag
   alias PhoenixIntegration.Form.Common
 
