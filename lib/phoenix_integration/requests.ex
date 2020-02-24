@@ -12,7 +12,7 @@ defmodule PhoenixIntegration.Requests do
   conn each time. The final conn is returned.
 
   All the functions except `follow_path` and `follow_redirect` examine the html
-  conntent of the incoming conn to find a link or form to use. In this way, you
+  content of the incoming conn to find a link or form to use. In this way, you
   can both confirm that content exists in rendered pages and take actions as
   the user would.
 
@@ -171,7 +171,7 @@ defmodule PhoenixIntegration.Requests do
 
   ### Links that don't use the :get method
 
-  When Phoneix.Html renders a link, it usually generates an `<a>` tag. However, if you
+  When Phoenix.Html renders a link, it usually generates an `<a>` tag. However, if you
   specify a method other than :get, then Phoenix generates html looks like a link, but
   is really a form using the method. This is why you must specify the method used in `opts`
   if you used anything other than the standard :get in your link.
@@ -461,11 +461,13 @@ defmodule PhoenixIntegration.Requests do
   ### Parameters
     * `conn` should be a conn returned from a previous request that rendered some html. The
       functions are designed to pass the conn from one call into the next via pipes.
-    * `fields` a map of fields and data to be written into the form before submitting its action. The data can take one of three forms:
+    * `fields` is a map of fields and data to be written into the form before submitting its action. The data can take one of three forms:
       * Most frequently, it's a string.
       * It can be a list of strings. That's used when a set of tags in the form have names ending with `[]` to tell Phoenix to create a list value. See the example below.
-      * It can be an Elixir struct like `DateTime` or [`%Plug.Upload`](https://hexdocs.pm/plug/Plug.Upload.html).
+      * It can be an Elixir struct like `DateTime`.
         In that case, the fields within the struct are used to find matching tags (by name) in the form. Fields that don't match are ignored. See the example below.
+      * If you use [`Plug.Upload`](https://hexdocs.pm/plug/Plug.Upload.html), you can set an `input type="file"` value to the `%Plug.Upload{}` value you'd expect
+        Phoenix to deliver to your controller action. See the example below.
     * `opts` A map of additional options
       * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
         in the following forms:
@@ -493,6 +495,7 @@ defmodule PhoenixIntegration.Requests do
         get( conn, thing_path(conn, :edit, thing) )
         |> follow_form( %{ thing: %{
             name: "Updated Name",
+            expires: ~D[2011-09-23],
             some_count: 42,
             comments: ["first", "second"],
             photo: upload
@@ -504,7 +507,14 @@ defmodule PhoenixIntegration.Requests do
        <input id="comment1" type="text" name="thing[comments][]" value="">
        <input id="comment2" type="text" name="thing[comments][]" value="">
 
-  The photo part of the form would probably have been created like this:
+  As it happens, the form has tags for only the month and year of the expiration date:
+
+       <select name="thing[expires][year]"> ... </select>
+       <select name="thing[expires][month]"> ... </select>
+
+  ... so the day part of the `Date` is ignored.
+
+  The photo part of the form might have been created like this:
 
        <%= file_input f, :photo %>  
         
