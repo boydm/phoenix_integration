@@ -140,7 +140,35 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
     end
   end
   # ----------------------------------------------------------------------------
+  describe "handling of files" do
+    setup do 
+      tag =
+        """
+        <input type="file" name="top_level[picture]">
+        """ |> input_to_tag
+      [tree: test_tree!([tag])]
+    end
+
+    test "one normally sets a Plug.Upload", %{tree: tree} do
+      upload = %Plug.Upload{content_type: "image/jpg",
+                            path: "/var/mytests/photo.jpg",
+                            filename: "photo.jpg"}
+
+      {:ok, edited} = TreeEdit.apply_edits(tree, %{top_level: %{picture: upload}})
+      assert edited.top_level.picture.values == [upload]
+    end
     
+    test "In case they're not using Plug.Upload, a string is accepted",
+      %{tree: tree} do
+
+      {:ok, edited} = TreeEdit.apply_edits(tree, %{top_level: %{picture: "filename"}})
+      assert edited.top_level.picture.values == ["filename"]
+    end
+  end
+
+  # ----------------------------------------------------------------------------
+
+  
   defp require_ok({:ok, val}), do: val
 
   defp assert_changed(new_tree, old_leaf, changes) do
