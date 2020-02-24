@@ -27,7 +27,7 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     form
     |> Floki.find("input")
     |> Enum.map(&force_explicit_type/1)
-    |> filter_types(["text", "checkbox", "hidden", "radio"])
+    |> reject_types(["button", "image", "reset", "submit"])
   end
 
   defp floki_tags(form, "textarea"), do: Floki.find(form, "textarea")
@@ -45,13 +45,13 @@ defmodule PhoenixIntegration.Form.TreeCreation do
     end
   end
 
-  defp filter_types(floki_tags, allowed) do
-    filter_one = fn floki_tag ->
+  defp reject_types(floki_tags, disallowed) do
+    reject_one = fn floki_tag ->
       [type] = Floki.attribute(floki_tag, "type")
-      type in allowed
+      type in disallowed
     end
     
-    Enum.filter(floki_tags, filter_one)
+    Enum.reject(floki_tags, reject_one)
   end 
 
   # ----------------------------------------------------------------------------

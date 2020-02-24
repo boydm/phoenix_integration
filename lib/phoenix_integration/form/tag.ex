@@ -142,8 +142,8 @@ defmodule PhoenixIntegration.Form.Tag do
   defp apply_input_special_cases(%{type: "radio"} = incomplete_tag, values),
     do: tags_with_checked_attribute(incomplete_tag, values)
 
-  defp apply_input_special_cases(%{type: "text"}, []),
-    do: [""]
+  # This catches the zillion variants of the type="text" tag.
+  defp apply_input_special_cases(_incomplete_tag, []), do: [""]
 
   defp apply_input_special_cases(_incomplete_tag, values), do: values
 
