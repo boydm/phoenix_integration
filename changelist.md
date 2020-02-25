@@ -1,5 +1,8 @@
 ## phoenix_integration Changelist
 
+### 0.8.1
+  * Fixes issue #36, correctly handle other form input types. Thank you @marick for the fix.
+
 ### 0.8.0
   * Fairly large update to handle forms with hidden fields. This update treats forms as parsed
     trees and has more informative output, and is generally more flexible. This entire update
