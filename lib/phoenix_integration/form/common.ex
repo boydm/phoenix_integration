@@ -1,7 +1,7 @@
 defmodule PhoenixIntegration.Form.Common do
-  @moduledoc """
-  Code shared among different tree-traversal modules.
-  """
+  @moduledoc false
+
+  ### Code shared among different tree-traversal modules.
   alias PhoenixIntegration.Form.Tag
   
   def symbolize(anything), do: to_string(anything) |> String.to_atom

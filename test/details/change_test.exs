@@ -77,6 +77,25 @@ defmodule PhoenixIntegration.Details.ChangeTest do
     end
   end
 
+
+  # ----------------------------------------------------------------------------
+  describe "special handling of Plug.Upload" do
+    test "it is treated as a single value, not descended into" do 
+      upload = %Plug.Upload{content_type: "image/jpg",
+                            path: "/var/mytests/photo.jpg",
+                            filename: "photo.jpg"}
+    
+      input = %{top_level: %{picture: upload}}
+
+      [only] = Change.changes(input)
+
+      assert_fields(only,
+        path: [:top_level, :picture],
+        value: upload,
+        ignore_if_missing_from_form: false)
+    end
+  end
+
   # ----------------------------------------------------------------------------
   defp sort_by_value(changes) do
     Enum.sort_by(changes, &(to_string &1.value))

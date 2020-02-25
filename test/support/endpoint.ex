@@ -48,6 +48,12 @@ defmodule PhoenixIntegration.TestEndpoint do
     |> resp(200, File.read!("test/fixtures/templates/checkbox.html"))
   end
 
+  def respond(conn, "GET", "/input_types") do
+    #  <> query
+    pre_get_html(conn, conn_request_path(conn))
+    |> resp(200, File.read!("test/fixtures/templates/input_types.html"))
+  end
+  
   def respond(conn, "GET", _path) do
     pre_get_html(conn, conn_request_path(conn))
     |> resp(200, File.read!("test/fixtures/templates/second.html"))

@@ -1,8 +1,7 @@
 defmodule PhoenixIntegration.Form.Messages do
   
-  @moduledoc """
-  The various messages - both warnings and errors - that can be given to the user. 
-  """
+  @moduledoc false
+  # The various messages - both warnings and errors - that can be given to the user. 
   alias PhoenixIntegration.Form.Common
 
   @headlines %{

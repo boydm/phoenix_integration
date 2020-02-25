@@ -1,12 +1,11 @@
 defmodule PhoenixIntegration.Form.Tag do
   alias PhoenixIntegration.Form.Common
 
-  @moduledoc """
-  A `Tag` is a representation of a value-providing HTML tag within a
-  Phoenix-style HTML form. Tags live on the leaves of a tree (nested
-  `Map`) representing the whole form. See [DESIGN.md](./DESIGN.md) for
-  more.
-  """
+  @moduledoc false
+  # A `Tag` is a representation of a value-providing HTML tag within a
+  # Phoenix-style HTML form. Tags live on the leaves of a tree (nested
+  # `Map`) representing the whole form. See [DESIGN.md](./DESIGN.md) for
+  # more.
 
   # There are two types of tags.
   #   - some tags are associated with an list of values. Those tags
@@ -142,8 +141,8 @@ defmodule PhoenixIntegration.Form.Tag do
   defp apply_input_special_cases(%{type: "radio"} = incomplete_tag, values),
     do: tags_with_checked_attribute(incomplete_tag, values)
 
-  defp apply_input_special_cases(%{type: "text"}, []),
-    do: [""]
+  # This catches the zillion variants of the type="text" tag.
+  defp apply_input_special_cases(_incomplete_tag, []), do: [""]
 
   defp apply_input_special_cases(_incomplete_tag, values), do: values
 
