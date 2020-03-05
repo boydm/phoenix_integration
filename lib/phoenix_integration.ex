@@ -30,7 +30,7 @@ defmodule PhoenixIntegration do
   defp deps do
     [
       # ...
-      {:phoenix_integration, "~> 0.6", only: :test}
+      {:phoenix_integration, "~> 0.8", only: :test}
       # ...
     ]
   end
