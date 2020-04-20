@@ -284,7 +284,8 @@ defmodule PhoenixIntegration.RequestTest do
           tag: %{name: "tag"},
           type: "type_two",
           friends: %{"0": %{address: %{city: %{zip: "12345"}}}},
-          grades: %{a: "true", b: "true", c: "true"}
+          grades: %{a: "true", b: "true", c: "true"},
+          allotments: ["1", "3"]
         }
       },
       method: "put"
