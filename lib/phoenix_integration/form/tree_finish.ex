@@ -6,12 +6,18 @@ defmodule PhoenixIntegration.Form.TreeFinish do
   alias PhoenixIntegration.Form.Tag
 
   def to_action_params(tree) when is_map(tree) do
-    Enum.reduce(tree, %{}, &to_action_params/2)
+    Enum.reduce(tree, %{}, &to_params/2)
     |> Enum.reject(fn {_key, val} -> val == %{} end)
     |> Map.new
   end
 
-  defp to_action_params({key, %Tag{} = tag}, acc) do 
+  def to_params(tree) when is_map(tree) do
+    Enum.reduce(tree, %{}, &to_params/2)
+    |> Enum.reject(fn {_key, val} -> val == %{} end)
+    |> Map.new
+  end
+
+  defp to_params({key, %Tag{} = tag}, acc) do 
     case {tag.has_list_value, tag.values} do
       {_, []} ->
         acc
@@ -24,8 +30,8 @@ defmodule PhoenixIntegration.Form.TreeFinish do
     end
   end
 
-  defp to_action_params({key, submap}, acc) when is_map(submap) do
-    Map.put(acc, key, to_action_params(submap))
+  defp to_params({key, submap}, acc) when is_map(submap) do
+    Map.put(acc, key, to_params(submap))
   end
 
 end  
