@@ -12,13 +12,14 @@ defmodule PhoenixIntegration.Form.TreeFinish do
     to_params_reducer(tree, ignore_empty_array_tag_like_HTTP_does)
   end
 
+  # This is a function because it's referred to by tests.
   def no_value_msg,
     do: {:no_value,
          "Unless given a value, this param will not be sent to the server."}
     
   def to_form_params(tree) when is_map(tree) do
     retain_empty_array_tag = fn acc, key ->
-      Map.put(acc, key, no_value_msg)
+      Map.put(acc, key, no_value_msg())
     end
     to_params_reducer(tree, retain_empty_array_tag)
   end
