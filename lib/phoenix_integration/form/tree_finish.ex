@@ -6,21 +6,20 @@ defmodule PhoenixIntegration.Form.TreeFinish do
   alias PhoenixIntegration.Form.Tag
 
   def to_action_params(tree) when is_map(tree) do
-    Enum.reduce(tree, %{}, &to_params/2)
+    ignore_tag_like_HTTP_does = &(&1)
+    to_params_reducer(tree, ignore_tag_like_HTTP_does)
+  end
+
+  defp to_params_reducer(tree, empty_list_handler) when is_map(tree) do
+    Enum.reduce(tree, %{}, &(to_params_step &1, &2, empty_list_handler))
     |> Enum.reject(fn {_key, val} -> val == %{} end)
     |> Map.new
   end
 
-  def to_params(tree) when is_map(tree) do
-    Enum.reduce(tree, %{}, &to_params/2)
-    |> Enum.reject(fn {_key, val} -> val == %{} end)
-    |> Map.new
-  end
-
-  defp to_params({key, %Tag{} = tag}, acc) do 
+  defp to_params_step({key, %Tag{} = tag}, acc, empty_list_handler) do
     case {tag.has_list_value, tag.values} do
       {_, []} ->
-        acc
+        empty_list_handler.(acc)
       {true, values} -> 
         Map.put(acc, key, values)
       {false, [value]} ->
@@ -30,8 +29,8 @@ defmodule PhoenixIntegration.Form.TreeFinish do
     end
   end
 
-  defp to_params({key, submap}, acc) when is_map(submap) do
-    Map.put(acc, key, to_params(submap))
+  defp to_params_step({key, submap}, acc, empty_list_handler) when is_map(submap) do
+    Map.put(acc, key, to_params_reducer(submap, empty_list_handler))
   end
 
 end  

@@ -3,7 +3,7 @@ defmodule PhoenixIntegration.Details.TreeFinishTest do
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.{TreeFinish}
 
-  describe "converting the values into a map sent ConnTest" do
+  describe "converting the values into a map sent via ConnTest" do
     test "a scalar" do
       actual = """
           <input type="text" name="top_level[first]" value="first value">
