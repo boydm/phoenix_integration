@@ -605,7 +605,7 @@ defmodule PhoenixIntegration.Requests do
     # fetch the main form attributes
     form = %{
       method: form_method(raw_form),
-      inputs: tree_after_emitted_warnings(raw_form) |> TreeFinish.to_action_params
+      inputs: tree_after_emitted_warnings(raw_form) |> TreeFinish.to_form_params
     }
 
     form =

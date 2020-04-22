@@ -4,6 +4,11 @@ defmodule PhoenixIntegration.RequestTest do
   @endpoint PhoenixIntegration.TestEndpoint
 
   use PhoenixIntegration
+  alias PhoenixIntegration.Form.TreeFinish
+  # This value informs the user that a tag has no value and nothing about
+  # it will be sent to the server in the `params`. 
+  # This is only produced by `fetch_form`.
+  @not_sent TreeFinish.no_value_msg()
 
   #  import IEx
 
@@ -285,7 +290,10 @@ defmodule PhoenixIntegration.RequestTest do
           type: "type_two",
           friends: %{"0": %{address: %{city: %{zip: "12345"}}}},
           grades: %{a: "true", b: "true", c: "true"},
-          allotments: ["1", "3"]
+          allotments: ["1", "3"],
+
+          locale: @not_sent,
+          usage: @not_sent
         }
       },
       method: "put"
