@@ -1,5 +1,8 @@
 ## phoenix_integration Changelist
 
+### 0.8.2
+  * Fixes issue #39. Nice improvements to fetch_form. Thank you @marick
+
 ### 0.8.1
   * Fixes issue #36, correctly handle other form input types. Thank you @marick for the fix.
 
