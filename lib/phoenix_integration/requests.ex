@@ -580,6 +580,12 @@ defmodule PhoenixIntegration.Requests do
 
   Note: this fetches the form as it is in the response. It will not show you updates you are making as
   you prepare for the next submission.
+
+  In HTML, tags without values are not sent to the controller. For
+  your convenience, this function shows you that valueless tags are in the
+  form, marking them with `:no_value`. Note that some tags have values
+  even if there's no `value` or `checked` attribute. For example, a
+  text input's default value is the empty string.
   """
   def fetch_form(conn, opts \\ %{})
 
@@ -605,7 +611,7 @@ defmodule PhoenixIntegration.Requests do
     # fetch the main form attributes
     form = %{
       method: form_method(raw_form),
-      inputs: tree_after_emitted_warnings(raw_form) |> TreeFinish.to_action_params
+      inputs: tree_after_emitted_warnings(raw_form) |> TreeFinish.to_form_params
     }
 
     form =

@@ -300,6 +300,11 @@ A proper one this time, with fields to be filled out.
   <input type="checkbox" name="user[grades][b]" value="true" checked="checked">  B<br>
   <input type="checkbox" name="user[grades][c]" value="true" checked="checked">  C<br>
 
+  <p>This is an example of tags that are sent as a single list to the server.t</p>
+  <input name="user[allotments][]" type="checkbox" value="1" checked="true">
+  <input name="user[allotments][]" type="checkbox" value="2">
+  <input name="user[allotments][]" type="checkbox" value="3" checked="true">
+
   <div class="form-group">
     <input class="btn btn-primary" type="submit" value="Update">
   </div>
