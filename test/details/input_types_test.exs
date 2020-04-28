@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.Details.InputTypeTest do
   use ExUnit.Case
-  use Phoenix.ConnTest, async: true
+  import Phoenix.ConnTest
   alias PhoenixIntegration.Form.{TreeCreation,TreeEdit,TreeFinish}
 
   @endpoint PhoenixIntegration.TestEndpoint

@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.LinksTest do
   use ExUnit.Case, async: true
-  use Phoenix.ConnTest
+  import Phoenix.ConnTest
   @endpoint PhoenixIntegration.TestEndpoint
 
   @href_first_get "/links/first"

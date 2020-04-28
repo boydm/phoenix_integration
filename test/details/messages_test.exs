@@ -1,6 +1,5 @@
 defmodule PhoenixIntegration.Details.MessagesTest do
   use ExUnit.Case
-  use Phoenix.ConnTest
   import ExUnit.CaptureIO
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.Messages
