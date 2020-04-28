@@ -1,5 +1,7 @@
 defmodule PhoenixIntegration.Requests do
-  use Phoenix.ConnTest
+  # import Plug.Conn
+  import Phoenix.ConnTest
+
   alias PhoenixIntegration.Form.{TreeCreation, TreeEdit, TreeFinish}
   alias PhoenixIntegration.Form
 

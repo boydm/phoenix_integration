@@ -1,6 +1,7 @@
 defmodule PhoenixIntegration.AssertionsTest do
   use ExUnit.Case, async: true
-  use Phoenix.ConnTest
+  import Plug.Conn
+  import Phoenix.ConnTest
   @endpoint PhoenixIntegration.TestEndpoint
 
   # ============================================================================
