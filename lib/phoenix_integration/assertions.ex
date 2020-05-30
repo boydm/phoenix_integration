@@ -215,7 +215,7 @@ defmodule PhoenixIntegration.Assertions do
 
   defp refute_assigns(conn, expected, err_type) when is_map(expected) do
     Enum.each(expected, fn {key, value} ->
-      if conn.assigns[key] != value do
+      if conn.assigns[key] == value do
         # raise an appropriate error
         msg =
           error_msg_type(conn, err_type) <>

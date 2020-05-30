@@ -5,7 +5,7 @@ defmodule PhoenixIntegration.AssertionsTest do
   @endpoint PhoenixIntegration.TestEndpoint
 
   # ============================================================================
-  # set up context 
+  # set up context
   setup do
     %{conn: build_conn(:get, "/")}
   end
@@ -483,6 +483,31 @@ defmodule PhoenixIntegration.AssertionsTest do
 
     assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
       PhoenixIntegration.Assertions.refute_response(conn, to: "/sample")
+    end
+  end
+
+  # ----------------------------------------------------------------------------
+  # refute assigns
+  test "refute_response :assigns succeeds if missing a key", %{conn: conn} do
+    conn = assign(conn, :some_key, "some_value")
+    PhoenixIntegration.Assertions.refute_response(conn, assigns: %{missing_key: "some_value"})
+  end
+
+  test "refute_response :assigns succeeds if  wrong value", %{conn: conn} do
+    conn = assign(conn, :some_key, "some_value")
+    PhoenixIntegration.Assertions.refute_response(conn, assigns: %{some_key: "wrong_value"})
+  end
+
+  test "refute_response :assigns fails if key and value present", %{conn: conn} do
+    conn = assign(conn, :some_key, "some_value")
+
+    assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
+      PhoenixIntegration.Assertions.refute_response(
+        conn,
+        assigns: %{
+          some_key: "some_value"
+        }
+      )
     end
   end
 end
