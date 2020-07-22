@@ -9,6 +9,20 @@ defmodule PhoenixIntegration.CheckboxTest do
      form_without_hidden: find_form("#without_hidden")]
   end
 
+
+  test "diagnostic for issue 45" do
+    result = 
+      find_form("#issue45")
+      |> IO.inspect(label: "form as read")
+      |> PhoenixIntegration.Form.TreeCreation.build_tree
+      |> IO.inspect(label: "form converted to a tree")
+      |> Map.get(:tree)
+      |> PhoenixIntegration.Form.TreeEdit.apply_edits(%{ab_test: %{environments: ["ci"]}})
+      |> IO.inspect(label: "edited tree")
+
+    assert {:error, _} = result
+  end
+
   # The "hidden input hack" uses two `input` tags for each checkbox:
   #
   #   <input type="hidden"   value="false" name="name">

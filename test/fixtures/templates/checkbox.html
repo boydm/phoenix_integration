@@ -11,3 +11,23 @@
   <input name="animals[chosen][1]" type="checkbox" value="true">
   <input name="animals[chosen][2]" type="checkbox" value="true">
 </form>
+
+
+
+<form accept-charset="UTF-8" action="/form" id="issue45" method="post">
+<div>
+  <input id="ab_test_environments" name="ab_test[environments]" type="hidden" value="" />
+  <label class="checkbox-inline">
+    <input data-persisted="false" name="ab_test[environments][]" type="checkbox" value="ci" checked="" />
+    Ci
+  </label>
+  <label class="checkbox-inline">
+    <input data-persisted="false" name="ab_test[environments][]" type="checkbox" value="staging" checked="" />
+    Staging
+  </label>
+  <label class="checkbox-inline">
+    <input data-persisted="false" name="ab_test[environments][]" type="checkbox" value="production" />
+    Production
+  </label>
+</div>
+</form>
