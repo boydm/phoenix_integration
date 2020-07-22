@@ -20,7 +20,7 @@ defmodule PhoenixIntegration.CheckboxTest do
       |> PhoenixIntegration.Form.TreeEdit.apply_edits(%{ab_test: %{environments: ["ci"]}})
       |> IO.inspect(label: "edited tree")
 
-    assert {:error, _} = result
+    assert {:ok, _} = result
   end
 
   # The "hidden input hack" uses two `input` tags for each checkbox:
