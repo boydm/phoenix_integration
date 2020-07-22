@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.CheckboxTest do
   use ExUnit.Case, async: true
-  use Phoenix.ConnTest
+  import Phoenix.ConnTest
   import PhoenixIntegration.Requests, only: [test_build_form_data: 2]
   @endpoint PhoenixIntegration.TestEndpoint
 

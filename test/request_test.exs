@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.RequestTest do
   use ExUnit.Case
-  use Phoenix.ConnTest, async: true
+  import Phoenix.ConnTest
   @endpoint PhoenixIntegration.TestEndpoint
 
   use PhoenixIntegration
