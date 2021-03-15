@@ -171,7 +171,7 @@ defmodule PhoenixIntegration.Form.Tag do
     end
   end
 
-  defp separate_name_pieces(name), do: Regex.scan(~r/\w+/, name)
+  defp separate_name_pieces(name), do: Regex.scan(~r/[^\[\]]+/, name)
 
   # Floki allows tags to come in two forms
   defp tag_name([floki_tag]), do: tag_name(floki_tag)
