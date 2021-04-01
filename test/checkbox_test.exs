@@ -13,12 +13,9 @@ defmodule PhoenixIntegration.CheckboxTest do
   test "diagnostic for issue 45" do
     result = 
       find_form("#issue45")
-      |> IO.inspect(label: "form as read")
       |> PhoenixIntegration.Form.TreeCreation.build_tree
-      |> IO.inspect(label: "form converted to a tree")
       |> Map.get(:tree)
       |> PhoenixIntegration.Form.TreeEdit.apply_edits(%{ab_test: %{environments: ["ci"]}})
-      |> IO.inspect(label: "edited tree")
 
     assert {:ok, _} = result
   end
