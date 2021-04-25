@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.Details.TagTest do
   use ExUnit.Case, async: true
-  import PhoenixIntegration.Assertions.Map
+  import FlowAssertions.MapA
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.Tag
 

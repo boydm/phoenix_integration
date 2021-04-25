@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.Details.ChangeTest do
   use ExUnit.Case, async: true
-  import PhoenixIntegration.Assertions.Map
+  import FlowAssertions.MapA
   alias PhoenixIntegration.Form.Change
 
   describe "changes created from simple maps" do 

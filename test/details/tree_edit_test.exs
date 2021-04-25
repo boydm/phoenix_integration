@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.Details.TreeEditTest do
   use ExUnit.Case, async: true
-  import PhoenixIntegration.Assertions.Map
+  import FlowAssertions.MapA
   import PhoenixIntegration.FormSupport
   alias PhoenixIntegration.Form.{TreeEdit, Change, Tag}
 
@@ -173,7 +173,7 @@ defmodule PhoenixIntegration.Details.TreeEditTest do
 
   defp assert_changed(new_tree, old_leaf, changes) do
     get_in(new_tree, old_leaf.path)
-    |> assert_copy(old_leaf, except: changes)
+    |> assert_same_map(old_leaf, except: changes)
     new_tree
   end
 
