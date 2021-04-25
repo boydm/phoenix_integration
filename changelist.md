@@ -1,7 +1,9 @@
 ## phoenix_integration Changelist
 
-### 0.8.3
+### 0.9.0
   * Fixs bug in refute_response. Thank you @StanisLove
+  * update flow_assertions. Thank you @marick
+  * now requires Elixir 1.10+ bumping to 0.9.0 accordingly
 
 ### 0.8.2
   * Fixes issue #39. Nice improvements to fetch_form. Thank you @marick

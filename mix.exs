@@ -1,14 +1,14 @@
 defmodule PhoenixIntegration.Mixfile do
   use Mix.Project
 
-  @version "0.8.3"
+  @version "0.9.0"
   @url "https://github.com/boydm/phoenix_integration"
 
   def project do
     [
       app: :phoenix_integration,
       version: @version,
-      elixir: "~> 1.4",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       package: [
