@@ -46,7 +46,7 @@ defmodule PhoenixIntegration.Mixfile do
       {:phoenix_html, "~> 2.10"},
       {:floki, ">= 0.24.0"},
       {:jason, "~> 1.1"},
-      {:flow_assertions, "~> 0.6", only: :test},
+      {:flow_assertions, "~> 0.7", only: :test},
 
       # Docs dependencies
       {:ex_doc, ">= 0.0.0", only: [:dev, :docs]},
