@@ -1,5 +1,8 @@
 ## phoenix_integration Changelist
 
+### 0.9.1
+  * Loosen name identification to allow form field names with characters like ? in them. Thank you @arnodirlam
+
 ### 0.9.0
   * Fixs bug in refute_response. Thank you @StanisLove
   * update flow_assertions. Thank you @marick
