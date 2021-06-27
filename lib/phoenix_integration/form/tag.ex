@@ -30,7 +30,7 @@ defmodule PhoenixIntegration.Form.Tag do
     checked: false,
     # The original Floki tag.
     original: nil
-  
+
   def new!(floki_tag) do
     {:ok, %__MODULE__{} = tag} = new(floki_tag)
     tag
@@ -87,8 +87,8 @@ defmodule PhoenixIntegration.Form.Tag do
   defp add_values(%{tag: "textarea"} = incomplete_tag) do
     raw_value = Floki.FlatText.get(incomplete_tag.original)
     %{incomplete_tag | values: [raw_value]}
-  end    
-    
+  end
+
   defp add_values(%{tag: "select"} = incomplete_tag) do
     selected_values = fn selected_options ->
       case Floki.attribute(selected_options, "value") do
@@ -97,7 +97,7 @@ defmodule PhoenixIntegration.Form.Tag do
           # text contained inside the element" -
           # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select
           [Floki.FlatText.get(selected_options)]
-        values -> 
+        values ->
           values
       end
     end
@@ -111,12 +111,12 @@ defmodule PhoenixIntegration.Form.Tag do
         # of the first option.
         {false, [first|_rest]} -> selected_values.(first)
         {true, _}              -> []
-        # A `select` with no options is pretty silly. Nevertheless.        
+        # A `select` with no options is pretty silly. Nevertheless.
         {_, []}                -> []
       end
     end
 
-    values = 
+    values =
       case Floki.find(incomplete_tag.original, "option[selected]") do
         [] ->
           value_when_no_option_is_selected.(incomplete_tag.original)
@@ -125,7 +125,7 @@ defmodule PhoenixIntegration.Form.Tag do
       end
     %{incomplete_tag | values: values}
   end
-    
+
   defp add_values(%{tag: "input"} = incomplete_tag) do
     raw_values = Floki.attribute(incomplete_tag.original, "value")
     %{incomplete_tag | values: apply_input_special_cases(incomplete_tag, raw_values)}
@@ -134,7 +134,7 @@ defmodule PhoenixIntegration.Form.Tag do
   # ----------------------------------------------------------------------------
   # Special cases for `input` tags as described in
   # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/checkbox
-  # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio  
+  # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/radio
   defp apply_input_special_cases(%{type: "checkbox"} = incomplete_tag, values),
     do: tags_with_checked_attribute(incomplete_tag, values)
 
@@ -148,7 +148,7 @@ defmodule PhoenixIntegration.Form.Tag do
 
   # ----------------------------------------------------------------------------
   defp tags_with_checked_attribute(incomplete_tag, values) do
-    case {incomplete_tag.checked, values} do 
+    case {incomplete_tag.checked, values} do
       {true,[]} -> ["on"]
       {true,values} -> values
       {false,_} -> []
@@ -161,7 +161,7 @@ defmodule PhoenixIntegration.Form.Tag do
     |> separate_name_pieces
     |> Enum.map(&(List.first(&1) |> Common.symbolize))
   end
-    
+
   defp check_name(name) do
     case separate_name_pieces(name) do
       [] ->

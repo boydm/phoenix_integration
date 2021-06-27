@@ -1,6 +1,6 @@
 defmodule PhoenixIntegration.Form.TreeFinish do
   @moduledoc false
-  # Once a tree of `Tag` structures has been created and perhaps edited, 
+  # Once a tree of `Tag` structures has been created and perhaps edited,
   # nit is converted to a simple tree as delivered to a controller action.
 
   alias PhoenixIntegration.Form.Tag
@@ -16,7 +16,7 @@ defmodule PhoenixIntegration.Form.TreeFinish do
   def no_value_msg,
     do: {:no_value,
          "Unless given a value, this param will not be sent to the server."}
-    
+
   def to_form_params(tree) when is_map(tree) do
     retain_empty_array_tag = fn acc, key ->
       Map.put(acc, key, no_value_msg())
@@ -35,7 +35,7 @@ defmodule PhoenixIntegration.Form.TreeFinish do
     case {tag.has_list_value, tag.values} do
       {_, []} ->
         empty_list_handler.(acc, key)
-      {true, values} -> 
+      {true, values} ->
         Map.put(acc, key, values)
       {false, [value]} ->
         Map.put(acc, key, value)
@@ -48,4 +48,4 @@ defmodule PhoenixIntegration.Form.TreeFinish do
     Map.put(acc, key, to_params_reducer(submap, empty_list_handler))
   end
 
-end  
+end
