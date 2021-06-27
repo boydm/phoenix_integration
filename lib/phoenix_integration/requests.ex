@@ -21,7 +21,8 @@ defmodule PhoenixIntegration.Requests do
   This is intended to be used as a (possibly long) chain of piped functions that
   exercises a set of functionality in your application.
 
-  ### Examples
+  ## Examples
+
       test "Basic page flow", %{conn: conn} do
         # get the root index page
         get( conn, page_path(conn, :index) )
@@ -460,26 +461,51 @@ defmodule PhoenixIntegration.Requests do
 
   Similar to `submit_form`, except that it does follow redirects.
 
-  ### Parameters
-    * `conn` should be a conn returned from a previous request that rendered some html. The
-      functions are designed to pass the conn from one call into the next via pipes.
-    * `fields` is a map of fields and data to be written into the form before submitting its action. The data can take one of three forms:
+  ## Parameters
+
+    * `conn` should be a conn returned from a previous request that rendered
+      some html. The functions are designed to pass the conn from one call into
+      the next via pipes.
+
+    * `fields` is a map of fields and data to be written into the form before
+      submitting its action. The data can take one of three forms:
+
       * Most frequently, it's a string.
-      * It can be a list of strings. That's used when a set of tags in the form have names ending with `[]` to tell Phoenix to create a list value. See the example below.
-      * It can be an Elixir struct like `DateTime`.
-        In that case, the fields within the struct are used to find matching tags (by name) in the form. Fields that don't match are ignored. See the example below.
-      * If you use [`Plug.Upload`](https://hexdocs.pm/plug/Plug.Upload.html), you can set an `input type="file"` value to the `%Plug.Upload{}` value you'd expect
-        Phoenix to deliver to your controller action. See the example below.
+
+      * It can be a list of strings. That's used when a set of tags in the form
+        have names ending with `[]` to tell Phoenix to create a list value. See
+        the example below.
+
+      * It can be an Elixir struct like `DateTime`.  In that case, the fields
+        within the struct are used to find matching tags (by name) in the form.
+        Fields that don't match are ignored. See the example below.
+
+      * If you use [`Plug.Upload`](https://hexdocs.pm/plug/Plug.Upload.html),
+        you can set an `input type="file"` value to the `%Plug.Upload{}` value
+        you'd expect Phoenix to deliver to your controller action. See the
+        example below.
+
     * `opts` A map of additional options
-      * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
-        in the following forms:
-          * `"/some/path"` specify the link's href starting with a `"/"` character
-          * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
-          * `"#element-id"` specify the html element id of the link you are looking for. Must start
-            start with the `"#"` character (same as css id specifier).
-          * `"Some Text"` specify text contained within the link you are looking for.
-      * `:method` - restricts the forms searched to those whose action uses the given
-      method (such as "post" or "put"). Defaults to `nil`;
+
+      * `identifier` indicates which link to find in the html. Defaults to
+        `nil`. Valid values can be in the following forms:
+
+          * `"/some/path"` specify the link's href starting with a `"/"`
+            character
+
+          * `"http://www.example.com/some/uri"`, specify the href as full uri
+            starting with either `"http"` or `"https"`
+
+          * `"#element-id"` specify the html element id of the link you are
+            looking for. Must start start with the `"#"` character (same as css
+            id specifier).
+
+          * `"Some Text"` specify text contained within the link you are
+            looking for.
+
+      * `:method` - restricts the forms searched to those whose action uses the
+        given method (such as "post" or "put"). Defaults to `nil`;
+
       * `:finder` - finding string passed to `Floki.find`. Defaults to `"form"`
 
   If no `opts.identifier` is specified, the first form that makes sense is used. Unless you
@@ -487,12 +513,13 @@ defmodule PhoenixIntegration.Requests do
 
   If no appropriate form is found, `follow_form` raises an error.
 
-  ### Example:
+  ## Examples
+
         upload = %Plug.Upload{
           content_type: "image/jpg",
           path: "/var/mytests/photo.jpg",
           filename: "photo.jpg"}
-  
+
         # fill out a form and submit it
         get( conn, thing_path(conn, :edit, thing) )
         |> follow_form( %{ thing: %{
@@ -518,8 +545,8 @@ defmodule PhoenixIntegration.Requests do
 
   The photo part of the form might have been created like this:
 
-       <%= file_input f, :photo %>  
-        
+       <%= file_input f, :photo %>
+
   """
   def follow_form(conn, fields, opts \\ %{})
 
@@ -540,48 +567,65 @@ defmodule PhoenixIntegration.Requests do
 
   Returns the form as a map.
 
-  ### Parameters
-    * `conn` should be a conn returned from a previous request that rendered some html. The
-      functions are designed to pass the conn from one call into the next via pipes.
+  ## Parameters
+
+    * `conn` should be a conn returned from a previous request that rendered
+      some html. The functions are designed to pass the conn from one call into
+      the next via pipes.
+
     * `opts` A map of additional options
-      * `identifier` indicates which link to find in the html. Defaults to `nil`. Valid values can be
-        in the following forms:
-          * `"/some/path"` specify the link's href starting with a `"/"` character
-          * `"http://www.example.com/some/uri"`, specify the href as full uri starting with either `"http"` or `"https"`
-          * `"#element-id"` specify the html element id of the link you are looking for. Must start
-            start with the `"#"` character (same as css id specifier).
-          * `"Some Text"` specify text contained within the link you are looking for.
-      * `:method` - restricts the forms searched to those whose action uses the given
-      method (such as "post" or "put"). Defaults to `nil`;
+
+      * `identifier` indicates which link to find in the html. Defaults to
+        `nil`. Valid values can be in the following forms:
+
+          * `"/some/path"` specify the link's href starting with a `"/"`
+            character
+
+          * `"http://www.example.com/some/uri"`, specify the href as full uri
+            starting with either `"http"` or `"https"`
+
+          * `"#element-id"` specify the html element id of the link you are
+            looking for. Must start start with the `"#"` character (same as css
+            id specifier).
+
+          * `"Some Text"` specify text contained within the link you are
+            looking for.
+
+      * `:method` - restricts the forms searched to those whose action uses the
+        given method (such as "post" or "put"). Defaults to `nil`;
+
       * `:finder` - finding string passed to `Floki.find`. Defaults to `"form"`
 
-  If no `opts.identifier` is specified, the first form that makes sense is used. Unless you
-  have multiple forms on your page, this often is the most understandable pattern.
+  If no `opts.identifier` is specified, the first form that makes sense is
+  used. Unless you have multiple forms on your page, this often is the most
+  understandable pattern.
 
   If no appropriate form is found, `fetch_form` raises an error.
 
-  If you have more than one form in the response, you will probably need to use the identifier options
-  similar to what how you specify a form for submit_form or follow_form.
+  If you have more than one form in the response, you will probably need to use
+  the identifier options similar to what how you specify a form for submit_form
+  or follow_form.
 
-  ### Example:
-        # get the value from a form on the page.
-        fetch_form( conn )
+  ## Examples
 
-        ## returns something like...
-        %{
-          id:     "some_id",
-          method: "put",
-          action: "/some/action"
-          inputs: %{
-            user: %{
-              first_name: "Jane",
-              last_name:  "Doe"
-            }
+      # get the value from a form on the page.
+      fetch_form( conn )
+
+      ## returns something like...
+      %{
+        id:     "some_id",
+        method: "put",
+        action: "/some/action"
+        inputs: %{
+          user: %{
+            first_name: "Jane",
+            last_name:  "Doe"
           }
         }
+      }
 
-  Note: this fetches the form as it is in the response. It will not show you updates you are making as
-  you prepare for the next submission.
+  Note: this fetches the form as it is in the response. It will not show you
+  updates you are making as you prepare for the next submission.
 
   In HTML, tags without values are not sent to the controller. For
   your convenience, this function shows you that valueless tags are in the
@@ -629,26 +673,35 @@ defmodule PhoenixIntegration.Requests do
   end
 
   # ----------------------------------------------------------------------------
+
   @doc """
   Calls a function and follows the any redirects in the returned `conn`.
+
   If the function returns anything other than a `conn`, then the result is ignored
   and `follow_fn` will simply return the original `conn`
 
   This gives a way to insert custom assertions, or other setup code without breaking
   the piped chain of functions.
 
-  ### Parameters
-    * `conn` A conn that has been set up to work in the test environment.
-      Could be the conn originally passed in to the test;
-    * `func` a function in the form of `fn(conn) -> end`;
-    * `opts` A map of additional options
-      * `:max_redirects` - Maximum number of redirects to follow. Defaults to `5`;
+  ## Parameters
 
-  ### Example:
+    * `conn` A conn that has been set up to work in the test environment.
+      Could be the conn originally passed in to the test.
+
+    * `func` a function in the form of `fn(conn) -> end`.
+
+    * `opts` A map of additional options.
+
+      * `:max_redirects` - Maximum number of redirects to follow. Defaults to
+        `5`.
+
+  ## Examples
+
       follow_fn( conn, fn(c) ->
           "/some_path/" <> token = c.request_path
           assert token == "valid_token"
         end)
+
   """
   def follow_fn(conn, func, opts \\ %{})
 

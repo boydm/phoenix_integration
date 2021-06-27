@@ -1,22 +1,22 @@
-phoenix_integration
-========
+# PhoenixIntegration
 
 [![Build Status](https://travis-ci.org/boydm/phoenix_integration.svg?branch=master)](https://travis-ci.org/boydm/phoenix_integration)
-[![Hex.pm](https://img.shields.io/hexpm/v/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
-[![Hex.pm](https://img.shields.io/hexpm/dw/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
-[![Hex.pm](https://img.shields.io/hexpm/dt/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
 [![Inline docs](http://inch-ci.org/github/boydm/phoenix_integration.svg?branch=master)](http://inch-ci.org/github/boydm/phoenix_integration)
-
+[![Module Version](https://img.shields.io/hexpm/v/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/phoenix_integration/)
+[![Total Download](https://img.shields.io/hexpm/dt/phoenix_integration.svg)](https://hex.pm/packages/phoenix_integration)
+[![License](https://img.shields.io/hexpm/l/phoenix_integration.svg)](https://github.com/boydm/phoenix_integration/blob/master/LICENSE.md)
+[![Last Updated](https://img.shields.io/github/last-commit/boydm/phoenix_integration.svg)](https://github.com/boydm/phoenix_integration/commits/master)
 
 ## Overview
 
-PhoenixIntegration is set of lightweight, server-side integration test functions for Phoenix.
+`PhoenixIntegration` is set of lightweight, server-side integration test functions for Phoenix.
 Works within the existing `Phoenix.ConnTest` framework and emphasizes both speed and readability.
 
 The goal is to chain together a string of requests and assertions that thoroughly
 exercise your application in as lightweight and readable manner as possible.
 
-I love the pipe `|>` command in Elixir. By using the pipe to chain together calls in an integration test, phoenix_integration is able to be very readable. Tight integration with Phoenix.ConnTest means the calls all use the fast-path to your application for speed.
+I love the pipe `|>` command in Elixir. By using the pipe to chain together calls in an integration test, `PhoenixIntegration` is able to be very readable. Tight integration with `Phoenix.ConnTest` means the calls all use the fast-path to your application for speed.
 
 Version 0.6 moves from Poison to Jason for Phoenix 1.4 compatibility.
 
@@ -250,6 +250,9 @@ The `refute_response` function is very similar in form to `assert_response`, exc
   )
 ```
 
-## Documentation
+## Copyright and License
 
-You can read [the full documentation here](https://hexdocs.pm/phoenix_integration).
+Copyright (c) 2016 Boyd Multerer
+
+Released under the MIT License, which can be found in the repository in
+[LICENSE.md](./LICENSE.md).
