@@ -1,8 +1,8 @@
 defmodule PhoenixIntegration.Mixfile do
   use Mix.Project
 
+  @source_url "https://github.com/boydm/phoenix_integration"
   @version "0.9.2"
-  @url "https://github.com/boydm/phoenix_integration"
 
   def project do
     [
@@ -10,25 +10,10 @@ defmodule PhoenixIntegration.Mixfile do
       version: @version,
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
-      deps: deps(),
-      package: [
-        contributors: ["Boyd Multerer"],
-        maintainers: ["Boyd Multerer"],
-        licenses: ["MIT"],
-        links: %{
-          "GitHub" => @url,
-          "Blog Post" =>
-            "https://medium.com/@boydm/integration-testing-phoenix-applications-b2a46acae9cb"
-        }
-      ],
       name: "phoenix_integration",
-      source_url: @url,
+      deps: deps(),
       docs: docs(),
-      description: """
-      Lightweight server-side integration test functions for Phoenix.
-      Optimized for Elixir Pipes and the existing Phoenix.ConnTest
-      framework to emphasize both speed and readability.
-      """
+      package: package()
     ]
   end
 
@@ -47,19 +32,40 @@ defmodule PhoenixIntegration.Mixfile do
       {:floki, ">= 0.24.0"},
       {:jason, "~> 1.1"},
       {:flow_assertions, "~> 0.7", only: :test},
-
-      # Docs dependencies
       {:ex_doc, ">= 0.0.0", only: [:dev, :docs]},
       {:inch_ex, ">= 0.0.0", only: :docs}
-      # {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 
   def docs do
     [
-      extras: ["README.md"],
+      extras: [
+        "CHANGELOG.md": [title: "Changelog"],
+        "LICENSE.md": [title: "License"],
+        "README.md": [title: "Overview"]
+      ],
+      main: "readme",
+      source_url: @source_url,
       source_ref: "v#{@version}",
-      main: "PhoenixIntegration"
+      formatters: ["html"]
+    ]
+  end
+
+  defp package do
+    [
+      description:
+        "Lightweight server-side integration test functions for Phoenix." <>
+          " Optimized for Elixir Pipes and the existing Phoenix.ConnTest" <>
+          " framework to emphasize both speed and readability.",
+      contributors: ["Boyd Multerer"],
+      maintainers: ["Boyd Multerer"],
+      licenses: ["Apache-2.0"],
+      links: %{
+        "Changelog" => "https://hexdocs.pm/phoenix_integration/changelog.html",
+        "Blog Post" =>
+          "https://medium.com/@boydm/integration-testing-phoenix-applications-b2a46acae9cb",
+        "GitHub" => @source_url
+      }
     ]
   end
 end

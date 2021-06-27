@@ -10,7 +10,8 @@ defmodule PhoenixIntegration.Assertions do
   This is intended to be used in a (possibly long) chain of piped functions that
   exercises a set of functionality in your application.
 
-  ### Example
+  ## Examples
+
       test "Basic page flow", %{conn: conn} do
         # get the root index page
         get( conn, page_path(conn, :index) )
@@ -24,6 +25,7 @@ defmodule PhoenixIntegration.Assertions do
         |> follow_link( "Home" )
         |> assert_response( status: 200, path: page_path(conn, :index) )
       end
+
   """
 
   #  import IEx
@@ -33,32 +35,53 @@ defmodule PhoenixIntegration.Assertions do
   end
 
   @doc """
-  Asserts a set of conditions against the response fields of a conn. Returns the conn on success
-  so that it can be used in the next integration call.
+  Asserts a set of conditions against the response fields of a conn.
 
-  ### Parameters
-     * `conn` should be a conn returned from a previous request
-      should point to the path being redirected to.
+  Returns the conn on success so that it can be used in the next integration
+  call.
+
+  ## Parameters
+
+    * `conn` should be a conn returned from a previous request should point to
+      the path being redirected to.
+
     * `conditions` a list of conditions to test against. Conditions can include:
-      * `:status` checks that `conn.status` equals the given numeric value
-      * `:content_type` the conn's content-type header should contain the given text. Typical
-        values are `"text/html"` or `"application/json"`
-      * `:body` conn.resp_body should contain the given text. Does not check the content_type.
-      * `:html` checks that content_type is html, then looks for the given text in the body.
-      * `:json` checks that content_type is json, then checks that the json data equals the given map.
-      * `:path` the route rendered into the conn must equal the given path (or uri).
-      * `:uri` same as `:path`
-      * `:redirect` checks that `conn.status` is 302 and that the path in the "location" redirect
-        header equals the given path.
-      * `:to` same as `:redirect`
-      * `:assigns` checks that conn.assigns contains the given values, which could be in the form of `%{key => value}`
-        or `[{key, value}]`
-      * `:value` checks that the value returned by a callback (in the form `fn(conn)`) is truthy
 
-  Conditions can be used multiple times within a single call to `assert_response`. This can be useful
+      * `:status` checks that `conn.status` equals the given numeric value
+
+      * `:content_type` the conn's content-type header should contain the given
+        text. Typical values are `"text/html"` or `"application/json"`
+
+      * `:body` conn.resp_body should contain the given text. Does not check
+        the content_type.
+
+      * `:html` checks that content_type is html, then looks for the given text
+        in the body.
+
+      * `:json` checks that content_type is json, then checks that the json
+        data equals the given map.
+
+      * `:path` the route rendered into the conn must equal the given path (or
+        uri).
+
+      * `:uri` same as `:path`
+
+      * `:redirect` checks that `conn.status` is 302 and that the path in the
+        "location" redirect header equals the given path.
+
+      * `:to` same as `:redirect`
+
+      * `:assigns` checks that conn.assigns contains the given values, which
+        could be in the form of `%{key => value}` or `[{key, value}]`
+
+      * `:value` checks that the value returned by a callback (in the form
+        `fn(conn)`) is truthy
+
+  Conditions can be used multiple times within a single call to
+  `assert_response`. This can be useful
   to look for multiple text strings in the body.
 
-  Example
+  ## Example
 
       # test a rendered page
       assert_response( conn,
@@ -76,6 +99,7 @@ defmodule PhoenixIntegration.Assertions do
       assert_response( conn, value: fn(conn) ->
         Guardian.Plug.current_resource(conn)
       end)
+
   """
   def assert_response(conn = %Plug.Conn{}, conditions) do
     Enum.each(conditions, fn {condition, value} ->
@@ -98,31 +122,53 @@ defmodule PhoenixIntegration.Assertions do
   end
 
   @doc """
-  Refutes a set of conditions for the response fields in a conn. Returns the conn on success
-  so that it can be used in the next integration call.
+  Refutes a set of conditions for the response fields in a conn.
 
-  ### Parameters
-     * `conn` should be a conn returned from a previous request
-      should point to the path being redirected to.
-    * `conditions` a list of conditions to test against. Conditions can include:
+  Returns the conn on success so that it can be used in the next integration
+  call.
+
+  ## Parameters
+
+    * `conn` should be a conn returned from a previous request should point to
+      the path being redirected to.
+
+    * `conditions` a list of conditions to test against. Conditions can
+      include:
+
       * `:status` checks that `conn.status` is not the given numeric value
-      * `:content_type` the conn's content-type header should not contain the given text. Typical
-        values are `"text/html"` or `"applicaiton/json"`
-      * `:body` conn.resp_body should not contain the given text. Does not check the content_type.
-      * `:html` checks if content_type is html. If it is, it then checks that the given text is not in the body.
-      * `:json` checks if content_type is json, then checks that the json data does not equal the given map.
-      * `:path` the route rendered into the conn must not equal the given path (or uri).
+
+      * `:content_type` the conn's content-type header should not contain the
+        given text. Typical values are `"text/html"` or `"applicaiton/json"`
+
+      * `:body` conn.resp_body should not contain the given text. Does not
+        check the content_type.
+
+      * `:html` checks if content_type is html. If it is, it then checks that
+        the given text is not in the body.
+
+      * `:json` checks if content_type is json, then checks that the json data
+        does not equal the given map.
+
+      * `:path` the route rendered into the conn must not equal the given path
+        (or uri).
+
       * `:uri` same as `:path`
-      * `:redirect` checks if `conn.status` is 302. If it is, then checks that the path in the "location" redirect
-        header is not the given path.
+
+      * `:redirect` checks if `conn.status` is 302. If it is, then checks that
+        the path in the "location" redirect header is not the given path.
+
       * `:to` same as `:redirect`
-      * `:assigns` checks that conn.assigns does not contain the given values, which could be in the form of `%{key: value}`
-        or `[{:key, value}]`
-      * `:value` checks that the value returned by a callback (in the form `fn(conn)`) is false or nil
 
-  `refute_response` is often used in conjuntion with `assert_response` to form a complete condition check.
+      * `:assigns` checks that conn.assigns does not contain the given values,
+        which could be in the form of `%{key: value}` or `[{:key, value}]`
 
-  Example
+      * `:value` checks that the value returned by a callback (in the form
+        `fn(conn)`) is false or nil
+
+  `refute_response` is often used in conjuntion with `assert_response` to form
+  a complete condition check.
+
+  ## Examples
 
       # test a rendered page
       follow_path( conn, page_path(conn, :index) )
@@ -132,6 +178,7 @@ defmodule PhoenixIntegration.Assertions do
           html:   "Good Content"
         )
       |> refute_response( body: "Invalid Content" )
+
   """
   def refute_response(conn = %Plug.Conn{}, conditions) do
     Enum.each(conditions, fn {condition, value} ->

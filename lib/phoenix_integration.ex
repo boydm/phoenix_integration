@@ -1,13 +1,16 @@
 defmodule PhoenixIntegration do
   @moduledoc """
-  Lightweight server-side integration test functions for Phoenix. Works within the existing
-  Phoenix.ConnTest framework and emphasizes both speed and readability.
+  Lightweight server-side integration test functions for Phoenix.
+
+  Works within the existing `Phoenix.ConnTest` framework and emphasizes both
+  speed and readability.
 
   ## Configuration
 
   ### Step 1
 
-  You need to tell phoenix_integration which endpoint to use. Add the following to your phoenix application's `config/test.exs` file.
+  You need to tell `:phoenix_integration` which endpoint to use. Add the
+  following to your phoenix application's `config/test.exs` file.
 
   ```elixir
   config :phoenix_integration,
@@ -16,15 +19,18 @@ defmodule PhoenixIntegration do
 
   Where MyApp is the name of your application.
 
-  Do this up before compiling phoenix_integration as part of step 2. If you change the endpoint in the config file, you will need to recompile the phoenix_integration dependency.
+  Do this up before compiling phoenix_integration as part of step 2. If you
+  change the endpoint in the config file, you will need to recompile the
+  phoenix_integration dependency.
 
-  Phoenix_integration will produce warnings if your HTML likely doesn't do what you meant. (For example, it will warn you if two text fields have the same name.) You can turn those off by adding `warnings: false` to the config.
-
-
+  Phoenix_integration will produce warnings if your HTML likely doesn't do what
+  you meant. (For example, it will warn you if two text fields have the same
+  name.) You can turn those off by adding `warnings: false` to the config.
 
   ### Step 2
 
-  Add PhoenixIntegration to the deps section of your application's `mix.exs` file
+  Add `:phoenix_integration` to the deps section of your application's
+  `mix.exs` file:
 
   ```elixir
   defp deps do
@@ -36,11 +42,11 @@ defmodule PhoenixIntegration do
   end
   ```
 
-  Don't forget to run `mix deps.get`
+  Don't forget to run `mix deps.get`.
 
   ### Step 3
 
-  Create a test/support/integration_case.ex file. Mine simply looks like this:
+  Create a `test/support/integration_case.ex` file. Mine simply looks like this:
 
   ```elixir
   defmodule MyApp.IntegrationCase do
@@ -57,16 +63,14 @@ defmodule PhoenixIntegration do
 
   ```
 
-  Alternately you could place the call to `use PhoenixIntegration` in your conn_case.ex file. Just make sure it is after the definition of `@endpoint`.
-
-
-
+  Alternately you could place the call to `use PhoenixIntegration` in your
+  conn_case.ex file. Just make sure it is after the definition of `@endpoint`.
 
   ## Overview
 
-  phoenix_integration provides two assertion and six request functions to be used
-  alongside the existing `get`, `post`, `put`, `patch`, and `delete` utilities
-  inside of a Phoenix.ConnTest test suite.
+  `:phoenix_integration` provides two assertion and six request functions to be
+  used alongside the existing `get`, `post`, `put`, `patch`, and `delete`
+  utilities inside of a `Phoenix.ConnTest` test suite.
 
   The goal is to chain together a string of requests and assertions that thouroughly
   exercise your application in as lightweight and readable manner as possible.
@@ -75,6 +79,7 @@ defmodule PhoenixIntegration do
   passed into the next function via a pipe.
 
   ### Examples
+
       test "Basic page flow", %{conn: conn} do
         # get the root index page
         get( conn, page_path(conn, :index) )
@@ -105,6 +110,7 @@ defmodule PhoenixIntegration do
       end
 
   ### Simulate multiple users
+
   Since all user state is held in the conn that is being passed around (just like when
   a user is hitting your application in a browser), you can simulate multiple users
   simply by tracking separate conns for them.
@@ -115,7 +121,8 @@ defmodule PhoenixIntegration do
   Notice how `user_conn` is tracked and reused. This keeps the state the user builds
   up as the various links are followed, just like it would be when a proper browser is used.
 
-  ### Example
+  ### Examples
+
       test "admin grants a user permissions", %{conn: conn, user: user, admin: admin} do
         # sign in the user and admin
         user_conn = test_sign_in( conn, user )
@@ -165,33 +172,32 @@ defmodule PhoenixIntegration do
   I like to use `assert_response` pretty heavily to make sure the content I expect
   is really there and to make sure I am traveling to the right locations.
 
-        test "Basic page flow", %{conn: conn} do
-          get(conn, page_path(conn, :index) )
-          |> assert_response(
-              status: 200,
-              path: page_path(conn, :index),
-              html: "Test App"
-            )
-          |> follow_link( "About" )
-          |> assert_response(
-              status: 200,
-              path: about_path(conn, :index),
-              html: "About Test App"
-            )
-          |> follow_link( "Contact" )
-          |> assert_response(
-              status: 200,
-              path: about_path(conn, :contact),
-              html: "Contact"
-            )
-          |> follow_link( "Home" )
-          |> assert_response(
-              status: 200,
-              path: page_path(conn, :index),
-              html: "Test App"
-            )
-        end
-
+      test "Basic page flow", %{conn: conn} do
+        get(conn, page_path(conn, :index) )
+        |> assert_response(
+            status: 200,
+            path: page_path(conn, :index),
+            html: "Test App"
+          )
+        |> follow_link( "About" )
+        |> assert_response(
+            status: 200,
+            path: about_path(conn, :index),
+            html: "About Test App"
+          )
+        |> follow_link( "Contact" )
+        |> assert_response(
+            status: 200,
+            path: about_path(conn, :contact),
+            html: "Contact"
+          )
+        |> follow_link( "Home" )
+        |> assert_response(
+            status: 200,
+            path: page_path(conn, :index),
+            html: "Test App"
+          )
+      end
 
   ### What phoenix_integration is NOT
 
@@ -208,9 +214,5 @@ defmodule PhoenixIntegration do
       import PhoenixIntegration.Assertions
       import PhoenixIntegration.Requests
     end
-
-    # quote
   end
-
-  # defmacro
 end

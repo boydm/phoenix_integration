@@ -1,8 +1,8 @@
 defmodule PhoenixIntegration.Form.Change do
   alias PhoenixIntegration.Form.Common
   @moduledoc false
-  
-  # A test asks that a form value be changed. This struct contains 
+
+  # A test asks that a form value be changed. This struct contains
   # the information required to make the change.
 
   defstruct path: [], value: nil, ignore_if_missing_from_form: false
@@ -11,13 +11,13 @@ defmodule PhoenixIntegration.Form.Change do
 
   defp changes(node, state) do
     case classify(node) do
-      :descend_map -> 
+      :descend_map ->
         Enum.flat_map(node, fn {key, value} ->
           changes(value, note_longer_path(state, key))
         end)
-      :descend_struct -> 
+      :descend_struct ->
         changes(Map.from_struct(node), note_struct(state))
-      :finish_descent -> 
+      :finish_descent ->
         finish_descent(node, state)
     end
   end
@@ -32,8 +32,8 @@ defmodule PhoenixIntegration.Form.Change do
       {true,               _} -> :descend_struct
     end
   end
-    
-  def finish_descent(leaf, state) do 
+
+  def finish_descent(leaf, state) do
     [%{state |
        path: Enum.reverse(state.path),
        value: leaf
@@ -52,5 +52,5 @@ defmodule PhoenixIntegration.Form.Change do
 
   defp note_longer_path(%__MODULE__{} = state, key),
     do: %{state | path: [Common.symbolize(key) | state.path] }
-  
+
 end

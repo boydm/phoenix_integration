@@ -1,7 +1,6 @@
 defmodule PhoenixIntegration.Form.Messages do
-  
   @moduledoc false
-  # The various messages - both warnings and errors - that can be given to the user. 
+  # The various messages - both warnings and errors - that can be given to the user.
   alias PhoenixIntegration.Form.Common
 
   @headlines %{
@@ -14,7 +13,7 @@ defmodule PhoenixIntegration.Form.Messages do
 
   # This is used for testing as well as within this module.
   def get(key), do: @headlines[key]
-  
+
   # ----------------------------------------------------------------------------
   # Entry point
 
@@ -28,7 +27,7 @@ defmodule PhoenixIntegration.Form.Messages do
     {severity, iodata} =
       apply(__MODULE__, message_atom, [get(message_atom), form] ++ context)
     warnings? = Application.get_env(:phoenix_integration, :warnings, true)
-    
+
     case {severity, warnings?} do
       {:error, _} ->
         put_iodata(:red, "Error", iodata)
@@ -61,7 +60,7 @@ defmodule PhoenixIntegration.Form.Messages do
             "Here is your path", inspect(context.change.path),
             "Here is an available name", Common.any_leaf(context.tree).name])
         ]
-        :possible_typo -> 
+        :possible_typo ->
           key_values([
            "Path tried", inspect(context.change.path),
            "Is this a typo?", "#{inspect context.last_tried}",
@@ -90,7 +89,7 @@ defmodule PhoenixIntegration.Form.Messages do
 
     {:error, [headline, hint, form_description(form)]}
   end
-  
+
   def tag_has_no_name(headline, form, floki_tag) do
     {:warning, [
         headline,
@@ -102,7 +101,7 @@ defmodule PhoenixIntegration.Form.Messages do
 
   def empty_name(headline, form, floki_tag) do
     {:warning, [
-        headline, 
+        headline,
         Floki.raw_html(floki_tag),
         form_description(form),
       ]}
@@ -126,7 +125,7 @@ defmodule PhoenixIntegration.Form.Messages do
 
   defp put_iodata(color, word, [headline | rest]) do
     prefix = apply(IO.ANSI, color, [])
-    
+
     IO.puts "#{prefix}#{word}: #{headline}"
     for iodata <- rest, do: put_iodata(iodata)
     IO.puts "#{IO.ANSI.reset}"
@@ -135,15 +134,15 @@ defmodule PhoenixIntegration.Form.Messages do
   defp put_iodata(iodata) when is_list(iodata) do
     for line <- iodata, do: put_iodata(line)
   end
-    
+
   defp put_iodata(string) when is_binary(string), do: IO.puts string
 
   # ----------------------------------------------------------------------------
-  
+
   defp form_description(form) do
     [action] = Floki.attribute(form, "action")
-    
-    [ key_value("Form action", inspect action), 
+
+    [ key_value("Form action", inspect action),
       case Floki.attribute(form, "id") do
         [] -> []
         [id] -> key_value("Form id", inspect id)
@@ -156,7 +155,7 @@ defmodule PhoenixIntegration.Form.Messages do
     |> Enum.chunk_every(2)
     |> Enum.map(fn [key, value] -> key_value(key, value) end)
   end
-  
+
   defp key_value(key, value) do
     "#{key}: #{value}"
   end
