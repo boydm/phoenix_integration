@@ -37,13 +37,13 @@ defmodule PhoenixIntegration.Mixfile do
   defp elixirc_paths(_), do: ["lib"]
 
   def application do
-    [applications: [:phoenix]]
+    [applications: [:phoenix, :floki, :jason]]
   end
 
   defp deps do
     [
       {:phoenix, "~> 1.3"},
-      {:phoenix_html, "~> 2.10"},
+      {:phoenix_html, "~> 2.10 or ~> 3.0"},
       {:floki, ">= 0.24.0"},
       {:jason, "~> 1.1"},
       {:flow_assertions, "~> 0.7", only: :test},
