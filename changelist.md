@@ -1,5 +1,11 @@
 ## phoenix_integration Changelist
 
+### 1.0.0
+  * Supports phoenix_html 3.0. Thank you @hzeus and @ZombieHarvester
+  * :jason and :floki warnings resolved by making them dependent applications @ZombieHarvester
+  * Improve regex matching. @adz
+  * Added the Apache 2.0 license
+
 ### 0.9.1
   * Loosen name identification to allow form field names with characters like ? in them. Thank you @arnodirlam
 
