@@ -238,6 +238,14 @@ defmodule PhoenixIntegration.AssertionsTest do
     end
   end
 
+  test "assert_response :html fails if missing content for regexp", %{conn: conn} do
+    conn = get(conn, "/sample")
+
+    assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
+      PhoenixIntegration.Assertions.assert_response(conn, html: ~r/invalid content/)
+    end
+  end
+
   # ----------------------------------------------------------------------------
   # assert json
   test "assert_response :json succeeds", %{conn: conn} do

@@ -434,7 +434,7 @@ defmodule PhoenixIntegration.Assertions do
     else
       msg =
         error_msg_type(conn, err_type) <>
-          error_msg_expected("to find \"#{expected}\"") <>
+          error_msg_expected("to find \"#{inspect(expected)}\"") <>
           error_msg_found("Not in the response body\n") <> IO.ANSI.yellow() <> conn.resp_body
 
       raise %ResponseError{message: msg}
@@ -446,7 +446,7 @@ defmodule PhoenixIntegration.Assertions do
     if conn.resp_body =~ expected do
       msg =
         error_msg_type(conn, err_type) <>
-          error_msg_expected("NOT to find \"#{expected}\"") <>
+          error_msg_expected("NOT to find \"#{inspect(expected)}\"") <>
           error_msg_found("in the response body\n") <> IO.ANSI.yellow() <> conn.resp_body
 
       raise %ResponseError{message: msg}
