@@ -1,6 +1,6 @@
 ## phoenix_integration Changelist
 
-### 1.0.0
+### 0.9.2
   * Supports phoenix_html 3.0. Thank you @hzeus and @ZombieHarvester
   * :jason and :floki warnings resolved by making them dependent applications @ZombieHarvester
   * Improve regex matching. @adz
