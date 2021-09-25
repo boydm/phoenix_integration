@@ -37,7 +37,7 @@ defmodule PhoenixIntegration.Mixfile do
   defp elixirc_paths(_), do: ["lib"]
 
   def application do
-    [applications: [:phoenix]]
+    [applications: [:phoenix, :floki, :jason]]
   end
 
   defp deps do
