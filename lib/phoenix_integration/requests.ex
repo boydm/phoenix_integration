@@ -228,7 +228,7 @@ defmodule PhoenixIntegration.Requests do
 
   ### Links that don't use the :get method
 
-  When Phoneix.Html renders a link, it usually generates an `<a>` tag. However, if you
+  When Phoenix.Html renders a link, it usually generates an `<a>` tag. However, if you
   specify a method other than :get, then Phoenix generates html looks like a link, but
   is really a form using the method. This is why you must specify the method used in `opts`
   if you used anything other than the standard :get in your link.
