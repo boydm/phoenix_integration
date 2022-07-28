@@ -45,6 +45,7 @@ defmodule PhoenixIntegration.Assertions do
         values are `"text/html"` or `"application/json"`
       * `:body` conn.resp_body should contain the given text. Does not check the content_type.
       * `:html` checks that content_type is html, then looks for the given text in the body.
+      * `:text` checks that content_type is html, then looks for the given text in the visible text of the document.
       * `:json` checks that content_type is json, then checks that the json data equals the given map.
       * `:path` the route rendered into the conn must equal the given path (or uri).
       * `:uri` same as `:path`
@@ -84,7 +85,7 @@ defmodule PhoenixIntegration.Assertions do
         :content_type -> assert_content_type(conn, value)
         :body -> assert_body(conn, value)
         :html -> assert_body_html(conn, value)
-        :visible_html -> assert_visible_html(conn, value)
+        :text -> assert_text(conn, value)
         :json -> assert_body_json(conn, value)
         :uri -> assert_uri(conn, value)
         :path -> assert_uri(conn, value, :path)
@@ -111,6 +112,7 @@ defmodule PhoenixIntegration.Assertions do
         values are `"text/html"` or `"applicaiton/json"`
       * `:body` conn.resp_body should not contain the given text. Does not check the content_type.
       * `:html` checks if content_type is html. If it is, it then checks that the given text is not in the body.
+      * `:text` checks if content_type is html. If it is, it then checks that the given text is not in the document text.
       * `:json` checks if content_type is json, then checks that the json data does not equal the given map.
       * `:path` the route rendered into the conn must not equal the given path (or uri).
       * `:uri` same as `:path`
@@ -141,7 +143,7 @@ defmodule PhoenixIntegration.Assertions do
         :content_type -> refute_content_type(conn, value)
         :body -> refute_body(conn, value)
         :html -> refute_body_html(conn, value)
-        :visible_html -> refute_visible_html(conn, value)
+        :text -> refute_text(conn, value)
         :json -> refute_body_json(conn, value)
         :uri -> refute_uri(conn, value)
         :path -> refute_uri(conn, value, :path)
@@ -384,13 +386,13 @@ defmodule PhoenixIntegration.Assertions do
   end
 
   # ----------------------------------------------------------------------------
-  defp assert_visible_html(conn, expected, err_type \\ :html) do
+  defp assert_text(conn, expected, err_type \\ :html) do
     assert_content_type(conn, "text/html", err_type)
-    |> assert_visible_html_body(expected, err_type)
+    |> assert_visible_html_text(expected, err_type)
   end
 
   # ----------------------------------------------------------------------------
-  defp refute_visible_html(conn, expected, err_type \\ :html) do
+  defp refute_text(conn, expected, err_type \\ :html) do
     # similar to refute body html, ok if content isn't html
     case Plug.Conn.get_resp_header(conn, "content-type") do
       [] ->
@@ -399,7 +401,7 @@ defmodule PhoenixIntegration.Assertions do
       [header] ->
         cond do
           header =~ "text/html" ->
-            refute_visible_html_body(conn, expected, err_type)
+            refute_visible_html_text(conn, expected, err_type)
 
           true ->
             conn
@@ -482,7 +484,7 @@ defmodule PhoenixIntegration.Assertions do
   end
 
   # ----------------------------------------------------------------------------
-  defp assert_visible_html_body(conn, expected, err_type) do
+  defp assert_visible_html_text(conn, expected, err_type) do
     visible_text = Floki.text(conn.resp_body, style: false, sep: " ")
     if visible_text =~ expected do
       conn
@@ -497,8 +499,8 @@ defmodule PhoenixIntegration.Assertions do
   end
 
   # ----------------------------------------------------------------------------
-  defp refute_visible_html_body(conn, expected, err_type) do
-    visible_text = Floki.text(conn.resp_body)
+  defp refute_visible_html_text(conn, expected, err_type) do
+    visible_text = Floki.text(conn.resp_body, style: false, sep: " ")
     if visible_text =~ expected do
       msg =
         error_msg_type(conn, err_type) <>

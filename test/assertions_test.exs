@@ -247,8 +247,8 @@ defmodule PhoenixIntegration.AssertionsTest do
   end
 
   # ----------------------------------------------------------------------------
-  # assert visible html
-  test "assert_response :visible_html succeeds", %{conn: conn} do
+  # assert text
+  test "assert_response :text succeeds", %{conn: conn} do
     conn = get(conn, "/sample")
 
     PhoenixIntegration.Assertions.assert_response(
@@ -258,27 +258,27 @@ defmodule PhoenixIntegration.AssertionsTest do
     )
   end
 
-  test "assert_response :visible_html fails if wrong type", %{conn: conn} do
+  test "assert_response :text fails if wrong type", %{conn: conn} do
     conn = get(conn, "/test_json")
 
     assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
-      PhoenixIntegration.Assertions.assert_response(conn, visible_html: "Sample Page")
+      PhoenixIntegration.Assertions.assert_response(conn, text: "Sample Page")
     end
   end
 
-  test "assert_response :visible_html fails if missing content", %{conn: conn} do
+  test "assert_response :text fails if missing content", %{conn: conn} do
     conn = get(conn, "/sample")
 
     assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
-      PhoenixIntegration.Assertions.assert_response(conn, visible_html: "href=\"/links/first\"")
+      PhoenixIntegration.Assertions.assert_response(conn, text: "href=\"/links/first\"")
     end
   end
 
-  test "assert_response :visible_html fails if missing content for regexp", %{conn: conn} do
+  test "assert_response :text fails if missing content for regexp", %{conn: conn} do
     conn = get(conn, "/sample")
 
     assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
-      PhoenixIntegration.Assertions.assert_response(conn, visible_html: ~r/invalid content/)
+      PhoenixIntegration.Assertions.assert_response(conn, text: ~r/invalid content/)
     end
   end
 
@@ -437,22 +437,22 @@ defmodule PhoenixIntegration.AssertionsTest do
   end
 
   # ----------------------------------------------------------------------------
-  # refute visible_html
-  test "refute_response :visible_html succeeds with wrong content", %{conn: conn} do
+  # refute text
+  test "refute_response :text succeeds with wrong content", %{conn: conn} do
     conn = get(conn, "/sample")
     PhoenixIntegration.Assertions.refute_response(conn, body: "not_in_body")
   end
 
-  test "refute_response :visible_html succeeds if wrong type", %{conn: conn} do
+  test "refute_response :text succeeds if wrong type", %{conn: conn} do
     conn = get(conn, "/test_json")
-    PhoenixIntegration.Assertions.refute_response(conn, visible_html: "Sample")
+    PhoenixIntegration.Assertions.refute_response(conn, text: "Sample")
   end
 
-  test "refute_response :visible_html fails if contains content", %{conn: conn} do
+  test "refute_response :text fails if contains content", %{conn: conn} do
     conn = get(conn, "/sample")
 
     assert_raise PhoenixIntegration.Assertions.ResponseError, fn ->
-      PhoenixIntegration.Assertions.refute_response(conn, visible_html: "Sample Page")
+      PhoenixIntegration.Assertions.refute_response(conn, text: "Sample Page")
     end
   end
 
