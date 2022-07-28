@@ -483,7 +483,7 @@ defmodule PhoenixIntegration.Assertions do
 
   # ----------------------------------------------------------------------------
   defp assert_visible_html_body(conn, expected, err_type) do
-    visible_text = Floki.text(conn.resp_body)
+    visible_text = Floki.text(conn.resp_body, style: false, sep: " ")
     if visible_text =~ expected do
       conn
     else
