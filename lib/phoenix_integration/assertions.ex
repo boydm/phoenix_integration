@@ -492,7 +492,7 @@ defmodule PhoenixIntegration.Assertions do
       msg =
         error_msg_type(conn, err_type) <>
           error_msg_expected("to find \"#{inspect(expected)}\"") <>
-          error_msg_found("Not visible in the response body\n") <> IO.ANSI.yellow() <> visible_text
+          error_msg_found("Not visible in the html text of the response\n") <> IO.ANSI.yellow() <> visible_text
 
       raise %ResponseError{message: msg}
     end
@@ -505,7 +505,7 @@ defmodule PhoenixIntegration.Assertions do
       msg =
         error_msg_type(conn, err_type) <>
           error_msg_expected("NOT to find \"#{inspect(expected)}\"") <>
-          error_msg_found("in the visible response body\n") <> IO.ANSI.yellow() <> visible_text
+          error_msg_found("in the html text of the response\n") <> IO.ANSI.yellow() <> visible_text
 
       raise %ResponseError{message: msg}
     else
