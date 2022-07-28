@@ -485,7 +485,7 @@ defmodule PhoenixIntegration.Assertions do
 
   # ----------------------------------------------------------------------------
   defp assert_visible_html_text(conn, expected, err_type) do
-    visible_text = Floki.text(conn.resp_body, style: false, sep: " ")
+    visible_text = conn.resp_body |> Floki.parse_document!() |> Floki.text(style: false, sep: " ")
     if visible_text =~ expected do
       conn
     else
@@ -500,7 +500,7 @@ defmodule PhoenixIntegration.Assertions do
 
   # ----------------------------------------------------------------------------
   defp refute_visible_html_text(conn, expected, err_type) do
-    visible_text = Floki.text(conn.resp_body, style: false, sep: " ")
+    visible_text = conn.resp_body |> Floki.parse_document!() |> Floki.text(style: false, sep: " ")
     if visible_text =~ expected do
       msg =
         error_msg_type(conn, err_type) <>
