@@ -45,6 +45,7 @@ defmodule PhoenixIntegration.Assertions do
         values are `"text/html"` or `"application/json"`
       * `:body` conn.resp_body should contain the given text. Does not check the content_type.
       * `:html` checks that content_type is html, then looks for the given text in the body.
+      * `:text` checks that content_type is html, then looks for the given text in the visible text of the document.
       * `:json` checks that content_type is json, then checks that the json data equals the given map.
       * `:path` the route rendered into the conn must equal the given path (or uri).
       * `:uri` same as `:path`
@@ -84,6 +85,7 @@ defmodule PhoenixIntegration.Assertions do
         :content_type -> assert_content_type(conn, value)
         :body -> assert_body(conn, value)
         :html -> assert_body_html(conn, value)
+        :text -> assert_text(conn, value)
         :json -> assert_body_json(conn, value)
         :uri -> assert_uri(conn, value)
         :path -> assert_uri(conn, value, :path)
@@ -110,6 +112,7 @@ defmodule PhoenixIntegration.Assertions do
         values are `"text/html"` or `"applicaiton/json"`
       * `:body` conn.resp_body should not contain the given text. Does not check the content_type.
       * `:html` checks if content_type is html. If it is, it then checks that the given text is not in the body.
+      * `:text` checks if content_type is html. If it is, it then checks that the given text is not in the document text.
       * `:json` checks if content_type is json, then checks that the json data does not equal the given map.
       * `:path` the route rendered into the conn must not equal the given path (or uri).
       * `:uri` same as `:path`
@@ -140,6 +143,7 @@ defmodule PhoenixIntegration.Assertions do
         :content_type -> refute_content_type(conn, value)
         :body -> refute_body(conn, value)
         :html -> refute_body_html(conn, value)
+        :text -> refute_text(conn, value)
         :json -> refute_body_json(conn, value)
         :uri -> refute_uri(conn, value)
         :path -> refute_uri(conn, value, :path)
@@ -382,6 +386,30 @@ defmodule PhoenixIntegration.Assertions do
   end
 
   # ----------------------------------------------------------------------------
+  defp assert_text(conn, expected, err_type \\ :html) do
+    assert_content_type(conn, "text/html", err_type)
+    |> assert_visible_html_text(expected, err_type)
+  end
+
+  # ----------------------------------------------------------------------------
+  defp refute_text(conn, expected, err_type \\ :html) do
+    # similar to refute body html, ok if content isn't html
+    case Plug.Conn.get_resp_header(conn, "content-type") do
+      [] ->
+        conn
+
+      [header] ->
+        cond do
+          header =~ "text/html" ->
+            refute_visible_html_text(conn, expected, err_type)
+
+          true ->
+            conn
+        end
+    end
+  end
+
+  # ----------------------------------------------------------------------------
   defp assert_body_json(conn, expected, err_type \\ :json) do
     assert_content_type(conn, "application/json", err_type)
 
@@ -454,6 +482,37 @@ defmodule PhoenixIntegration.Assertions do
       conn
     end
   end
+
+  # ----------------------------------------------------------------------------
+  defp assert_visible_html_text(conn, expected, err_type) do
+    visible_text = conn.resp_body |> Floki.parse_document!() |> Floki.text(style: false, sep: " ")
+    if visible_text =~ expected do
+      conn
+    else
+      msg =
+        error_msg_type(conn, err_type) <>
+          error_msg_expected("to find \"#{inspect(expected)}\"") <>
+          error_msg_found("Not visible in the html text of the response\n") <> IO.ANSI.yellow() <> visible_text
+
+      raise %ResponseError{message: msg}
+    end
+  end
+
+  # ----------------------------------------------------------------------------
+  defp refute_visible_html_text(conn, expected, err_type) do
+    visible_text = conn.resp_body |> Floki.parse_document!() |> Floki.text(style: false, sep: " ")
+    if visible_text =~ expected do
+      msg =
+        error_msg_type(conn, err_type) <>
+          error_msg_expected("NOT to find \"#{inspect(expected)}\"") <>
+          error_msg_found("in the html text of the response\n") <> IO.ANSI.yellow() <> visible_text
+
+      raise %ResponseError{message: msg}
+    else
+      conn
+    end
+  end
+
 
   # ----------------------------------------------------------------------------
   defp assert_status(conn, status, err_type \\ :status) do
